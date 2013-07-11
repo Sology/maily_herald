@@ -1,0 +1,3 @@
+module MailyHerald
+  VERSION = "0.0.1"
+end
