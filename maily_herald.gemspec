@@ -10,13 +10,15 @@ Gem::Specification.new do |s|
   s.authors     = ["Łukasz Jachymczyk"]
   s.email       = ["lukasz@sology.eu"]
   s.homepage    = "https://github.com/Sology/maily_herald"
-  s.summary     = "Handles sending mailings and recurring newsletters."
+  s.summary     = "Mailing framework for Ruby on Rails applications"
   #s.description = ""
 
   s.files        = `git ls-files`.split("\n")
   s.test_files   = `git ls-files -- {test,spec,features}/*`.split("\n")
 
   s.add_dependency "rails", "~> 3.2.8"
+  s.add_dependency "liquid", "~> 2.6.0"
+  s.add_dependency "sidekiq", "~> 2.13.0"
   # s.add_dependency "jquery-rails"
 
   s.add_development_dependency "sqlite3"

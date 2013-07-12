@@ -1,0 +1,13 @@
+en:
+  activerecord:
+    attributes:
+      mailing: 
+        name: Name
+        context: Context
+        sequence: Sequence
+        conditions: Conditions
+        title: Title
+        sender: Sender
+        delay: Delay
+        token: Token
+        template: Template
