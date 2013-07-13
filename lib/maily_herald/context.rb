@@ -15,7 +15,8 @@ module MailyHerald
 			def invoke_drop name
 				name = name.to_sym
 
-				@attributes[name].try(:call, @item)
+				#@attributes[name].try(:call, @item)
+				@attributes[name].call(@item)
 			end
 
 			alias :[] :invoke_drop
@@ -49,9 +50,8 @@ module MailyHerald
 			end
 		end
 
-		def for item, &block
-			drop = Drop.new(@attributes, item)
-			block.call(item, drop)
+		def drop_for item
+			Drop.new(@attributes, item)
 		end
 	end
 end
