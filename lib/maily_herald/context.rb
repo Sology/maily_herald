@@ -79,9 +79,9 @@ module MailyHerald
 		private
 
 		def extend_model
-			unless model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
-				model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
-			end
+			#unless model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
+				#model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
+			#end
 		end
 	end
 end
