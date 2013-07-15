@@ -3,7 +3,7 @@ en:
     attributes:
       mailing: 
         name: Name
-        context: Context
+        context_name: Context
         sequence: Sequence
         conditions: Conditions
         title: Title

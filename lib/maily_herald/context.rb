@@ -23,12 +23,30 @@ module MailyHerald
 		end
 
 		attr_accessor :entity
+		attr_reader :name
+
+		def initialize name
+			@name = name
+		end
+
+		def model
+			@model ||= @scope.call.table.engine
+		end
 
 		def scope &block
 			if block_given?
 				@scope = block
+				extend_model 
 			else
-				@scope
+				@scope.call
+			end
+		end
+
+		def destination &block
+			if block_given?
+				@destination = block
+			else
+				@destination
 			end
 		end
 
@@ -43,6 +61,10 @@ module MailyHerald
 			end
 		end
 
+		def attribute_names
+			@attributes.keys
+		end
+
 		def each &block
 			@scope.call.each do |item|
 				drop = Drop.new(@attributes, item)
@@ -52,6 +74,14 @@ module MailyHerald
 
 		def drop_for item
 			Drop.new(@attributes, item)
+		end
+
+		private
+
+		def extend_model
+			unless model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
+				model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
+			end
 		end
 	end
 end
