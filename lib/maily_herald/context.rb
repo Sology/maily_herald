@@ -1,6 +1,8 @@
 module MailyHerald
   class Context
     class Drop < Liquid::Drop
+      include Rails.application.routes.url_helpers
+
       def initialize attributes, item
         @attributes = attributes
         @item = item

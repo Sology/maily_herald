@@ -12,7 +12,19 @@ module MailyHerald
     end
 
     def deliver_to entity
-      Mailer.generic(@mailing.destination_for(entity), prepare_for(entity)).deliver
+      if @mailing.mailer_name == 'generic'
+        Mailer.generic(@mailing.destination_for(entity), prepare_for(entity)).deliver
+
+        unless record = @mailing.record_for(entity)
+          record = @mailing.records.build
+          record.entity = entity
+        end
+        record.last_delivery = DateTime.now
+        record.status = "ok"
+        record.save
+      else
+        # TODO
+      end
     end
   end
 end

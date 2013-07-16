@@ -1,18 +1,18 @@
 module MailyHerald
   class Mailing < ActiveRecord::Base
-    attr_accessible :name, :context_name, :sequence, :conditions, :title, :sender, :delay, :template
+    attr_accessible :name, :context_name, :sequence, :conditions, :title, :from, :delay, :template
 
     belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
     has_many    :records,       :as => :mailing, :class_name => "MailyHerald::MailingRecord"
     
     validates   :context_name,  :presence => true
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
-    validates   :name,          :presence => true
+    validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
     validates   :title,         :presence => true
     validates   :template,      :presence => true
 
     def has_conditions?
-      !conditions.empty?
+      conditions && !conditions.empty?
     end
 
     def context
@@ -43,6 +43,10 @@ module MailyHerald
 
     def destination_for item
       context.destination.call(item)
+    end
+
+    def record_for item
+      self.records.where(:entity_id => item, :entity_type => item.class.name).first
     end
 
     private

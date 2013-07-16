@@ -8,12 +8,13 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :mailer_name,       :default => 'generic',    :null => false
       t.string            :name,                                        :null => false
       t.string            :title,                                       :null => false
-      t.string            :sender
+      t.string            :from
       t.text              :template,                                    :null => false
       t.integer           :delay
 
       t.timestamps
     end
+		add_index :maily_herald_mailings, :name, :unique => true
     add_index :maily_herald_mailings, :context_name
     add_index :maily_herald_mailings, :trigger
 

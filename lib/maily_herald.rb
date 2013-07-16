@@ -7,6 +7,8 @@ module MailyHerald
   autoload :Worker,           'maily_herald/worker'
   autoload :Manager,          'maily_herald/manager'
 
+  mattr_reader :default_from
+
   def self.setup
     yield self
   end
@@ -23,8 +25,32 @@ module MailyHerald
     end
   end
 
+  def self.mailing name
+    if Mailing.table_exists?
+      mailing = Mailing.find_or_initialize_by_name(name)
+      if block_given?
+        yield(mailing)
+        mailing.save
+      end
+      mailing
+    end
+  end
+
   def self.contexts
     @@contexts
+  end
+
+  def self.default_from= from
+    @@default_from = from
+  end
+
+  def self.deliver mailing, entity
+    mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
+
+    if mailing
+      worker = Worker.new mailing
+      worker.deliver_to entity
+    end
   end
 end
 
