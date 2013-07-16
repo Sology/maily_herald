@@ -9,9 +9,9 @@ module MailyHerald
         template "maily_herald.rb", "config/initializers/maily_herald.rb"
       end
 
-			def copy_locale
-				copy_file "../../../config/locales/en.yml", "config/locales/maily_handler.en.yml"
-			end
+      def copy_locale
+        copy_file "../../../config/locales/en.yml", "config/locales/maily_handler.en.yml"
+      end
 
       def show_readme
         readme "README" if behavior == :invoke
