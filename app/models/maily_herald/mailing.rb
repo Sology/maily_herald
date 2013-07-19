@@ -54,9 +54,9 @@ module MailyHerald
     end
 
     def find_or_initialize_record_for entity
-      record = @mailing.record_for(entity)
+      record = self.record_for(entity)
       unless record
-        record = @mailing.records.build
+        record = self.records.build
         record.entity = entity
       end
       record
