@@ -1,8 +1,6 @@
 module MailyHerald
   class Context
     class Drop < Liquid::Drop
-      include Rails.application.routes.url_helpers
-
       def initialize attributes, item
         @attributes = attributes
         @item = item
@@ -17,8 +15,12 @@ module MailyHerald
       def invoke_drop name
         name = name.to_sym
 
-        #@attributes[name].try(:call, @item)
-        @attributes[name].call(@item)
+        if @attributes.has_key? name
+          #@attributes[name].try(:call, @item)
+          @attributes[name].call(@item)
+        else
+          nil
+        end
       end
 
       alias :[] :invoke_drop

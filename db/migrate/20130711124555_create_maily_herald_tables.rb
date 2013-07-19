@@ -10,7 +10,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :title,                                       :null => false
       t.string            :from
       t.text              :template,                                    :null => false
-      t.integer           :delay
+      t.integer           :delay 			#TODO that name is reserved for ActiveRecord
 
       t.timestamps
     end

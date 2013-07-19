@@ -1,6 +1,20 @@
+require 'sidekiq'
 require "maily_herald/engine"
 
 module MailyHerald
+  class Async
+    include Sidekiq::Worker
+
+    def perform args
+      if args["entity"]
+        MailyHerald::Manager.deliver args["mailing"], args["entity"]
+      else
+        MailyHerald::Manager.deliver_all args["mailing"]
+      end
+    end
+
+  end
+
   autoload :Utils,            'maily_herald/utils'
   autoload :ModelExtensions,  'maily_herald/model_extensions'
   autoload :Context,          'maily_herald/context'
@@ -44,13 +58,17 @@ module MailyHerald
     @@default_from = from
   end
 
-  def self.deliver mailing, entity
-    mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
+  def self.deliver mailing_name, entity_id
+    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
+    entity_id = entity_id.id if !entity_id.is_a?(Fixnum)
 
-    if mailing
-      worker = Worker.new mailing
-      worker.deliver_to entity
-    end
+    Async.perform_async :mailing => mailing_name, :entity => entity_id
+  end
+
+  def self.deliver_all mailing_name
+    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
+
+    Async.perform_async :mailing => mailing_name
   end
 end
 

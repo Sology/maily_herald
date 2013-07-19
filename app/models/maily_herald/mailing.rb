@@ -26,27 +26,40 @@ module MailyHerald
       write_attribute(:trigger, value.to_s)
     end
 
-    def evaluate_conditions_for item
+    def evaluate_conditions_for entity
       if has_conditions?
         condition = create_liquid_condition conditions
         template = Liquid::Template.parse(conditions)
-        drop = @context.drop_for item 
+        drop = @context.drop_for entity 
 
         liquid_context = Liquid::Context.new([drop, template.assigns], template.instance_assigns, template.registers, true, {})
         drop.context = liquid_context
 
-        condition.evaluate liquid_context
+        begin
+          condition.evaluate liquid_context
+        rescue
+          false
+        end
       else
         true
       end
     end
 
-    def destination_for item
-      context.destination.call(item)
+    def destination_for entity
+      context.destination.call(entity)
     end
 
-    def record_for item
-      self.records.where(:entity_id => item, :entity_type => item.class.name).first
+    def record_for entity
+      self.records.where(:entity_id => entity, :entity_type => entity.class.name).first
+    end
+
+    def find_or_initialize_record_for entity
+      record = @mailing.record_for(entity)
+      unless record
+        record = @mailing.records.build
+        record.entity = entity
+      end
+      record
     end
 
     private

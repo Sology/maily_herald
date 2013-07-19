@@ -15,15 +15,18 @@ module MailyHerald
       if @mailing.mailer_name == 'generic'
         Mailer.generic(@mailing.destination_for(entity), prepare_for(entity)).deliver
 
-        unless record = @mailing.record_for(entity)
-          record = @mailing.records.build
-          record.entity = entity
-        end
+        record = @mailing.find_or_initialize_record_for(entity)
         record.last_delivery = DateTime.now
         record.status = "ok"
         record.save
       else
         # TODO
+      end
+    end
+
+    def deliver_to_all
+      @context.scope.each do |entity|
+        deliver_to entity
       end
     end
   end
