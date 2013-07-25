@@ -1,17 +1,9 @@
 module MailyHerald
-  class MailingRecord < ActiveRecord::Base
-    belongs_to  :entity,        :polymorphic => true
-    belongs_to  :mailing,       :polymorphic => true
+  class MailingRecord < MailyHerald::Record
+    belongs_to  :mailing
 
-    validates   :entity,        :presence => true
     validates   :mailing,       :presence => true
-    validates   :token,         :presence => true, :uniqueness => true
 
-    before_validation :generate_token
-
-    def generate_token
-      self.token = MailyHerald::Utils.random_hex(20) if new_record?
-    end
-
+    scope       :for_mailing,   lambda {|mailing| where(:mailing_id => mailing.id, :mailing_type => mailing.class.base_class) }
   end
 end

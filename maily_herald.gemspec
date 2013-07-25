@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   #s.description = ""
 
   s.files        = `git ls-files`.split("\n")
-  s.test_files   = `git ls-files -- {test,spec,features}/*`.split("\n")
+  s.test_files   = `git ls-files -- {spec,features}/**/`.split("\n")
 
   s.add_dependency "rails", "~> 3.2.8"
   s.add_dependency "liquid", "~> 2.6.0"
@@ -26,4 +26,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency "shoulda-matchers", "~>1.0"#, "~> 3.0"
   s.add_development_dependency "factory_girl_rails"
   s.add_development_dependency "database_cleaner"
+  s.add_development_dependency "guard"
+  s.add_development_dependency "guard-rspec"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "timecop"
 end

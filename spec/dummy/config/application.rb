@@ -8,7 +8,7 @@ require "active_resource/railtie"
 require "sprockets/railtie"
 # require "rails/test_unit/railtie"
 
-Bundler.require
+Bundler.require(*Rails.groups)
 require "maily_herald"
 
 module Dummy

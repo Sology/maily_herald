@@ -2,7 +2,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
   def change
     create_table :maily_herald_mailings do |t|
       t.integer           :sequence_id
-      t.string            :context_name,                                :null => false
+      t.string            :context_name
       t.text              :conditions
       t.string            :trigger,           :default => 'manual',     :null => false
       t.string            :mailer_name,       :default => 'generic',    :null => false
@@ -10,7 +10,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :title,                                       :null => false
       t.string            :from
       t.text              :template,                                    :null => false
-      t.integer           :delay 			#TODO that name is reserved for ActiveRecord
+      t.integer           :delay_time
 
       t.timestamps
     end
@@ -23,7 +23,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :name,                                        :null => false
       t.string            :mode,              :default => 'periodical', :null => false 
       t.datetime          :start
-      t.text              :start_expr
+      t.text              :start_var
       t.integer           :period
 
       t.timestamps
@@ -31,15 +31,16 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
     add_index :maily_herald_sequences, :context_name
     add_index :maily_herald_sequences, :mode
 
-    create_table :maily_herald_mailing_records do |t|
+    create_table :maily_herald_records do |t|
+      t.string            :type,                                        :null => false
       t.integer           :entity_id,                                   :null => false
       t.string            :entity_type,                                 :null => false
-      t.integer           :mailing_id,                                  :null => false
-      t.string            :mailing_type,                                :null => false
+      t.integer           :mailing_id
+      t.integer           :sequence_id
       t.string            :token,                                       :null => false
       t.text              :settings
-      t.text              :status
-      t.datetime          :last_delivery
+      t.text              :data
+      t.datetime          :delivered_at
     end
   end
 end

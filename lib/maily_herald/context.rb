@@ -1,9 +1,9 @@
 module MailyHerald
   class Context
     class Drop < Liquid::Drop
-      def initialize attributes, item
+      def initialize attributes, entity
         @attributes = attributes
-        @item = item
+        @entity = entity
       end
 
       def has_key?(name)
@@ -16,8 +16,8 @@ module MailyHerald
         name = name.to_sym
 
         if @attributes.has_key? name
-          #@attributes[name].try(:call, @item)
-          @attributes[name].call(@item)
+          #@attributes[name].try(:call, @entity)
+          @attributes[name].call(@entity)
         else
           nil
         end
@@ -40,7 +40,6 @@ module MailyHerald
     def scope &block
       if block_given?
         @scope = block
-        extend_model 
       else
         @scope.call
       end
@@ -70,22 +69,15 @@ module MailyHerald
     end
 
     def each &block
-      @scope.call.each do |item|
-        drop = Drop.new(@attributes, item)
-        block.call(item, drop)
+      @scope.call.each do |entity|
+        drop = Drop.new(@attributes, entity)
+        block.call(entity, drop)
       end
     end
 
-    def drop_for item
-      Drop.new(@attributes, item)
+    def drop_for entity
+      Drop.new(@attributes, entity)
     end
 
-    private
-
-    def extend_model
-      #unless model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
-        #model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
-      #end
-    end
   end
 end

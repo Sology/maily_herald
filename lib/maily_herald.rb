@@ -1,3 +1,4 @@
+require 'liquid'
 require 'sidekiq'
 require "maily_herald/engine"
 
@@ -6,10 +7,14 @@ module MailyHerald
     include Sidekiq::Worker
 
     def perform args
-      if args["entity"]
-        MailyHerald::Manager.deliver args["mailing"], args["entity"]
-      else
-        MailyHerald::Manager.deliver_all args["mailing"]
+      if args["mailing"]
+        if args["entity"]
+          MailyHerald::Manager.deliver args["mailing"], args["entity"]
+        else
+          MailyHerald::Manager.deliver_all args["mailing"]
+        end
+      elsif args["sequence"]
+        MailyHerald::Manager.run_sequence args["sequence"]
       end
     end
 
@@ -18,13 +23,25 @@ module MailyHerald
   autoload :Utils,            'maily_herald/utils'
   autoload :ModelExtensions,  'maily_herald/model_extensions'
   autoload :Context,          'maily_herald/context'
-  autoload :Worker,           'maily_herald/worker'
   autoload :Manager,          'maily_herald/manager'
 
   mattr_reader :default_from
 
   def self.setup
     yield self
+
+    ActionDispatch::Callbacks.to_prepare do
+      @@contexts.each do|n, c|
+        if c.model
+          unless c.model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
+            c.model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
+          end
+          unless c.model.included_modules.include?(MailyHerald::ModelExtensions::AssociationsPatch)
+            c.model.send(:include, MailyHerald::ModelExtensions::AssociationsPatch)
+          end
+        end
+      end
+    end
   end
 
   def self.context name, &block
@@ -50,6 +67,17 @@ module MailyHerald
     end
   end
 
+  def self.sequence name
+    if Sequence.table_exists?
+      sequence = Sequence.find_or_initialize_by_name(name)
+      if block_given?
+        yield(sequence)
+        sequence.save
+      end
+      sequence
+    end
+  end
+
   def self.contexts
     @@contexts
   end
@@ -70,6 +98,10 @@ module MailyHerald
 
     Async.perform_async :mailing => mailing_name
   end
-end
 
-require 'liquid'
+  def self.run_sequence seq_name
+    seq_name = seq_name.name if seq_name.is_a?(Sequence)
+
+    Async.perform_async :sequence => seq_name
+  end
+end

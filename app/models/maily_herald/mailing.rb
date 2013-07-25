@@ -3,9 +3,9 @@ module MailyHerald
     attr_accessible :name, :context_name, :sequence, :conditions, :title, :from, :delay, :template
 
     belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
-    has_many    :records,       :as => :mailing, :class_name => "MailyHerald::MailingRecord"
+    has_many    :records,       :class_name => "MailyHerald::MailingRecord"
     
-    validates   :context_name,  :presence => true
+    validates   :context_name,  :presence => true, :if => lambda {|mailing| !mailing.sequence}
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
     validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
     validates   :title,         :presence => true
@@ -16,7 +16,7 @@ module MailyHerald
     end
 
     def context
-      @context ||= MailyHerald.context context_name
+      @context ||= MailyHerald.context sequence ? sequence.context_name : context_name
     end
 
     def trigger
@@ -50,7 +50,13 @@ module MailyHerald
     end
 
     def record_for entity
-      self.records.where(:entity_id => entity, :entity_type => entity.class.name).first
+      self.records.for_entity(entity).first
+    end
+
+    def prepare_for entity
+      drop = self.context.drop_for entity 
+      template = Liquid::Template.parse(template)
+      template.render drop
     end
 
     def find_or_initialize_record_for entity
@@ -60,6 +66,29 @@ module MailyHerald
         record.entity = entity
       end
       record
+    end
+
+    def deliver_to entity
+      if self.mailer_name == 'generic'
+        # TODO make it atomic
+        Mailer.generic(self.destination_for(entity), prepare_for(entity)).deliver
+
+        # Do not save records for mailings within sequence
+        unless self.sequence
+          record = find_or_initialize_record_for(entity)
+          record.delivered_at = DateTime.now
+          record.status = "ok"
+          record.save
+        end
+      else
+        # TODO
+      end
+    end
+
+    def deliver_to_all
+      self.context.scope.each do |entity|
+        deliver_to entity
+      end
     end
 
     private
