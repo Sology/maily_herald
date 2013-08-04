@@ -1,33 +1,42 @@
 require 'liquid'
 require 'sidekiq'
-require "maily_herald/engine"
+
+if defined?(::Rails::Engine)
+  require 'acts_as_list'
+  require "maily_herald/engine"
+end
 
 module MailyHerald
   class Async
     include Sidekiq::Worker
 
-    def perform args
+    def perform args = {}
       if args["mailing"]
         if args["entity"]
           MailyHerald::Manager.deliver args["mailing"], args["entity"]
         else
-          MailyHerald::Manager.deliver_all args["mailing"]
+          MailyHerald::Manager.run_mailing args["mailing"]
         end
       elsif args["sequence"]
         MailyHerald::Manager.run_sequence args["sequence"]
+      else
+        MailyHerald::Manager.run_all
       end
     end
 
   end
 
-  autoload :Utils,            'maily_herald/utils'
-  autoload :ModelExtensions,  'maily_herald/model_extensions'
-  autoload :Context,          'maily_herald/context'
-  autoload :Manager,          'maily_herald/manager'
+  autoload :Utils,              'maily_herald/utils'
+  autoload :ConditionEvaluator, 'maily_herald/condition_evaluator'
+  autoload :ModelExtensions,    'maily_herald/model_extensions'
+  autoload :Context,            'maily_herald/context'
+  autoload :Manager,            'maily_herald/manager'
 
   mattr_reader :default_from
 
   def self.setup
+    @@contexts ||= {}
+
     yield self
 
     ActionDispatch::Callbacks.to_prepare do
@@ -56,10 +65,21 @@ module MailyHerald
     end
   end
 
-  def self.mailing name
-    if Mailing.table_exists?
-      mailing = Mailing.find_or_initialize_by_name(name)
-      if block_given?
+  def self.one_time_mailing name
+    if OneTimeMailing.table_exists?
+      mailing = OneTimeMailing.find_or_initialize_by_name(name)
+      if block_given? && mailing.new_record?
+        yield(mailing)
+        mailing.save
+      end
+      mailing
+    end
+  end
+
+  def self.periodical_mailing name
+    if PeriodicalMailing.table_exists?
+      mailing = PeriodicalMailing.find_or_initialize_by_name(name)
+      if block_given? && mailing.new_record?
         yield(mailing)
         mailing.save
       end
@@ -70,7 +90,7 @@ module MailyHerald
   def self.sequence name
     if Sequence.table_exists?
       sequence = Sequence.find_or_initialize_by_name(name)
-      if block_given?
+      if block_given? && sequence.new_record?
         yield(sequence)
         sequence.save
       end
@@ -103,5 +123,11 @@ module MailyHerald
     seq_name = seq_name.name if seq_name.is_a?(Sequence)
 
     Async.perform_async :sequence => seq_name
+  end
+
+  def self.run_periodical mailing_name
+    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
+
+    Async.perform_async :mailing => mailing_name
   end
 end

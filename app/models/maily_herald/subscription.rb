@@ -1,5 +1,5 @@
 module MailyHerald
-  class Record < ActiveRecord::Base
+  class Subscription < ActiveRecord::Base
     belongs_to  :entity,        :polymorphic => true
 
     validates   :entity,        :presence => true
@@ -16,5 +16,8 @@ module MailyHerald
       self.token = MailyHerald::Utils.random_hex(20) if new_record?
     end
 
+    def active?
+      !new_record? && read_attribute(:active)
+    end
   end
 end

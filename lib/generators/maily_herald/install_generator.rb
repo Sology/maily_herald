@@ -10,7 +10,7 @@ module MailyHerald
       end
 
       def copy_locale
-        copy_file "../../../config/locales/en.yml", "config/locales/maily_handler.en.yml"
+        copy_file "../../../config/locales/en.yml", "config/locales/maily_herald.en.yml"
       end
 
       def show_readme

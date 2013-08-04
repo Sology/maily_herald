@@ -10,13 +10,13 @@ describe MailyHerald do
       User.included_modules.should include(MailyHerald::ModelExtensions::TriggerPatch)
       User.included_modules.should include(MailyHerald::ModelExtensions::AssociationsPatch)
 
-      @user.should respond_to(:maily_herald_mailing_records)
+      @user.should respond_to(:maily_herald_subscriptions)
 
-      @user.maily_herald_mailing_records.length.should be_zero
+      @user.maily_herald_subscriptions.length.should be_zero
     end
 
     it "should create mailings from initializer" do
-      mailing = MailyHerald.mailing(:test_mailing)
+      mailing = MailyHerald.one_time_mailing(:test_mailing)
       mailing.should be_a MailyHerald::Mailing
       mailing.should_not be_a_new_record
     end

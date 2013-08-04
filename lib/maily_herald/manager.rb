@@ -25,5 +25,16 @@ module MailyHerald
 
       seq.run if seq
     end
+
+    def self.run_mailing mailing
+      mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
+
+      mailing.run if mailing
+    end
+
+    def self.run_all
+      PeriodicalMailing.all.each {|m| m.run}
+      Sequence.all.each {|m| m.run}
+    end
   end
 end

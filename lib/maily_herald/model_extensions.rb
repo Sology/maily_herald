@@ -30,7 +30,7 @@ module MailyHerald
     module AssociationsPatch
       def self.included(base)
         base.class_eval do
-          has_many    :maily_herald_mailing_records,       :as => :entity, :class_name => "MailyHerald::MailingRecord"
+          has_many    :maily_herald_subscriptions,       :as => :entity, :class_name => "MailyHerald::Subscription"
           #has_many    :maily_herald_mailings,              :through => :maily_herald_mailing_records, :source => :entity, :source_type => "MailyHerald::Mailing"
         end
       end
