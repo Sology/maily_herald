@@ -18,10 +18,10 @@ module MailyHerald
 
     def run
       handler do |job|
-        MailyHerald::Async.perform_async
+        MailyHerald.run_all
       end
 
-      every(1.minutes, "job")
+      every(2.minutes, "job")
 
       Clockwork::run
     end

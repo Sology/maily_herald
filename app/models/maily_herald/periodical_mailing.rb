@@ -1,5 +1,7 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
+    attr_accessible :start, :start_var, :period
+
     validates   :context_name,  :presence => true
 
     def context
@@ -27,7 +29,7 @@ module MailyHerald
 
       if self.mailer_name == 'generic'
         # TODO make it atomic
-        Mailer.generic(self.destination_for(entity), prepare_for(entity)).deliver
+        Mailer.generic(self, entity).deliver
 
         DeliveryLog.create_for self, entity
       else
@@ -39,7 +41,7 @@ module MailyHerald
       current_time = Time.now
       self.context.scope.each do |entity|
         subscription = subscription_for entity
-        next unless subscription.active?
+        next unless subscription.deliverable?
 
         if !subscription.last_delivery_time || (subscription.last_delivery_time <= current_time - self.period)
           deliver_to entity

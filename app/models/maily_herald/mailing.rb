@@ -2,7 +2,7 @@ module MailyHerald
   class Mailing < ActiveRecord::Base
     include MailyHerald::ConditionEvaluator
 
-    attr_accessible :name, :context_name, :sequence, :conditions, :title, :from, :relative_delay, :template
+    attr_accessible :name, :context_name, :autosubscribe, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template
 
     has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id"
     
@@ -31,6 +31,14 @@ module MailyHerald
       @context ||= MailyHerald.context context_name
     end
 
+    def sender
+      if self.from && !self.from.empty?
+        self.from
+      else
+        MailyHerald.default_from
+      end
+    end
+
     def trigger
       read_attribute(:trigger).to_sym
     end
@@ -47,12 +55,5 @@ module MailyHerald
       template = Liquid::Template.parse(self.template)
       template.render drop
     end
-
-    def deliver_to_all
-      self.context.scope.each do |entity|
-        deliver_to entity
-      end
-    end
-
   end
 end

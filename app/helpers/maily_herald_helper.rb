@@ -3,10 +3,6 @@ module MailyHeraldHelper
     MailyHerald.contexts.keys.collect {|c| [c, c] }
   end
 
-  def maily_herald_sequence_mode_options_for_select selected = nil, options = {}
-    [:chronological, :periodical].collect {|c| [c, c] }
-  end
-
   def maily_herald_mailer_options_for_select selected = nil, options = {}
     [
       ['generic', 'generic']

@@ -11,12 +11,10 @@ module MailyHerald
     include Sidekiq::Worker
 
     def perform args = {}
-      if args["mailing"]
-        if args["entity"]
-          MailyHerald::Manager.deliver args["mailing"], args["entity"]
-        else
-          MailyHerald::Manager.run_mailing args["mailing"]
-        end
+      if args["mailing"] && args["entity"]
+        MailyHerald::Manager.deliver args["mailing"], args["entity"]
+      elsif args["mailing"]
+        MailyHerald::Manager.run_mailing args["mailing"]
       elsif args["sequence"]
         MailyHerald::Manager.run_sequence args["sequence"]
       else
@@ -113,21 +111,19 @@ module MailyHerald
     Async.perform_async :mailing => mailing_name, :entity => entity_id
   end
 
-  def self.deliver_all mailing_name
-    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
-
-    Async.perform_async :mailing => mailing_name
-  end
-
   def self.run_sequence seq_name
     seq_name = seq_name.name if seq_name.is_a?(Sequence)
 
     Async.perform_async :sequence => seq_name
   end
 
-  def self.run_periodical mailing_name
+  def self.run_mailing mailing_name
     mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
 
     Async.perform_async :mailing => mailing_name
+  end
+
+  def self.run_all
+    Async.perform_async
   end
 end

@@ -19,7 +19,7 @@ module MailyHerald
 
       if self.mailer_name == 'generic'
         # TODO make it atomic
-        Mailer.generic(self.destination_for(entity), prepare_for(entity)).deliver
+        Mailer.generic(self, entity).deliver
 
         DeliveryLog.create_for self, entity
       else

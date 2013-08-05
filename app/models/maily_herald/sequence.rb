@@ -1,6 +1,6 @@
 module MailyHerald
   class Sequence < ActiveRecord::Base
-    attr_accessible :name, :context_name, :conditions, :start, :start_var, :period
+    attr_accessible :name, :context_name, :autosubscribe, :conditions, :start, :start_var, :period
 
     has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription"
     has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "position ASC"

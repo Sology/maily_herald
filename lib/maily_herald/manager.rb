@@ -14,12 +14,6 @@ module MailyHerald
       mailing.deliver_to entity if mailing
     end
 
-    def self.deliver_all mailing
-      mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
-
-      mailing.deliver_to_all if mailing
-    end
-
     def self.run_sequence seq
       seq = Sequence.find_by_name(seq) if !seq.is_a?(Sequence)
 
