@@ -8,7 +8,7 @@ module MailyHerald
       if has_conditions?
         condition = create_liquid_condition self.conditions
         template = Liquid::Template.parse(self.conditions)
-        drop = context.drop_for entity 
+        drop = context.drop_for entity, subscription_for(entity)
 
         liquid_context = Liquid::Context.new([drop, template.assigns], template.instance_assigns, template.registers, true, {})
         drop.context = liquid_context

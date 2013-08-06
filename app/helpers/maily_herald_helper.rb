@@ -12,4 +12,12 @@ module MailyHeraldHelper
   def maily_herald_context_attributes_list name
     MailyHerald.context(name).each
   end
+
+  def maily_herald_token_action_options_for_select selected = nil, options = {}
+    [
+      ['Unsubscribe', 'unsubscribe'],
+      ['Unsubscribe group', 'unsubscribe_group'],
+      ['Custom', 'custom'],
+    ]
+  end
 end

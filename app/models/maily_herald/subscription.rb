@@ -19,5 +19,22 @@ module MailyHerald
     def active?
       !new_record? && read_attribute(:active)
     end
+
+    def deactivate!
+      case target.token_action
+      when :unsubscribe
+        update_attribute(:active, false)
+      when :unsubscribe_group
+        MailingSubscription.for_entity(entity).joins(:mailing).where(:maily_herald_mailings => {:subscription_group => target.subscription_group}).update_all(:active => false)
+        SequenceSubscription.for_entity(entity).joins(:sequence).where(:maily_herald_sequences => {:subscription_group => target.subscription_group}).update_all(:active => false)
+      end
+    end
+
+    def to_liquid
+      #TODO fix the host
+      {
+        "token_url" => MailyHerald::Engine.routes.url_helpers.token_url(:token => self.token, :host => HOST)
+      }
+    end
   end
 end

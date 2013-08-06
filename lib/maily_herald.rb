@@ -34,6 +34,7 @@ module MailyHerald
 
   def self.setup
     @@contexts ||= {}
+    @@token_custom_actions ||= {}
 
     yield self
 
@@ -66,9 +67,9 @@ module MailyHerald
   def self.one_time_mailing name
     if OneTimeMailing.table_exists?
       mailing = OneTimeMailing.find_or_initialize_by_name(name)
-      if block_given? && mailing.new_record?
+      if block_given? 
         yield(mailing)
-        mailing.save
+        mailing.save if mailing.new_record?
       end
       mailing
     end
@@ -77,9 +78,9 @@ module MailyHerald
   def self.periodical_mailing name
     if PeriodicalMailing.table_exists?
       mailing = PeriodicalMailing.find_or_initialize_by_name(name)
-      if block_given? && mailing.new_record?
+      if block_given? 
         yield(mailing)
-        mailing.save
+        mailing.save if mailing.new_record?
       end
       mailing
     end
@@ -88,9 +89,9 @@ module MailyHerald
   def self.sequence name
     if Sequence.table_exists?
       sequence = Sequence.find_or_initialize_by_name(name)
-      if block_given? && sequence.new_record?
+      if block_given? 
         yield(sequence)
-        sequence.save
+        sequence.save if sequence.new_record?
       end
       sequence
     end
@@ -102,6 +103,24 @@ module MailyHerald
 
   def self.default_from= from
     @@default_from = from
+  end
+
+  def self.token_redirect &block
+    if block_given?
+      @@token_redirect = block
+    else
+      @@token_redirect
+    end
+  end
+
+  def self.token_custom_action type, id, &block
+    if block_given?
+      @@token_custom_actions[type] ||= {}
+      @@token_custom_actions[type][id] = block
+    else
+      @@token_custom_actions[type] ||= {}
+      @@token_custom_actions[type][id]
+    end
   end
 
   def self.deliver mailing_name, entity_id

@@ -11,6 +11,14 @@ module MailyHerald
     validates   :title,         :presence => true
     validates   :template,      :presence => true
 
+    def subscription_group
+      read_attribute(:subscription_group).to_sym if read_attribute(:subscription_group)
+    end
+
+    def token_action
+      read_attribute(:token_action).to_sym
+    end
+
     def enabled?
       self.enabled
     end
@@ -46,14 +54,12 @@ module MailyHerald
       write_attribute(:trigger, value.to_s)
     end
 
-    def destination_for entity
-      context.destination.call(entity)
-    end
-
-    def prepare_for entity
-      drop = self.context.drop_for entity 
-      template = Liquid::Template.parse(self.template)
-      template.render drop
+    def token_custom_action &block
+      if block_given?
+        MailyHerald.token_custom_action :mailing, self.id, &block
+      else
+        MailyHerald.token_custom_action :mailing, self.id
+      end
     end
   end
 end

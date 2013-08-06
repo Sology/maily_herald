@@ -1,9 +1,10 @@
 module MailyHerald
   class Context
     class Drop < Liquid::Drop
-      def initialize attributes, entity
+      def initialize attributes, entity, subscription
         @attributes = attributes
         @entity = entity
+        @subscription = subscription
       end
 
       def has_key?(name)
@@ -18,6 +19,8 @@ module MailyHerald
         if @attributes.has_key? name
           #@attributes[name].try(:call, @entity)
           @attributes[name].call(@entity)
+        elsif name == :subscription
+          @subscription
         else
           nil
         end
@@ -31,6 +34,7 @@ module MailyHerald
 
     def initialize name
       @name = name
+      @attributes = {}
     end
 
     def model
@@ -68,15 +72,15 @@ module MailyHerald
       @attributes.keys
     end
 
-    def each &block
-      @scope.call.each do |entity|
-        drop = Drop.new(@attributes, entity)
-        block.call(entity, drop)
-      end
-    end
+    #def each &block
+      #@scope.call.each do |entity|
+        #drop = Drop.new(@attributes, entity)
+        #block.call(entity, drop)
+      #end
+    #end
 
-    def drop_for entity
-      Drop.new(@attributes, entity)
+    def drop_for entity, subscription
+      Drop.new(@attributes, entity, subscription)
     end
 
   end

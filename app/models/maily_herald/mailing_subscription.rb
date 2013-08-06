@@ -11,7 +11,7 @@ module MailyHerald
     end
 
     def start_delivery_time
-      evaluator = Utils::MarkupEvaluator.new(self.mailing.context.drop_for(self.entity))
+      evaluator = Utils::MarkupEvaluator.new(self.mailing.context.drop_for(self.entity, self))
       evaluator.evaluate_variable(self.mailing.start_var)
     end
 
@@ -36,6 +36,20 @@ module MailyHerald
 
     def conditions_met?
       self.mailing.evaluate_conditions_for(self.entity)
+    end
+
+    def destination 
+      self.mailing.context.destination.call(self.entity)
+    end
+
+    def render_template
+      drop = self.mailing.context.drop_for self.entity, self
+      template = Liquid::Template.parse(self.mailing.template)
+      template.render drop
+    end
+
+    def target
+      self.mailing
     end
   end
 end

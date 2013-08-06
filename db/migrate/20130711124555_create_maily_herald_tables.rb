@@ -18,6 +18,8 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.boolean           :enabled,           :default => false
       t.integer           :position,          :default => 0,            :null => false
       t.boolean           :autosubscribe,     :default => true
+      t.string            :subscription_group
+      t.string            :token_action,      :default => "unsubscribe",:null => false
 
       t.timestamps
     end
@@ -32,6 +34,8 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.text              :start_var
       t.boolean           :enabled,           :default => false
       t.boolean           :autosubscribe,     :default => true
+      t.string            :subscription_group
+      t.string            :token_action,      :default => "unsubscribe",:null => false
 
       t.timestamps
     end

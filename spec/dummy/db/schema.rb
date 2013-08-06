@@ -21,25 +21,27 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
   end
 
   create_table "maily_herald_mailings", :force => true do |t|
-    t.string   "type",                                  :null => false
+    t.string   "type",                                          :null => false
     t.integer  "sequence_id"
     t.string   "context_name"
     t.text     "conditions"
-    t.string   "trigger",        :default => "manual",  :null => false
-    t.string   "mailer_name",    :default => "generic", :null => false
-    t.string   "name",                                  :null => false
-    t.string   "title",                                 :null => false
+    t.string   "trigger",            :default => "manual",      :null => false
+    t.string   "mailer_name",        :default => "generic",     :null => false
+    t.string   "name",                                          :null => false
+    t.string   "title",                                         :null => false
     t.string   "from"
-    t.text     "template",                              :null => false
+    t.text     "template",                                      :null => false
     t.integer  "relative_delay"
     t.datetime "start"
     t.text     "start_var"
     t.integer  "period"
-    t.boolean  "enabled",        :default => false
-    t.integer  "position",       :default => 0,         :null => false
-    t.boolean  "autosubscribe",  :default => true
-    t.datetime "created_at",                            :null => false
-    t.datetime "updated_at",                            :null => false
+    t.boolean  "enabled",            :default => false
+    t.integer  "position",           :default => 0,             :null => false
+    t.boolean  "autosubscribe",      :default => true
+    t.string   "subscription_group"
+    t.string   "token_action",       :default => "unsubscribe", :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
   end
 
   add_index "maily_herald_mailings", ["context_name"], :name => "index_maily_herald_mailings_on_context_name"
@@ -47,14 +49,16 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
   add_index "maily_herald_mailings", ["trigger"], :name => "index_maily_herald_mailings_on_trigger"
 
   create_table "maily_herald_sequences", :force => true do |t|
-    t.string   "context_name",                     :null => false
-    t.string   "name",                             :null => false
+    t.string   "context_name",                                  :null => false
+    t.string   "name",                                          :null => false
     t.datetime "start"
     t.text     "start_var"
-    t.boolean  "enabled",       :default => false
-    t.boolean  "autosubscribe", :default => true
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.boolean  "enabled",            :default => false
+    t.boolean  "autosubscribe",      :default => true
+    t.string   "subscription_group"
+    t.string   "token_action",       :default => "unsubscribe", :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
   end
 
   add_index "maily_herald_sequences", ["context_name"], :name => "index_maily_herald_sequences_on_context_name"

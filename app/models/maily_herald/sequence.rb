@@ -8,6 +8,14 @@ module MailyHerald
     validates   :context_name,        :presence => true
     validates   :name,                :presence => true
 
+    def subscription_group
+      read_attribute(:subscription_group).to_sym  if read_attribute(:subscription_group)
+    end
+
+    def token_action
+      read_attribute(:token_action).to_sym
+    end
+
     def context
       @context ||= MailyHerald.context context_name
     end
@@ -54,6 +62,14 @@ module MailyHerald
         if mailing && subscription.delivery_time_for(mailing) <= current_time
           mailing.deliver_to entity
         end
+      end
+    end
+
+    def token_custom_action &block
+      if block_given?
+        MailyHerald.token_custom_action :mailing, self.id, block
+      else
+        MailyHerald.token_custom_action :mailing, self.id
       end
     end
   end
