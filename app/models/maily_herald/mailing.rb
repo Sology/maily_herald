@@ -2,7 +2,7 @@ module MailyHerald
   class Mailing < ActiveRecord::Base
     include MailyHerald::ConditionEvaluator
 
-    attr_accessible :name, :context_name, :autosubscribe, :subscription_group, :subscription_override,
+    attr_accessible :name, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start, :start_var, :period
 
     has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id", :dependent => :destroy
