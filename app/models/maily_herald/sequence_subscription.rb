@@ -48,9 +48,17 @@ module MailyHerald
         mailings = self.sequence.mailings.where("position < (?)", mailing.position)
         delay_sum = mailings.sum(:relative_delay)
 
-        evaluator = Utils::MarkupEvaluator.new(self.sequence.context.drop_for(self.entity, self))
-        start = evaluator.evaluate_variable(self.sequence.start_var)
-        start + delay_sum + mailing.relative_delay
+        if self.sequence.start
+          start = self.sequence.start
+        else
+          evaluator = Utils::MarkupEvaluator.new(self.sequence.context.drop_for(self.entity, self))
+          start = evaluator.evaluate_variable(self.sequence.start_var)
+        end
+        if start
+          start + delay_sum + mailing.relative_delay
+        else
+          nil
+        end
       end
     end
 
@@ -61,7 +69,7 @@ module MailyHerald
     end
 
     def deliverable?
-      self.sequence.enabled? && active? 
+      self.sequence.enabled? && (self.sequence.override_subscription? || active?) 
     end
 
     def destination 

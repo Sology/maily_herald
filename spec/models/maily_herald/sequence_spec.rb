@@ -43,13 +43,25 @@ describe MailyHerald::Sequence do
       @entity = FactoryGirl.create :user
     end
 
+    after do
+      @sequence.update_attribute(:start, nil)
+    end
+
     it "should parse start_var" do
       @entity.should be_a(User)
       subscription = @sequence.subscription_for @entity
       subscription.next_delivery_time.should be_a(Time)
     end
 
-    pending "should parse absolute start date"
+    it "should use absolute start date if possible" do
+      @entity.should be_a(User)
+      time = @entity.created_at + rand(100).days + rand(24).hours + rand(60).minutes
+      @sequence.update_attribute(:start, time)
+      @sequence.start.should be_a(Time)
+      subscription = @sequence.subscription_for @entity
+      subscription.next_delivery_time.should be_a(Time)
+      subscription.next_delivery_time.should eq(time + @sequence.mailings.first.relative_delay)
+    end
   end
 
   describe "Scheduled Delivery" do
@@ -119,6 +131,34 @@ describe MailyHerald::Sequence do
     end
   end
 
+  describe "Error handling" do
+    before do
+      @old_start_var = @sequence.start_var
+      @sequence.update_attribute(:start_var, "")
+    end
+
+    before(:each) do
+      @entity = FactoryGirl.create :user
+    end
+
+    it "should handle start_var parsing errors or nil start time" do
+      subscription = @sequence.subscription_for @entity
+      subscription.last_delivery_time.should be_nil
+      subscription.next_delivery_time.should be_nil
+
+      Timecop.freeze @entity.created_at
+      @sequence.run
+
+      subscription = @sequence.subscription_for @entity
+      subscription.last_delivery_time.should be_nil
+      subscription.next_delivery_time.should be_nil
+    end
+
+    after do
+      @sequence.update_attribute(:start_var, @old_start_var)
+    end
+  end
+
   describe "Autosubscribe" do
     before(:each) do
       @sequence.autosubscribe = false
@@ -146,6 +186,42 @@ describe MailyHerald::Sequence do
 
       @sequence.autosubscribe = true
       @sequence.save
+    end
+  end
+
+  describe "Subscription override" do
+    before(:each) do
+      @entity = FactoryGirl.create :user
+    end
+
+    after do
+      @sequence.update_attribute(:override_subscription, false)
+    end
+
+    it "should be able to override subscription" do
+      subscription = @sequence.subscription_for @entity
+
+      subscription.should be_active
+
+      next_delivery = subscription.next_delivery_time
+
+      subscription.deactivate!
+      subscription.should_not be_active
+
+      subscription.last_delivery_time.should be_nil
+
+      Timecop.freeze subscription.next_delivery_time
+
+      @sequence.run
+
+      subscription.last_delivery_time.should be_nil
+
+
+      @sequence.update_attribute(:override_subscription, true)
+
+      @sequence.run
+
+      subscription.last_delivery_time.to_i.should eq(next_delivery.to_i)
     end
   end
 

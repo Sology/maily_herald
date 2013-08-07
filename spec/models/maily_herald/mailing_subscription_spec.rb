@@ -18,11 +18,5 @@ describe MailyHerald::MailingSubscription do
       @subscription.should_not be_a_new_record
     end
 
-    it "should unsubscribe" do
-      @subscription.target.token_action.should eq(:unsubscribe)
-      @subscription.active.should be_true
-      @subscription.deactivate!
-      @subscription.active.should_not be_true
-    end
   end
 end

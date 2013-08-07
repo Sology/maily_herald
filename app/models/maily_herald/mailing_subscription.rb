@@ -11,8 +11,12 @@ module MailyHerald
     end
 
     def start_delivery_time
-      evaluator = Utils::MarkupEvaluator.new(self.mailing.context.drop_for(self.entity, self))
-      evaluator.evaluate_variable(self.mailing.start_var)
+      if self.mailing.start
+        self.mailing.start
+      else
+        evaluator = Utils::MarkupEvaluator.new(self.mailing.context.drop_for(self.entity, self))
+        evaluator.evaluate_variable(self.mailing.start_var)
+      end
     end
 
     def last_delivery_time
@@ -25,13 +29,15 @@ module MailyHerald
       log = logs.last
       if log && log.delivered_at
         log.delivered_at + self.mailing.period
+      elsif start_delivery_time
+        start_delivery_time
       else
-        start_delivery_time + self.mailing.period
+        nil
       end
     end
 
     def deliverable?
-      self.mailing.enabled? && active? && conditions_met?
+      self.mailing.enabled? && (self.mailing.override_subscription? || active?) && conditions_met?
     end
 
     def conditions_met?

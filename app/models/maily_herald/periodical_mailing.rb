@@ -2,7 +2,8 @@ module MailyHerald
   class PeriodicalMailing < Mailing
     attr_accessible :start, :start_var, :period
 
-    validates   :context_name,  :presence => true
+    validates   :context_name, :presence => true
+    validates   :period, :presence => true, :numericality => true
 
     def context
       @context ||= MailyHerald.context self.context_name
@@ -42,10 +43,11 @@ module MailyHerald
         subscription = subscription_for entity
         next unless subscription.deliverable?
 
-        if !subscription.last_delivery_time || (subscription.last_delivery_time <= current_time - self.period)
+        if subscription.next_delivery_time && (subscription.next_delivery_time <= current_time)
           deliver_to entity
         end
       end
     end
+
   end
 end
