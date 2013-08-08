@@ -17,6 +17,7 @@ MailyHerald.setup do |config|
 
   config.one_time_mailing :test_mailing do |mailing|
     mailing.title = "Test mailing"
+    mailing.subject = "Test mailing"
     mailing.context_name = :all_users
     mailing.template = "User name: {{user.name}}."
     mailing.enabled = true
@@ -30,25 +31,37 @@ MailyHerald.setup do |config|
   end
 
   config.sequence :newsletters do |seq|
+    seq.title = "Newsletters"
     seq.context_name = :all_users
     seq.start_var = "user.created_at"
     seq.enabled = true
     seq.subscription_group = "test_group"
     seq.mailing :initial_mail do |mailing|
       mailing.title = "Test mailing #1"
+      mailing.subject = "Test mailing #1"
       mailing.template = "User name: {{user.name}}."
       mailing.relative_delay = 1.hour
       mailing.enabled = true
     end
     seq.mailing :second_mail do |mailing|
       mailing.title = "Test mailing #2"
+      mailing.subject = "Test mailing #2"
       mailing.template = "User name: {{user.name}}."
       mailing.relative_delay = 2.hours
+      mailing.enabled = true
+    end
+    seq.mailing :third_mail do |mailing|
+      mailing.title = "Test mailing #3"
+      mailing.subject = "Test mailing #3"
+      mailing.template = "User name: {{user.name}}."
+      mailing.relative_delay = 3.hours
       mailing.enabled = true
     end
   end
 
   config.periodical_mailing :weekly_summary do |mailing|
+    mailing.title = "Weekly summary"
+    mailing.subject = "Weekly summary"
     mailing.start_var = "user.created_at"
     mailing.context_name = :all_users
     mailing.title = "Test periodical mailing"

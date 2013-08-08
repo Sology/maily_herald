@@ -70,11 +70,11 @@ describe MailyHerald::Sequence do
     end
 
     it "should deliver mailings with delays" do
-      @sequence.mailings.length.should eq(2)
+      @sequence.mailings.length.should eq(3)
 
       subscription = @sequence.subscription_for(@entity)
       subscription.delivered_mailings.length.should eq(0)
-      subscription.pending_mailings.length.should eq(2)
+      subscription.pending_mailings.length.should eq(@sequence.mailings.length)
 
       Timecop.freeze @entity.created_at
 
@@ -98,7 +98,7 @@ describe MailyHerald::Sequence do
       subscription.entity.should eq(@entity)
 
       subscription.delivered_mailings.length.should eq(1)
-      subscription.pending_mailings.length.should eq(1)
+      subscription.pending_mailings.length.should eq(@sequence.mailings.length - 1)
       
       subscription.last_delivered_mailing.should eq @sequence.mailings.first
       log = subscription.mailing_log_for(@sequence.mailings.first)
@@ -125,10 +125,12 @@ describe MailyHerald::Sequence do
       log.should be_a(MailyHerald::DeliveryLog)
       log.entity.should eq(@entity)
 
-      log = subscription.mailing_log_for(@sequence.mailings.last)
+      log = subscription.mailing_log_for(@sequence.mailings[1])
       log.should be_a(MailyHerald::DeliveryLog)
       log.entity.should eq(@entity)
     end
+
+    pending "should skip disabled mailings and go on"
   end
 
   describe "Error handling" do

@@ -9,6 +9,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :mailer_name,       :default => 'generic',    :null => false
       t.string            :name,                                        :null => false
       t.string            :title,                                       :null => false
+      t.string            :subject,                                     :null => false
       t.string            :from
       t.text              :template,                                    :null => false
       t.integer           :relative_delay
@@ -31,6 +32,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
     create_table :maily_herald_sequences do |t|
       t.string            :context_name,                                :null => false
       t.string            :name,                                        :null => false
+      t.string            :title,                                       :null => false
       t.datetime          :start
       t.text              :start_var
       t.boolean           :enabled,           :default => false
@@ -64,6 +66,16 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.integer           :entity_id,                                   :null => false
       t.string            :entity_type,                                 :null => false
       t.integer           :mailing_id
+    end
+
+    create_table :maily_herald_subscription_groups do |t|
+      t.string            :name,                                        :null => false
+    end
+
+    create_table :maily_herald_entities_subscription_groups do |t|
+      t.integer           :entity_id,                                   :null => false
+      t.string            :entity_type,                                 :null => false
+      t.integer           :group_id,                                    :null => false
     end
   end
 end

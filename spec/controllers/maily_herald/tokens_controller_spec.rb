@@ -56,6 +56,7 @@ describe MailyHerald::TokensController do
   describe "Custom action" do
     before(:each) do
       @mailing.token_action = :custom
+      @mailing.should be_valid
       @mailing.save
       @mailing.token_custom_action.should_not be_nil
     end

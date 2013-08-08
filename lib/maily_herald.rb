@@ -69,7 +69,7 @@ module MailyHerald
       mailing = OneTimeMailing.find_or_initialize_by_name(name)
       if block_given? 
         yield(mailing)
-        mailing.save if mailing.new_record?
+        mailing.save! if mailing.new_record?
       end
       mailing
     end
@@ -80,7 +80,7 @@ module MailyHerald
       mailing = PeriodicalMailing.find_or_initialize_by_name(name)
       if block_given? 
         yield(mailing)
-        mailing.save if mailing.new_record?
+        mailing.save! if mailing.new_record?
       end
       mailing
     end
@@ -91,7 +91,7 @@ module MailyHerald
       sequence = Sequence.find_or_initialize_by_name(name)
       if block_given? 
         yield(sequence)
-        sequence.save if sequence.new_record?
+        sequence.save! if sequence.new_record?
       end
       sequence
     end

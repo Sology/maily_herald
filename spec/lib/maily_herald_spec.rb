@@ -26,7 +26,7 @@ describe MailyHerald do
       sequence.should be_a MailyHerald::Sequence
       sequence.should_not be_a_new_record
 
-      sequence.mailings.length.should eq(2)
+      sequence.mailings.length.should eq(3)
     end
   end
 end

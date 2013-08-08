@@ -2,7 +2,7 @@ module MailyHerald
   class Mailer < ActionMailer::Base
     def generic mailing, entity, subscription
       destination = subscription.destination
-      subject = mailing.title
+      subject = mailing.subject
       from = mailing.sender
       content = subscription.is_a?(SequenceSubscription) ? subscription.render_template(mailing) : subscription.render_template
 

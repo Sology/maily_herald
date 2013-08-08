@@ -1,14 +1,19 @@
 module MailyHerald
   class Sequence < ActiveRecord::Base
-    attr_accessible :name, :context_name, :autosubscribe, :subscription_group, :override_subscription,
+    attr_accessible :title, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :conditions, :start, :start_var, :period
 
     has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :dependent => :destroy
     has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "position ASC", :dependent => :destroy
-    has_many    :logs,                :class_name => "MailyHerald::DeliveryLog", :dependent => :destroy
+    has_many    :logs,                :class_name => "MailyHerald::DeliveryLog", :through => :mailings
 
     validates   :context_name,        :presence => true
-    validates   :name,                :presence => true
+    validates   :name,                :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
+    validates   :title,               :presence => true
+
+    before_validation do
+      write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
 
     def subscription_group
       read_attribute(:subscription_group).to_sym  if read_attribute(:subscription_group)
@@ -48,7 +53,7 @@ module MailyHerald
         if block_given?
           yield(mailing)
         end
-        mailing.save
+        mailing.save!
         mailing
       end
     end

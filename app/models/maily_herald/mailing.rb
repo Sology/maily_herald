@@ -2,7 +2,7 @@ module MailyHerald
   class Mailing < ActiveRecord::Base
     include MailyHerald::ConditionEvaluator
 
-    attr_accessible :name, :context_name, :autosubscribe, :subscription_group, :override_subscription,
+    attr_accessible :title, :subject, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start, :start_var, :period
 
     has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id", :dependent => :destroy
@@ -11,7 +11,12 @@ module MailyHerald
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
     validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
     validates   :title,         :presence => true
+    validates   :subject,       :presence => true
     validates   :template,      :presence => true
+
+    before_validation do
+      write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
 
     def subscription_group
       read_attribute(:subscription_group).to_sym if read_attribute(:subscription_group)

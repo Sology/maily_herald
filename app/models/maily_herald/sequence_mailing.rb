@@ -2,6 +2,8 @@ module MailyHerald
   class SequenceMailing < Mailing
     belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
 
+    validates   :relative_delay,      :presence => true, :numericality => true
+
     acts_as_list :scope => :sequence
 
     def context
