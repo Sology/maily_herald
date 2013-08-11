@@ -7,6 +7,8 @@ if defined?(::Rails::Engine)
 end
 
 module MailyHerald
+  TIME_FORMAT = "%Y-%m-%d %H:%M"
+
   class Async
     include Sidekiq::Worker
 

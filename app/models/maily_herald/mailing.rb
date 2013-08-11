@@ -14,6 +14,8 @@ module MailyHerald
     validates   :subject,       :presence => true
     validates   :template,      :presence => true
 
+    scope       :enabled,       where(:enabled => true)
+
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
     end

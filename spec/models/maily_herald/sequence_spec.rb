@@ -7,7 +7,7 @@ describe MailyHerald::Sequence do
     @sequence.should_not be_a_new_record
   end
 
-  after do
+  after(:all) do
     Timecop.return
   end
 
@@ -43,7 +43,7 @@ describe MailyHerald::Sequence do
       @entity = FactoryGirl.create :user
     end
 
-    after do
+    after(:each) do
       @sequence.update_attribute(:start, nil)
     end
 
@@ -69,12 +69,19 @@ describe MailyHerald::Sequence do
       @entity = FactoryGirl.create :user
     end
 
+    after(:each) do
+      @sequence.mailings[1].update_attribute(:enabled, true)
+    end
+
     it "should deliver mailings with delays" do
       @sequence.mailings.length.should eq(3)
+      @sequence.start.should be_nil
 
       subscription = @sequence.subscription_for(@entity)
       subscription.delivered_mailings.length.should eq(0)
       subscription.pending_mailings.length.should eq(@sequence.mailings.length)
+      subscription.next_mailing.relative_delay.should_not eq(0)
+      subscription.next_delivery_time.should eq(@entity.created_at + @sequence.mailings.first.relative_delay)
 
       Timecop.freeze @entity.created_at
 
@@ -130,20 +137,57 @@ describe MailyHerald::Sequence do
       log.entity.should eq(@entity)
     end
 
-    pending "should skip disabled mailings and go on"
+    it "should skip disabled mailings and go on with delivery" do
+      @sequence.mailings.length.should eq(3)
+      @sequence.start.should be_nil
+      @sequence.should be_enabled
+
+      subscription = @sequence.subscription_for(@entity)
+
+      @sequence.mailings[0].should be_enabled
+      @sequence.mailings[1].should be_enabled
+      @sequence.mailings[2].should be_enabled
+
+      @sequence.mailings[1].update_attribute(:enabled, false)
+      @sequence.mailings[1].should_not be_enabled
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings.first)
+      subscription.pending_mailings.first.should be_enabled
+
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.relative_delay
+
+      @sequence.run
+
+      MailyHerald::DeliveryLog.count.should eq(1)
+      subscription.delivered_mailings.length.should eq(1)
+
+      subscription.pending_mailings.should_not include(@sequence.mailings[1])
+      subscription.next_mailing.should eq(@sequence.mailings[2])
+
+      Timecop.freeze @entity.created_at + @sequence.mailings[0].relative_delay + @sequence.mailings[2].relative_delay
+
+      @sequence.run
+
+      MailyHerald::DeliveryLog.count.should eq(2)
+      subscription.pending_mailings.should be_empty
+    end
   end
 
   describe "Error handling" do
-    before do
+    before(:each) do
       @old_start_var = @sequence.start_var
       @sequence.update_attribute(:start_var, "")
-    end
-
-    before(:each) do
       @entity = FactoryGirl.create :user
     end
 
+    after(:each) do
+      @sequence.update_attribute(:start_var, @old_start_var)
+      @sequence.update_attribute(:start, nil)
+    end
+
     it "should handle start_var parsing errors or nil start time" do
+      @sequence.start.should be_nil
+      @sequence.start_var.should eq("")
       subscription = @sequence.subscription_for @entity
       subscription.last_delivery_time.should be_nil
       subscription.next_delivery_time.should be_nil
@@ -156,8 +200,18 @@ describe MailyHerald::Sequence do
       subscription.next_delivery_time.should be_nil
     end
 
-    after do
-      @sequence.update_attribute(:start_var, @old_start_var)
+    it "should allow to set start date via text field" do
+      datetime = "2013-01-01 10:11"
+
+      @sequence.start.should be_nil
+      @sequence.start_text = datetime
+      @sequence.should be_valid
+      @sequence.start.to_i.should eq(Time.zone.parse(datetime).to_i)
+      @sequence.start_text.should eq(datetime)
+
+      @sequence.start_text = ""
+      @sequence.should be_valid
+      @sequence.start.should be_nil
     end
   end
 
@@ -196,7 +250,7 @@ describe MailyHerald::Sequence do
       @entity = FactoryGirl.create :user
     end
 
-    after do
+    after(:each) do
       @sequence.update_attribute(:override_subscription, false)
     end
 

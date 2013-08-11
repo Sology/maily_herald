@@ -19,7 +19,7 @@ module MailyHerald
     end
 
     def pending_mailings 
-      logs.empty? ? self.sequence.mailings : self.sequence.mailings.where("id not in (?)", logs.map(&:mailing_id))
+      logs.empty? ? self.sequence.mailings.enabled : self.sequence.mailings.enabled.where("id not in (?)", logs.map(&:mailing_id))
     end
 
     def delivered_mailings
@@ -40,12 +40,12 @@ module MailyHerald
 
     def delivery_time_for mailing
       if last_delivered_mailing
-        mailings = self.sequence.mailings.where("position > (?)", last_delivered_mailing.position).where("position < (?)", mailing.position)
+        mailings = self.sequence.mailings.enabled.where("position > (?)", last_delivered_mailing.position).where("position < (?)", mailing.position)
         delay_sum = mailings.sum(:relative_delay)
         log = mailing_log_for(last_delivered_mailing)
         log.delivered_at + delay_sum + mailing.relative_delay
       else
-        mailings = self.sequence.mailings.where("position < (?)", mailing.position)
+        mailings = self.sequence.mailings.enabled.where("position < (?)", mailing.position)
         delay_sum = mailings.sum(:relative_delay)
 
         if self.sequence.start

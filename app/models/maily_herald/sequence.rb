@@ -1,7 +1,9 @@
 module MailyHerald
+  MailyHerald::Subscription #TODO fix this autoload for dev
+
   class Sequence < ActiveRecord::Base
     attr_accessible :title, :context_name, :autosubscribe, :subscription_group, :override_subscription,
-                    :token_action, :conditions, :start, :start_var, :period
+                    :token_action, :conditions, :start, :start_text, :start_var, :period
 
     has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :dependent => :destroy
     has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "position ASC", :dependent => :destroy
@@ -13,6 +15,19 @@ module MailyHerald
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
+
+    def start_text= date
+      if date && !date.empty?
+        date = Time.zone.parse(date) if date.is_a?(String)
+        write_attribute(:start, date)
+      else
+        write_attribute(:start, nil)
+      end
+    end
+
+    def start_text
+      @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
     end
 
     def subscription_group

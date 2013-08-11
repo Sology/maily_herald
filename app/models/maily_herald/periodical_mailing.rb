@@ -1,9 +1,22 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
-    attr_accessible :start, :start_var, :period
+    attr_accessible :start, :start_var, :start_text, :period
 
     validates   :context_name, :presence => true
     validates   :period, :presence => true, :numericality => true
+
+    def start_text= date
+      if date && !date.empty?
+        date = Time.zone.parse(date) if date.is_a?(String)
+        write_attribute(:start, date)
+      else
+        write_attribute(:start, nil)
+      end
+    end
+
+    def start_text
+      @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
+    end
 
     def context
       @context ||= MailyHerald.context self.context_name
