@@ -99,6 +99,17 @@ module MailyHerald
     end
   end
 
+  def self.subscription_group name
+    if SubscriptionGroup.table_exists?
+      group = SubscriptionGroup.find_or_initialize_by_name(name)
+      if block_given? 
+        yield(group)
+        group.save! if group.new_record?
+      end
+      group
+    end
+  end
+
   def self.contexts
     @@contexts
   end

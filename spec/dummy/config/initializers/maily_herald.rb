@@ -15,13 +15,20 @@ MailyHerald.setup do |config|
     end
   end
 
+  config.subscription_group :account do |group|
+    group.title = "Account mailings"
+  end
+  config.subscription_group :marketing do |group|
+    group.title = "Marketing mailings"
+  end
+
   config.one_time_mailing :test_mailing do |mailing|
     mailing.title = "Test mailing"
     mailing.subject = "Test mailing"
     mailing.context_name = :all_users
     mailing.template = "User name: {{user.name}}."
     mailing.enabled = true
-    mailing.subscription_group = "test_group"
+    #mailing.subscription_group = :marketing
     mailing.token_custom_action do |controller, subscription|
       user = subscription.entity
       user.name = "changed"
@@ -35,7 +42,7 @@ MailyHerald.setup do |config|
     seq.context_name = :all_users
     seq.start_var = "user.created_at"
     seq.enabled = true
-    seq.subscription_group = "test_group"
+    #seq.subscription_group = :marketing
     seq.mailing :initial_mail do |mailing|
       mailing.title = "Test mailing #1"
       mailing.subject = "Test mailing #1"
@@ -69,6 +76,18 @@ MailyHerald.setup do |config|
     mailing.period = 7.days
     mailing.conditions = "user.weekly_notifications"
     mailing.enabled = true
-    mailing.subscription_group = "test_group"
+  end
+
+  config.periodical_mailing :weekly_summary_sg do |mailing|
+    mailing.title = "Weekly summary"
+    mailing.subject = "Weekly summary"
+    mailing.start_var = "user.created_at"
+    mailing.context_name = :all_users
+    mailing.title = "Test periodical mailing"
+    mailing.template = "User name: {{user.name}}."
+    mailing.period = 7.days
+    mailing.conditions = "user.weekly_notifications"
+    mailing.enabled = true
+    mailing.subscription_group = :account
   end
 end

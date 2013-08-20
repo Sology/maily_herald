@@ -174,38 +174,6 @@ describe MailyHerald::PeriodicalMailing do
     end
   end
 
-  describe "Subscription override" do
-    before(:each) do
-      @entity = FactoryGirl.create :user
-    end
-
-    after do
-      @mailing.update_attribute(:override_subscription, false)
-    end
-
-    it "should be able to override subscription" do
-      subscription = @mailing.subscription_for @entity
-
-      subscription.should be_active
-      subscription.deactivate!
-      subscription.should_not be_active
-
-      subscription.last_delivery_time.should be_nil
-
-      Timecop.freeze @entity.created_at
-
-      @mailing.run
-
-      subscription.last_delivery_time.should be_nil
-
-      @mailing.update_attribute(:override_subscription, true)
-
-      @mailing.run
-
-      subscription.last_delivery_time.to_i.should eq(@entity.created_at.to_i)
-    end
-  end
-
   describe "Conditions" do
     before(:each) do
       @entity = FactoryGirl.create :user

@@ -10,7 +10,7 @@ describe MailyHerald::TokensController do
     MailyHerald::Sequence.where(:subscription_group => @mailing.subscription_group).should_not be_empty
   end
 
-  describe "Unsubscribe action" do
+  pending "Unsubscribe action" do
     before(:each) do
       @mailing.token_action = :unsubscribe
       @mailing.save
@@ -32,7 +32,7 @@ describe MailyHerald::TokensController do
     end
   end
 
-  describe "Unsubscribe group action" do
+  pending "Unsubscribe group action" do
     before(:each) do
       @mailing.token_action = :unsubscribe_group
       @mailing.save
@@ -53,7 +53,7 @@ describe MailyHerald::TokensController do
     end
   end
 
-  describe "Custom action" do
+  pending "Custom action" do
     before(:each) do
       @mailing.token_action = :custom
       @mailing.should be_valid

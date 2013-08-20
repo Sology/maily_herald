@@ -1,10 +1,19 @@
 module MailyHerald
   class SequenceMailing < Mailing
+    attr_accessible :relative_delay_in_days
+
     belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
 
     validates   :relative_delay,      :presence => true, :numericality => true
 
     acts_as_list :scope => :sequence
+
+    def relative_delay_in_days
+      "%.2f" % (self.relative_delay.to_f / 1.day.seconds)
+    end
+    def relative_delay_in_days= d
+      self.relative_delay = d.days
+    end
 
     def context
       @context ||= MailyHerald.context sequence.context_name

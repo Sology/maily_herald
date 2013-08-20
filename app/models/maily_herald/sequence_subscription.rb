@@ -85,5 +85,21 @@ module MailyHerald
     def target
       self.sequence
     end
+
+    def aggregated?
+      !!self.sequence.subscription_group
+    end
+
+    def aggregate
+      if aggregated?
+        @aggregate ||= self.sequence.subscription_group.aggregated_subscriptions.for_entity(self.entity).first
+        unless @aggregate
+          @aggregate = self.sequence.subscription_group.aggregated_subscriptions.build
+          @aggregate.entity = self.entity
+          @aggregate.save!
+        end
+        @aggregate
+      end
+    end
   end
 end

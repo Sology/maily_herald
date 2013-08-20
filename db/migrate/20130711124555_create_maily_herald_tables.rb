@@ -20,7 +20,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.integer           :position,          :default => 0,            :null => false
       t.boolean           :autosubscribe,     :default => true
       t.boolean           :override_subscription, :default => false,    :null => true
-      t.string            :subscription_group
+      t.integer           :subscription_group_id
       t.string            :token_action,      :default => "unsubscribe",:null => false
 
       t.timestamps
@@ -38,7 +38,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.boolean           :enabled,           :default => false
       t.boolean           :autosubscribe,     :default => true
       t.boolean           :override_subscription, :default => false,    :null => true
-      t.string            :subscription_group
+      t.integer           :subscription_group_id
       t.string            :token_action,      :default => "unsubscribe",:null => false
 
       t.timestamps
@@ -54,7 +54,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :token,                                       :null => false
       t.text              :settings
       t.text              :data
-      t.boolean           :active,             :default => true
+      t.boolean           :active,             :default => true,        :null => false
       t.datetime          :delivered_at
 
       t.timestamps
@@ -70,12 +70,14 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
 
     create_table :maily_herald_subscription_groups do |t|
       t.string            :name,                                        :null => false
+      t.string            :title,                                       :null => false
     end
 
-    create_table :maily_herald_entities_subscription_groups do |t|
+    create_table :maily_herald_aggregated_subscriptions do |t|
       t.integer           :entity_id,                                   :null => false
       t.string            :entity_type,                                 :null => false
       t.integer           :group_id,                                    :null => false
+      t.boolean           :active,             :default => true,        :null => false
     end
   end
 end

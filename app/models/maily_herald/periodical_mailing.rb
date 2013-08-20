@@ -1,10 +1,13 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
-    attr_accessible :start, :start_var, :start_text, :period
+    attr_accessible :start, :start_var, :start_text, :period, :period_in_days
 
     validates   :context_name, :presence => true
     validates   :period, :presence => true, :numericality => true
 
+    def start_text
+      @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
+    end
     def start_text= date
       if date && !date.empty?
         date = Time.zone.parse(date) if date.is_a?(String)
@@ -14,8 +17,11 @@ module MailyHerald
       end
     end
 
-    def start_text
-      @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
+    def period_in_days
+      "%.2f" % (self.period.to_f / 1.day.seconds)
+    end
+    def period_in_days= d
+      self.period = d.to_f.days
     end
 
     def context
@@ -61,6 +67,7 @@ module MailyHerald
         end
       end
     end
+
 
   end
 end

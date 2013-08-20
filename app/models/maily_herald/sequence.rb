@@ -9,12 +9,19 @@ module MailyHerald
     has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "position ASC", :dependent => :destroy
     has_many    :logs,                :class_name => "MailyHerald::DeliveryLog", :through => :mailings
 
+    belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
+
     validates   :context_name,        :presence => true
     validates   :name,                :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
     validates   :title,               :presence => true
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
+
+    def subscription_group= g
+      g = MailyHerald::SubscriptionGroup.find_by_name(g.to_s) if g.is_a?(String) || g.is_a?(Symbol)
+      super(g)
     end
 
     def start_text= date
@@ -28,10 +35,6 @@ module MailyHerald
 
     def start_text
       @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
-    end
-
-    def subscription_group
-      read_attribute(:subscription_group).to_sym  if read_attribute(:subscription_group)
     end
 
     def token_action

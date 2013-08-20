@@ -4,6 +4,7 @@ module MailyHerald
 
     validates   :entity,        :presence => true
     validates   :token,         :presence => true, :uniqueness => true
+    validate    :aggregate_presence
 
     scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
 
@@ -17,7 +18,11 @@ module MailyHerald
     end
 
     def active?
-      !new_record? && read_attribute(:active)
+      if aggregated?
+        aggregate.active?
+      else
+        !new_record? && read_attribute(:active)
+      end
     end
 
     def deactivate!
@@ -35,6 +40,12 @@ module MailyHerald
       {
         "token_url" => MailyHerald::Engine.routes.url_helpers.token_url(:token => self.token, :host => HOST)
       }
+    end
+
+    private
+
+    def aggregate_presence
+      self.errors.add(:base, "aggregate not present") if aggregated? && !aggregate
     end
   end
 end

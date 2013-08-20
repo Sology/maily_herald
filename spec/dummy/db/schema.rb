@@ -13,17 +13,18 @@
 
 ActiveRecord::Schema.define(:version => 20130723074347) do
 
+  create_table "maily_herald_aggregated_subscriptions", :force => true do |t|
+    t.integer "entity_id",                     :null => false
+    t.string  "entity_type",                   :null => false
+    t.integer "group_id",                      :null => false
+    t.boolean "active",      :default => true, :null => false
+  end
+
   create_table "maily_herald_delivery_logs", :force => true do |t|
     t.datetime "delivered_at"
     t.integer  "entity_id",    :null => false
     t.string   "entity_type",  :null => false
     t.integer  "mailing_id"
-  end
-
-  create_table "maily_herald_entities_subscription_groups", :force => true do |t|
-    t.integer "entity_id",   :null => false
-    t.string  "entity_type", :null => false
-    t.integer "group_id",    :null => false
   end
 
   create_table "maily_herald_mailings", :force => true do |t|
@@ -46,7 +47,7 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.integer  "position",              :default => 0,             :null => false
     t.boolean  "autosubscribe",         :default => true
     t.boolean  "override_subscription", :default => false
-    t.string   "subscription_group"
+    t.integer  "subscription_group_id"
     t.string   "token_action",          :default => "unsubscribe", :null => false
     t.datetime "created_at",                                       :null => false
     t.datetime "updated_at",                                       :null => false
@@ -65,7 +66,7 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.boolean  "enabled",               :default => false
     t.boolean  "autosubscribe",         :default => true
     t.boolean  "override_subscription", :default => false
-    t.string   "subscription_group"
+    t.integer  "subscription_group_id"
     t.string   "token_action",          :default => "unsubscribe", :null => false
     t.datetime "created_at",                                       :null => false
     t.datetime "updated_at",                                       :null => false
@@ -74,7 +75,8 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
   add_index "maily_herald_sequences", ["context_name"], :name => "index_maily_herald_sequences_on_context_name"
 
   create_table "maily_herald_subscription_groups", :force => true do |t|
-    t.string "name", :null => false
+    t.string "name",  :null => false
+    t.string "title", :null => false
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|
@@ -86,7 +88,7 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.string   "token",                          :null => false
     t.text     "settings"
     t.text     "data"
-    t.boolean  "active",       :default => true
+    t.boolean  "active",       :default => true, :null => false
     t.datetime "delivered_at"
     t.datetime "created_at",                     :null => false
     t.datetime "updated_at",                     :null => false

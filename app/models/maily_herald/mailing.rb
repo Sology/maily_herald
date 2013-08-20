@@ -1,4 +1,6 @@
 module MailyHerald
+  MailyHerald::SubscriptionGroup
+
   class Mailing < ActiveRecord::Base
     include MailyHerald::ConditionEvaluator
 
@@ -7,6 +9,8 @@ module MailyHerald
 
     has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id", :dependent => :destroy
     has_many    :logs,          :class_name => "MailyHerald::DeliveryLog", :dependent => :destroy
+
+    belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
     
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
     validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
@@ -20,8 +24,9 @@ module MailyHerald
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
     end
 
-    def subscription_group
-      read_attribute(:subscription_group).to_sym if read_attribute(:subscription_group)
+    def subscription_group= g
+      g = MailyHerald::SubscriptionGroup.find_by_name(g.to_s) if g.is_a?(String) || g.is_a?(Symbol)
+      super(g)
     end
 
     def token_action
