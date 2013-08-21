@@ -146,31 +146,117 @@ describe MailyHerald::PeriodicalMailing do
     end
   end
 
-  describe "Autosubscribe" do
+  describe "Single subscription" do
     before(:each) do
-      @mailing.autosubscribe = false
-      @mailing.should be_valid
-      @mailing.save.should be_true
       @entity = FactoryGirl.create :user
     end
 
-    it "should not create subscription without autosubscribe" do
-      subscription = @mailing.subscription_for @entity
+    describe "without autosubscribe" do
+      before(:each) do
+        @mailing.update_attribute(:autosubscribe, false)
+      end
 
-      subscription.should be_new_record
+      after(:each) do
+        @mailing.update_attribute(:autosubscribe, true)
+      end
 
-      MailyHerald::MailingSubscription.count.should eq(0)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      it "should not be created without autosubscribe" do
+        subscription = @mailing.subscription_for @entity
 
-      Timecop.freeze @entity.created_at
+        subscription.should be_new_record
+        subscription.should_not be_active
 
-      @mailing.run
+        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::DeliveryLog.count.should eq(0)
 
-      MailyHerald::MailingSubscription.count.should eq(0)
-      MailyHerald::DeliveryLog.count.should eq(0)
+        Timecop.freeze @entity.created_at
 
-      @mailing.autosubscribe = true
-      @mailing.save
+        @mailing.run
+
+        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::DeliveryLog.count.should eq(0)
+      end
+    end
+  end
+
+  describe "Aggregated subscription" do
+    before(:each) do
+      @entity = FactoryGirl.create :user
+      @mailing.subscription_group = :account
+      @mailing.save!
+    end
+
+    after(:each) do
+      @mailing.subscription_group = nil
+      @mailing.save!
+    end
+
+    describe "with mailing autosubscribe" do
+      it "should be created and active" do
+        subscription = @mailing.subscription_for @entity
+
+        subscription.should_not be_new_record
+        subscription.should be_active
+
+        aggregate = subscription.aggregate
+        aggregate.should be_a(MailyHerald::AggregatedSubscription)
+        aggregate.should be_active
+
+        Timecop.freeze @entity.created_at
+
+        @mailing.run
+
+        MailyHerald::MailingSubscription.count.should eq(1)
+        MailyHerald::DeliveryLog.count.should eq(1)
+      end
+    end
+
+    describe "without mailing autosubscribe" do
+      before(:each) do
+        @mailing.update_attribute(:autosubscribe, false)
+      end
+
+      after(:each) do
+        @mailing.update_attribute(:autosubscribe, true)
+      end
+
+      it "should be inactive after create" do
+        subscription = @mailing.subscription_for @entity
+
+        subscription.should be_new_record
+        subscription.should_not be_active
+
+        aggregate = subscription.aggregate
+        aggregate.should be_a(MailyHerald::AggregatedSubscription)
+        aggregate.should_not be_active
+
+        Timecop.freeze @entity.created_at
+
+        @mailing.run
+
+        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::DeliveryLog.count.should eq(0)
+      end
+
+      it "should be able to activate" do
+        subscription = @mailing.subscription_for @entity
+        aggregate = subscription.aggregate
+
+        subscription.should be_new_record
+        subscription.should_not be_active
+
+        aggregate.should be_new_record
+        aggregate.should_not be_active
+
+        subscription.activate!
+        aggregate = subscription.aggregate
+
+        subscription.should_not be_new_record
+        subscription.should be_active
+
+        aggregate.should_not be_new_record
+        aggregate.should be_active
+      end
     end
   end
 

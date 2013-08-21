@@ -48,13 +48,11 @@ module MailyHerald
     def subscription_for entity
       sequence_subscription = self.subscriptions.for_entity(entity).first
       unless sequence_subscription 
+        sequence_subscription = self.subscriptions.build
+        sequence_subscription.entity = entity
         if self.autosubscribe && context.scope.include?(entity)
-          sequence_subscription = self.subscriptions.build
-          sequence_subscription.entity = entity
-          sequence_subscription.save
-        else
-          sequence_subscription = self.subscriptions.build
-          sequence_subscription.entity = entity
+          sequence_subscription.active = true
+          sequence_subscription.save!
         end
       end
       sequence_subscription

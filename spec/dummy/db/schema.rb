@@ -14,10 +14,10 @@
 ActiveRecord::Schema.define(:version => 20130723074347) do
 
   create_table "maily_herald_aggregated_subscriptions", :force => true do |t|
-    t.integer "entity_id",                     :null => false
-    t.string  "entity_type",                   :null => false
-    t.integer "group_id",                      :null => false
-    t.boolean "active",      :default => true, :null => false
+    t.integer "entity_id",                      :null => false
+    t.string  "entity_type",                    :null => false
+    t.integer "group_id",                       :null => false
+    t.boolean "active",      :default => false, :null => false
   end
 
   create_table "maily_herald_delivery_logs", :force => true do |t|
@@ -80,18 +80,18 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|
-    t.string   "type",                           :null => false
-    t.integer  "entity_id",                      :null => false
-    t.string   "entity_type",                    :null => false
+    t.string   "type",                            :null => false
+    t.integer  "entity_id",                       :null => false
+    t.string   "entity_type",                     :null => false
     t.integer  "mailing_id"
     t.integer  "sequence_id"
-    t.string   "token",                          :null => false
+    t.string   "token",                           :null => false
     t.text     "settings"
     t.text     "data"
-    t.boolean  "active",       :default => true, :null => false
+    t.boolean  "active",       :default => false, :null => false
     t.datetime "delivered_at"
-    t.datetime "created_at",                     :null => false
-    t.datetime "updated_at",                     :null => false
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
   end
 
   add_index "maily_herald_subscriptions", ["type", "entity_id", "entity_type", "mailing_id", "sequence_id"], :name => "index_maliy_herald_subscriptions_unique", :unique => true

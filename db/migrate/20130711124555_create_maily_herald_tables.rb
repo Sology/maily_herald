@@ -54,7 +54,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :token,                                       :null => false
       t.text              :settings
       t.text              :data
-      t.boolean           :active,             :default => true,        :null => false
+      t.boolean           :active,             :default => false,       :null => false
       t.datetime          :delivered_at
 
       t.timestamps
@@ -77,7 +77,7 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.integer           :entity_id,                                   :null => false
       t.string            :entity_type,                                 :null => false
       t.integer           :group_id,                                    :null => false
-      t.boolean           :active,             :default => true,        :null => false
+      t.boolean           :active,             :default => false,       :null => false
     end
   end
 end

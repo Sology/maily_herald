@@ -12,7 +12,7 @@ module MailyHerald
       "%.2f" % (self.relative_delay.to_f / 1.day.seconds)
     end
     def relative_delay_in_days= d
-      self.relative_delay = d.days
+      self.relative_delay = d.to_f.days
     end
 
     def context

@@ -26,13 +26,17 @@ module MailyHerald
     end
 
     def deactivate!
-      case target.token_action
-      when :unsubscribe
-        update_attribute(:active, false)
-      when :unsubscribe_group
-        MailingSubscription.for_entity(entity).joins(:mailing).where(:maily_herald_mailings => {:subscription_group => target.subscription_group}).update_all(:active => false)
-        SequenceSubscription.for_entity(entity).joins(:sequence).where(:maily_herald_sequences => {:subscription_group => target.subscription_group}).update_all(:active => false)
-      end
+      aggregated? ? aggregate.deactivate! : update_attribute(:active, false)
+      save!
+    end
+
+    def activate!
+      aggregated? ? aggregate.activate! : update_attribute(:active, true)
+      save!
+    end
+
+    def toggle!
+      active? ? deactivate! : activate!
     end
 
     def to_liquid

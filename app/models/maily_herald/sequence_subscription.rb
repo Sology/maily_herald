@@ -92,13 +92,16 @@ module MailyHerald
 
     def aggregate
       if aggregated?
-        @aggregate ||= self.sequence.subscription_group.aggregated_subscriptions.for_entity(self.entity).first
-        unless @aggregate
-          @aggregate = self.sequence.subscription_group.aggregated_subscriptions.build
-          @aggregate.entity = self.entity
-          @aggregate.save!
+        aggregate = self.sequence.subscription_group.aggregated_subscriptions.for_entity(self.entity).first
+        unless aggregate
+          aggregate = self.sequence.subscription_group.aggregated_subscriptions.build
+          aggregate.entity = self.entity
+          if self.sequence.autosubscribe && self.sequence.context.scope.include?(self.entity)
+            aggregate.active = true
+            aggregate.save!
+          end
         end
-        @aggregate
+        aggregate
       end
     end
   end

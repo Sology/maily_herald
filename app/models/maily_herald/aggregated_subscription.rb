@@ -7,5 +7,15 @@ module MailyHerald
     has_many    :sequences,           :through => :group
 
     scope       :for_entity,          lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
+
+    def deactivate!
+      update_attribute(:active, false)
+      save!
+    end
+
+    def activate!
+      update_attribute(:active, true)
+      save!
+    end
   end
 end
