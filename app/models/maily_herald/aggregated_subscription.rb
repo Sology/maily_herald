@@ -17,5 +17,9 @@ module MailyHerald
       update_attribute(:active, true)
       save!
     end
+
+    def toggle!
+      active? ? deactivate! : activate!
+    end
   end
 end

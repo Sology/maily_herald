@@ -16,8 +16,11 @@ module MailyHeraldHelper
   def maily_herald_token_action_options_for_select selected = nil, options = {}
     [
       ['Unsubscribe', 'unsubscribe'],
-      ['Unsubscribe group', 'unsubscribe_group'],
       ['Custom', 'custom'],
     ]
+  end
+
+  def maily_herald_subscription_group_options_for_select selected = nil, options = {}
+    [["none", ""]] + MailyHerald::SubscriptionGroup.all.collect {|sg| [sg.title, sg.name] }
   end
 end

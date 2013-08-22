@@ -5,55 +5,61 @@ describe MailyHerald::TokensController do
     @user = FactoryGirl.create :user
     @mailing = MailyHerald.one_time_mailing :test_mailing
     @subscription = @mailing.subscription_for @user
-
-    MailyHerald::Mailing.where(:subscription_group => @mailing.subscription_group).should_not be_empty
-    MailyHerald::Sequence.where(:subscription_group => @mailing.subscription_group).should_not be_empty
   end
 
-  pending "Unsubscribe action" do
+  describe "Unsubscribe action" do
     before(:each) do
       @mailing.token_action = :unsubscribe
       @mailing.save
     end
 
-    it "should deactivate only one subscription" do
-      get :get, :token => @subscription.token, :use_route => :maily_herald
-      response.should redirect_to("/")
-      @subscription.reload
+    describe "when regular subscription" do
+      it "should deactivate only one subscription" do
+        get :get, :token => @subscription.token, :use_route => :maily_herald
+        response.should redirect_to("/")
+        @subscription.reload
 
-      @subscription.active?.should_not be_true
+        @subscription.active?.should_not be_true
 
-      @user.maily_herald_subscriptions.each do |s|
-        next unless s.target.subscription_group == @subscription.target.subscription_group
-        next if s == @subscription
+        @user.maily_herald_subscriptions.each do |s|
+          next unless s.target.subscription_group == @subscription.target.subscription_group
+          next if s == @subscription
 
-        s.active?.should be_true
+          s.active?.should be_true
+        end
+      end
+    end
+
+    describe "when aggregated subscription" do
+      before(:each) do
+        @mailing.subscription_group = :account
+        @mailing.save!
+      end
+
+      after(:each) do
+        @mailing.subscription_group = nil
+        @mailing.save!
+      end
+
+      it "should deactivate subscription group" do
+        get :get, :token => @subscription.token, :use_route => :maily_herald
+        response.should redirect_to("/")
+        @subscription.reload
+
+        @subscription.active?.should_not be_true
+        @subscription.aggregate.should_not be_nil
+        @subscription.aggregate.active?.should_not be_true
+
+        @user.maily_herald_subscriptions.each do |s|
+          next unless s.target.subscription_group == @subscription.target.subscription_group
+
+          s.active?.should be_false
+        end
       end
     end
   end
 
-  pending "Unsubscribe group action" do
-    before(:each) do
-      @mailing.token_action = :unsubscribe_group
-      @mailing.save
-    end
-
-    it "should deactivate subscription group" do
-      get :get, :token => @subscription.token, :use_route => :maily_herald
-      response.should redirect_to("/")
-      @subscription.reload
-
-      @subscription.active?.should_not be_true
-
-      @user.maily_herald_subscriptions.each do |s|
-        next unless s.target.subscription_group == @subscription.target.subscription_group
-
-        s.active?.should be_false
-      end
-    end
-  end
-
-  pending "Custom action" do
+  describe "Custom action" do
     before(:each) do
       @mailing.token_action = :custom
       @mailing.should be_valid
@@ -69,7 +75,6 @@ describe MailyHerald::TokensController do
       @subscription.reload
       @user.reload
 
-      @subscription.active?.should be_true
       @user.name.should eq("changed")
     end
   end

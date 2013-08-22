@@ -52,7 +52,7 @@ describe MailyHerald::SubscriptionGroup do
       MailyHerald::AggregatedSubscription.count.should eq(1)
     end
 
-    it "should be able to deactivate" do
+    it "should be able to activate/deactivate" do
       subscription = @sequence.subscription_for @entity
       aggregated = subscription.aggregate
 

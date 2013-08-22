@@ -32,7 +32,7 @@ MailyHerald.setup do |config|
     mailing.token_custom_action do |controller, subscription|
       user = subscription.entity
       user.name = "changed"
-      user.save
+      user.save!
       controller.redirect_to "/custom"
     end
   end
