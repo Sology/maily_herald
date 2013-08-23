@@ -5,13 +5,17 @@ MailyHerald.setup do |config|
   config.context :all_users do |context|
     context.scope {User.scoped}
     context.destination {|user| user.email}
-    context.attribute(:user) do |user|
-      {
-        'name' => user.name,
-        'email' => user.email,
-        'weekly_notifications' => user.weekly_notifications,
-        'created_at' => user.created_at,
-      }
+    context.attributes do |user| 
+      attribute_group(:user) do
+        attribute(:name) {user.name}
+        attribute(:email) {user.email}
+        attribute(:created_at) {user.created_at}
+        attribute(:weekly_notifications) {user.weekly_notifications}
+        attribute_group(:properties) do
+          attribute(:prop1) { user.name[0] }
+          attribute(:prop2) { 2 }
+        end
+      end
     end
   end
 

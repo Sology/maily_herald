@@ -1,26 +1,25 @@
 module MailyHerald
   class Context
     class Drop < Liquid::Drop
-      def initialize attributes, entity, subscription
-        @attributes = attributes
-        @entity = entity
-        @subscription = subscription
+      def initialize attrs
+        @attrs = attrs
       end
 
       def has_key?(name)
         name = name.to_sym
 
-        @attributes.has_key? name
+        @attrs.has_key? name
       end
 
       def invoke_drop name
         name = name.to_sym
 
-        if @attributes.has_key? name
-          #@attributes[name].try(:call, @entity)
-          @attributes[name].call(@entity)
-        elsif name == :subscription
-          @subscription
+        if @attrs.has_key? name
+          if @attrs[name].is_a? Hash
+            Drop.new(@attrs[name])
+          else
+            @attrs[name].call
+          end
         else
           nil
         end
@@ -29,12 +28,44 @@ module MailyHerald
       alias :[] :invoke_drop
     end
 
+    class Attributes
+      def initialize block
+        @attrs = {}
+        @node = @parent_node = @attrs
+        @block = block
+      end
+
+      def setup entity = nil, subscription = nil
+        if entity && subscription
+          @attrs[:subscription] = Proc.new{ subscription }
+          instance_exec entity, &@block
+        else
+          instance_eval &@block
+        end
+      end
+
+      def attribute_group name, &block
+        @parent_node = @node
+        @parent_node[name] ||= {}
+        @node = @parent_node[name]
+        yield
+        @node = @parent_node
+      end
+
+      def attribute name, &block
+        @node[name] = block
+      end
+
+      def for_drop
+        @attrs
+      end
+    end
+
     attr_accessor :entity
     attr_reader :name
 
     def initialize name
       @name = name
-      @attributes = {}
     end
 
     def model
@@ -57,30 +88,24 @@ module MailyHerald
       end
     end
 
-    def attribute name, &block
-      name = name.to_sym
-
-      @attributes ||= {}
+    def attributes &block
       if block_given?
-        @attributes[name] = block
+        @attributes = Attributes.new block
       else
-        @attributes[name]
+        @attributes
       end
     end
 
-    def attribute_names
-      @attributes.keys
+    def attributes_list
+      attributes = @attributes.dup
+      attributes.setup 
+      attributes.for_drop
     end
 
-    #def each &block
-      #@scope.call.each do |entity|
-        #drop = Drop.new(@attributes, entity)
-        #block.call(entity, drop)
-      #end
-    #end
-
     def drop_for entity, subscription
-      Drop.new(@attributes, entity, subscription)
+      attributes = @attributes.dup
+      attributes.setup entity, subscription
+      Drop.new(attributes.for_drop)
     end
 
   end

@@ -75,6 +75,9 @@ describe MailyHerald::PeriodicalMailing do
 
       Timecop.freeze @entity.created_at
 
+      subscription.conditions_met?.should be_true
+      subscription.deliverable?.should be_true
+
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)

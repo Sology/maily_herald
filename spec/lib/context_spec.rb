@@ -15,12 +15,13 @@ describe MailyHerald::Context do
     end
 
     it "should resolve attributes properly" do
-      @drop.invoke_drop("user").should be_a(Hash)
-      @drop.invoke_drop("user")["name"].should eq(@user.name)
+      @drop["user"].should be_a(MailyHerald::Context::Drop)
+      @drop["user"]["name"].should eq(@user.name)
+      @drop["user"]["properties"]["prop1"].should eq(@user.name[0])
     end
 
     it "should resolve subscription attributes properly" do
-      @drop.invoke_drop("subscription").should be_a(MailyHerald::MailingSubscription)
+      @drop["subscription"].should be_a(MailyHerald::MailingSubscription)
     end
   end
 end
