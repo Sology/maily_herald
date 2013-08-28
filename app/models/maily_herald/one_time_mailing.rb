@@ -9,13 +9,11 @@ module MailyHerald
     def subscription_for entity
       subscription = self.subscriptions.for_entity(entity).first
       unless subscription 
+        subscription = self.subscriptions.build
+        subscription.entity = entity
         if self.autosubscribe && context.scope.include?(entity)
-          subscription = self.subscriptions.build
-          subscription.entity = entity
-          subscription.save
-        else
-          subscription = self.subscriptions.build
-          subscription.entity = entity
+          subscription.active = true
+          subscription.save!
         end
       end
       subscription

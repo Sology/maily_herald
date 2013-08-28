@@ -1,5 +1,6 @@
 require 'liquid'
 require 'sidekiq'
+require 'timecop'
 
 if defined?(::Rails::Engine)
   require 'acts_as_list'
@@ -19,6 +20,8 @@ module MailyHerald
         MailyHerald::Manager.run_mailing args["mailing"]
       elsif args["sequence"]
         MailyHerald::Manager.run_sequence args["sequence"]
+      elsif args["simulate"]
+        MailyHerald::Manager.simulate args["simulate"]
       else
         MailyHerald::Manager.run_all
       end
@@ -157,5 +160,9 @@ module MailyHerald
 
   def self.run_all
     Async.perform_async
+  end
+
+  def self.simulate period
+    Async.perform_async :simulate => period
   end
 end

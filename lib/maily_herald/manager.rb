@@ -30,5 +30,16 @@ module MailyHerald
       PeriodicalMailing.all.each {|m| m.run}
       Sequence.all.each {|m| m.run}
     end
+
+    def self.simulate period
+      time = Time.now
+      end_time = time + period
+      while time < end_time 
+        Timecop.freeze(time)
+        run_all
+        time = time + 1.day
+      end
+      Timecop.return
+    end
   end
 end

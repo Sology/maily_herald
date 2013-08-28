@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "acts_as_list", "~> 0.2.0"
   s.add_dependency "acts_as_list", "~> 0.2.0"
   s.add_dependency "clockwork", "~> 0.5.4"
+  s.add_dependency "timecop"
   # s.add_dependency "jquery-rails"
 
   s.add_development_dependency "sqlite3"
@@ -35,5 +36,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-spork"
   s.add_development_dependency "spork"
   s.add_development_dependency "simplecov"
-  s.add_development_dependency "timecop"
+  #s.add_development_dependency "timecop"
 end

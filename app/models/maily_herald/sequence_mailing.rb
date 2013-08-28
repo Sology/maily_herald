@@ -18,6 +18,9 @@ module MailyHerald
     def context
       @context ||= MailyHerald.context sequence.context_name
     end
+    def context=
+      nil
+    end
 
     def subscription_for entity
       self.sequence.subscription_for entity
