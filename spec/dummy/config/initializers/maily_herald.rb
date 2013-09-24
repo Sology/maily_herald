@@ -51,21 +51,21 @@ MailyHerald.setup do |config|
       mailing.title = "Test mailing #1"
       mailing.subject = "Test mailing #1"
       mailing.template = "User name: {{user.name}}."
-      mailing.relative_delay = 1.hour
+      mailing.absolute_delay = 1.hour
       mailing.enabled = true
     end
     seq.mailing :second_mail do |mailing|
       mailing.title = "Test mailing #2"
       mailing.subject = "Test mailing #2"
       mailing.template = "User name: {{user.name}}."
-      mailing.relative_delay = 2.hours
+      mailing.absolute_delay = 3.hours
       mailing.enabled = true
     end
     seq.mailing :third_mail do |mailing|
       mailing.title = "Test mailing #3"
       mailing.subject = "Test mailing #3"
       mailing.template = "User name: {{user.name}}."
-      mailing.relative_delay = 3.hours
+      mailing.absolute_delay = 6.hours
       mailing.enabled = true
     end
   end

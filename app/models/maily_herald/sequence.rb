@@ -6,10 +6,10 @@ module MailyHerald
                     :token_action, :conditions, :start, :start_text, :start_var, :period
 
     has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :dependent => :destroy
-    has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "position ASC", :dependent => :destroy
-    has_many    :logs,                :class_name => "MailyHerald::DeliveryLog", :through => :mailings
+    has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "absolute_delay ASC", :dependent => :destroy
+    has_many    :logs,                :class_name => "MailyHerald::Log", :through => :mailings
 
-    belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
+    belongs_to  :subscription_group,  :class_name => "MailyHerald::SubscriptionGroup"
 
     validates   :context_name,        :presence => true
     validates   :name,                :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
@@ -78,11 +78,11 @@ module MailyHerald
       current_time = Time.now
       self.context.scope.each do |entity|
         subscription = subscription_for entity
-        next unless subscription.deliverable?
+        next unless subscription.processable?
 
         mailing = subscription.next_mailing
 
-        if mailing && subscription.delivery_time_for(mailing) && subscription.delivery_time_for(mailing) <= current_time
+        if mailing && subscription.processing_time_for(mailing) && subscription.processing_time_for(mailing) <= current_time
           mailing.deliver_to entity
         end
       end

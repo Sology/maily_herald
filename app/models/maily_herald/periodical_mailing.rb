@@ -3,7 +3,7 @@ module MailyHerald
     attr_accessible :start, :start_var, :start_text, :period, :period_in_days
 
     validates   :context_name, :presence => true
-    validates   :period, :presence => true, :numericality => true
+    validates   :period, :presence => true, :numericality => {:greater_than => 0}
 
     def start_text
       @start_text || self.start.strftime(MailyHerald::TIME_FORMAT) if self.start
@@ -43,29 +43,34 @@ module MailyHerald
 
     def deliver_to entity
       subscription = subscription_for entity
-      return unless subscription.deliverable?
+      return unless subscription.processable?
+      unless subscription.conditions_met?
+        Log.create_for self, entity, :skipped
+        return
+      end
 
       if self.mailer_name == 'generic'
         # TODO make it atomic
-        Mailer.generic(self, entity, subscription).deliver
-        DeliveryLog.create_for self, entity
+        mail = Mailer.generic(self, entity, subscription)
+        mail.deliver
+        Log.create_for self, entity, :delivered, {:content => mail.to_s}
       else
         # TODO
       end
+    rescue StandardError => e
+      Log.create_for self, entity, :error, {:msg => e.to_s}
     end
 
     def run
       current_time = Time.now
       self.context.scope.each do |entity|
         subscription = subscription_for entity
-        next unless subscription.deliverable?
+        next unless subscription.processable?
 
-        if subscription.next_delivery_time && (subscription.next_delivery_time <= current_time)
+        if subscription.next_processing_time && (subscription.next_processing_time <= current_time)
           deliver_to entity
         end
       end
     end
-
-
   end
 end

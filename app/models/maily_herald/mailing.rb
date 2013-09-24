@@ -2,13 +2,12 @@ module MailyHerald
   MailyHerald::SubscriptionGroup
 
   class Mailing < ActiveRecord::Base
-    include MailyHerald::ConditionEvaluator
 
     attr_accessible :title, :subject, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start, :start_var, :period
 
     has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id", :dependent => :destroy
-    has_many    :logs,          :class_name => "MailyHerald::DeliveryLog", :dependent => :destroy
+    has_many    :logs,          :class_name => "MailyHerald::Log", :dependent => :destroy
 
     belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
     
@@ -17,6 +16,8 @@ module MailyHerald
     validates   :title,         :presence => true
     validates   :subject,       :presence => true
     validates   :template,      :presence => true
+    validate    :template_syntax
+    validate    :validate_conditions
 
     scope       :enabled,       where(:enabled => true)
 
@@ -74,6 +75,26 @@ module MailyHerald
       else
         MailyHerald.token_custom_action :mailing, self.id
       end
+    end
+
+    def has_conditions?
+      self.conditions && !self.conditions.empty?
+    end
+
+    private
+
+    def template_syntax
+      begin
+        template = Liquid::Template.parse(self.template)
+      rescue StandardError => e
+        errors.add(:template, e.to_s)
+      end
+    end
+
+    def validate_conditions
+      evaluator = Utils::MarkupEvaluator.test_conditions(self.conditions)
+    rescue StandardError => e
+      errors.add(:conditions, e.to_s) 
     end
   end
 end

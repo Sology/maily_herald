@@ -6,13 +6,13 @@ module MailyHerald
       end
 
       def has_key?(name)
-        name = name.to_sym
+        name = name.to_s
 
         @attrs.has_key? name
       end
 
       def invoke_drop name
-        name = name.to_sym
+        name = name.to_s
 
         if @attrs.has_key? name
           if @attrs[name].is_a? Hash
@@ -37,7 +37,7 @@ module MailyHerald
 
       def setup entity = nil, subscription = nil
         if entity && subscription
-          @attrs[:subscription] = Proc.new{ subscription }
+          @attrs["subscription"] = Proc.new{ subscription }
           instance_exec entity, &@block
         else
           instance_eval &@block
@@ -46,18 +46,22 @@ module MailyHerald
 
       def attribute_group name, &block
         @parent_node = @node
-        @parent_node[name] ||= {}
-        @node = @parent_node[name]
+        @parent_node[name.to_s] ||= {}
+        @node = @parent_node[name.to_s]
         yield
         @node = @parent_node
       end
 
       def attribute name, &block
-        @node[name] = block
+        @node[name.to_s] = block
       end
 
       def for_drop
         @attrs
+      end
+
+      def method_missing(m, *args, &block)
+        true
       end
     end
 

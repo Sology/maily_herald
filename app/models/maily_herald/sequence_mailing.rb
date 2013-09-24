@@ -1,18 +1,16 @@
 module MailyHerald
   class SequenceMailing < Mailing
-    attr_accessible :relative_delay_in_days
+    attr_accessible :absolute_delay_in_days
 
     belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
 
-    validates   :relative_delay,      :presence => true, :numericality => true
+    validates   :absolute_delay,      :presence => true, :numericality => true
 
-    acts_as_list :scope => :sequence
-
-    def relative_delay_in_days
-      "%.2f" % (self.relative_delay.to_f / 1.day.seconds)
+    def absolute_delay_in_days
+      "%.2f" % (self.absolute_delay.to_f / 1.day.seconds)
     end
-    def relative_delay_in_days= d
-      self.relative_delay = d.to_f.days
+    def absolute_delay_in_days= d
+      self.absolute_delay = d.to_f.days
     end
 
     def context
@@ -28,21 +26,26 @@ module MailyHerald
 
     def deliver_to entity
       subscription = subscription_for entity
-      return unless subscription.deliverable?
-      return unless evaluate_conditions_for(entity)
+      return unless subscription.processable?
+      unless subscription.conditions_met?(self)
+        Log.create_for self, entity, :skipped
+        return
+      end
 
       if self.mailer_name == 'generic'
         # TODO make it atomic
-        Mailer.generic(self, entity, subscription).deliver
-
-        DeliveryLog.create_for self, entity
+        mail = Mailer.generic(self, entity, subscription)
+        mail.deliver
+        Log.create_for self, entity, :delivered, {:content => mail.to_s}
       else
         # TODO
       end
+    rescue StandardError => e
+      Log.create_for self, entity, :error, {:msg => e.to_s}
     end
 
-    def delivered_to? entity
-      self.sequence.delivered_mailings_for(entity).include?(self)
+    def processed_to? entity
+      self.sequence.processed_mailings_for(entity).include?(self)
     end
   end
 end

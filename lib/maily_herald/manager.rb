@@ -32,6 +32,7 @@ module MailyHerald
     end
 
     def self.simulate period
+      File.open("/tmp/maily_herlald_timetravel.lock", "w") {}
       time = Time.now
       end_time = time + period
       while time < end_time 
@@ -40,6 +41,7 @@ module MailyHerald
         time = time + 1.day
       end
       Timecop.return
+      File.delete("/tmp/maily_herlald_timetravel.lock")
     end
   end
 end

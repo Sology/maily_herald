@@ -12,12 +12,11 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
       t.string            :subject,                                     :null => false
       t.string            :from
       t.text              :template,                                    :null => false
-      t.integer           :relative_delay
+      t.integer           :absolute_delay
       t.datetime          :start
       t.text              :start_var
       t.integer           :period
       t.boolean           :enabled,           :default => false
-      t.integer           :position,          :default => 0,            :null => false
       t.boolean           :autosubscribe,     :default => true
       t.boolean           :override_subscription, :default => false,    :null => true
       t.integer           :subscription_group_id
@@ -61,11 +60,13 @@ class CreateMailyHeraldTables < ActiveRecord::Migration
     end
 		add_index :maily_herald_subscriptions, [:type, :entity_id, :entity_type, :mailing_id, :sequence_id], :unique => true, :name => "index_maliy_herald_subscriptions_unique"
 
-    create_table :maily_herald_delivery_logs do |t|
-      t.datetime          :delivered_at
+    create_table :maily_herald_logs do |t|
       t.integer           :entity_id,                                   :null => false
       t.string            :entity_type,                                 :null => false
       t.integer           :mailing_id
+      t.string            :status,             :default => "delivered", :null => false
+      t.text              :data
+      t.datetime          :processed_at
     end
 
     create_table :maily_herald_subscription_groups do |t|

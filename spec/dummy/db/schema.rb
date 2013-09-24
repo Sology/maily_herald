@@ -20,11 +20,13 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.boolean "active",      :default => false, :null => false
   end
 
-  create_table "maily_herald_delivery_logs", :force => true do |t|
-    t.datetime "delivered_at"
-    t.integer  "entity_id",    :null => false
-    t.string   "entity_type",  :null => false
+  create_table "maily_herald_logs", :force => true do |t|
+    t.integer  "entity_id",                             :null => false
+    t.string   "entity_type",                           :null => false
     t.integer  "mailing_id"
+    t.string   "status",       :default => "delivered", :null => false
+    t.text     "data"
+    t.datetime "processed_at"
   end
 
   create_table "maily_herald_mailings", :force => true do |t|
@@ -39,12 +41,11 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.string   "subject",                                          :null => false
     t.string   "from"
     t.text     "template",                                         :null => false
-    t.integer  "relative_delay"
+    t.integer  "absolute_delay"
     t.datetime "start"
     t.text     "start_var"
     t.integer  "period"
     t.boolean  "enabled",               :default => false
-    t.integer  "position",              :default => 0,             :null => false
     t.boolean  "autosubscribe",         :default => true
     t.boolean  "override_subscription", :default => false
     t.integer  "subscription_group_id"

@@ -38,7 +38,7 @@ describe MailyHerald::Sequence do
     end
   end
 
-  describe "markup evaluation" do
+  describe "Markup evaluation" do
     before(:each) do
       @entity = FactoryGirl.create :user
     end
@@ -50,27 +50,30 @@ describe MailyHerald::Sequence do
     it "should parse start_var" do
       @entity.should be_a(User)
       subscription = @sequence.subscription_for @entity
-      subscription.next_delivery_time.should be_a(Time)
+      subscription.next_processing_time.should be_a(Time)
     end
 
-    it "should use absolute start date if possible" do
+    it "should use absolute start date if provided and greater that evaluated start date" do
       @entity.should be_a(User)
       time = @entity.created_at + rand(100).days + rand(24).hours + rand(60).minutes
       @sequence.update_attribute(:start, time)
       @sequence.start.should be_a(Time)
       subscription = @sequence.subscription_for @entity
-      subscription.next_delivery_time.should be_a(Time)
-      subscription.next_delivery_time.should eq(time + @sequence.mailings.first.relative_delay)
+      subscription.next_processing_time.should be_a(Time)
+      subscription.next_processing_time.should eq(time + @sequence.mailings.first.absolute_delay)
     end
   end
 
-  describe "Scheduled Delivery" do
+  describe "Scheduled Processing" do
     before(:each) do
       @entity = FactoryGirl.create :user
+      @template_tmp = @sequence.mailings[1].template
     end
 
     after(:each) do
       @sequence.mailings[1].update_attribute(:enabled, true)
+      @sequence.mailings[1].update_attribute(:conditions, nil)
+      @sequence.mailings[1].update_attribute(:template, @template_tmp)
     end
 
     it "should deliver mailings with delays" do
@@ -78,10 +81,10 @@ describe MailyHerald::Sequence do
       @sequence.start.should be_nil
 
       subscription = @sequence.subscription_for(@entity)
-      subscription.delivered_mailings.length.should eq(0)
+      subscription.processed_mailings.length.should eq(0)
       subscription.pending_mailings.length.should eq(@sequence.mailings.length)
-      subscription.next_mailing.relative_delay.should_not eq(0)
-      subscription.next_delivery_time.should eq(@entity.created_at + @sequence.mailings.first.relative_delay)
+      subscription.next_mailing.absolute_delay.should_not eq(0)
+      subscription.next_processing_time.should eq(@entity.created_at + @sequence.mailings.first.absolute_delay)
 
       Timecop.freeze @entity.created_at
 
@@ -89,55 +92,94 @@ describe MailyHerald::Sequence do
 
       MailyHerald::MailingSubscription.count.should eq(0)
       MailyHerald::SequenceSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      MailyHerald::Log.delivered.count.should eq(0)
 
-      Timecop.freeze @entity.created_at + @sequence.mailings.first.relative_delay + 10.minutes
+      Timecop.freeze @entity.created_at + @sequence.mailings.first.absolute_delay
 
       @sequence.run
 
       MailyHerald::MailingSubscription.count.should eq(0)
       MailyHerald::SequenceSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
 
       subscription = @sequence.subscription_for(@entity)
       subscription.should_not be_nil
       subscription.should_not be_a_new_record
       subscription.entity.should eq(@entity)
 
-      subscription.delivered_mailings.length.should eq(1)
+      subscription.processed_mailings.length.should eq(1)
       subscription.pending_mailings.length.should eq(@sequence.mailings.length - 1)
+      subscription.pending_mailings.first.should eq(@sequence.mailings[1])
       
-      subscription.last_delivered_mailing.should eq @sequence.mailings.first
+      subscription.last_processed_mailing.should eq @sequence.mailings.first
       log = subscription.mailing_log_for(@sequence.mailings.first)
-      log.delivered_at.to_i.should eq (@entity.created_at + 1.hour + 10.minutes).to_i
+      log.processed_at.to_i.should eq (@entity.created_at + @sequence.mailings.first.absolute_delay).to_i
 
-      Timecop.freeze @entity.created_at + 2.hour + 10.minutes
-
-      @sequence.run
-
-      MailyHerald::MailingSubscription.count.should eq(0)
-      MailyHerald::SequenceSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
-
-      Timecop.freeze @entity.created_at + 3.hour + 10.minutes
+      Timecop.freeze @entity.created_at + (@sequence.mailings[0].absolute_delay + @sequence.mailings[1].absolute_delay)/2.0
 
       @sequence.run
 
       MailyHerald::MailingSubscription.count.should eq(0)
       MailyHerald::SequenceSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(2)
+      MailyHerald::Log.delivered.count.should eq(1)
+
+      Timecop.freeze @entity.created_at + @sequence.mailings[1].absolute_delay
+
+      @sequence.run
+
+      MailyHerald::MailingSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(2) 
 
       subscription = @sequence.subscription_for(@entity)
       log = subscription.mailing_log_for(@sequence.mailings.first)
-      log.should be_a(MailyHerald::DeliveryLog)
+      log.should be_a(MailyHerald::Log)
       log.entity.should eq(@entity)
 
       log = subscription.mailing_log_for(@sequence.mailings[1])
-      log.should be_a(MailyHerald::DeliveryLog)
+      log.should be_a(MailyHerald::Log)
       log.entity.should eq(@entity)
     end
 
-    it "should skip disabled mailings and go on with delivery" do
+    it "should handle processing with start date evaluated to the past date" do
+      @sequence.mailings.length.should eq(3)
+      @sequence.start.should be_nil
+
+      start_at = @entity.created_at + 1.year
+
+      subscription = @sequence.subscription_for(@entity)
+      subscription.processed_mailings.length.should eq(0)
+      subscription.pending_mailings.length.should eq(@sequence.mailings.length)
+      subscription.next_mailing.absolute_delay.should_not eq(0)
+      subscription.next_processing_time.should eq(@entity.created_at + @sequence.mailings.first.absolute_delay)
+
+      Timecop.freeze start_at
+
+      @sequence.run
+
+      MailyHerald::MailingSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+
+      Timecop.freeze start_at + 1
+
+      @sequence.run
+
+      MailyHerald::MailingSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+
+      subscription.next_processing_time.to_i.should eq((start_at - @sequence.mailings.first.absolute_delay + subscription.pending_mailings.first.absolute_delay).to_i)
+      Timecop.freeze start_at - @sequence.mailings.first.absolute_delay + subscription.pending_mailings.first.absolute_delay
+
+      @sequence.run
+
+      MailyHerald::MailingSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(2)
+    end
+
+    it "should skip disabled mailings and go on with processing" do
       @sequence.mailings.length.should eq(3)
       @sequence.start.should be_nil
       @sequence.should be_enabled
@@ -154,23 +196,84 @@ describe MailyHerald::Sequence do
       subscription.pending_mailings.first.should eq(@sequence.mailings.first)
       subscription.pending_mailings.first.should be_enabled
 
-      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.relative_delay
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
 
       @sequence.run
 
-      MailyHerald::DeliveryLog.count.should eq(1)
-      subscription.delivered_mailings.length.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+      subscription.processed_mailings.length.should eq(1)
 
       subscription.pending_mailings.should_not include(@sequence.mailings[1])
       subscription.next_mailing.should eq(@sequence.mailings[2])
 
-      Timecop.freeze @entity.created_at + @sequence.mailings[0].relative_delay + @sequence.mailings[2].relative_delay
+      Timecop.freeze @entity.created_at + @sequence.mailings[2].absolute_delay
 
       @sequence.run
 
-      MailyHerald::DeliveryLog.count.should eq(2)
+      MailyHerald::Log.delivered.count.should eq(2)
       subscription.pending_mailings.should be_empty
     end
+
+    it "should skip mailings with unmet conditions and create logs for them" do
+      subscription = @sequence.subscription_for(@entity)
+
+      @sequence.mailings[1].update_attribute(:conditions, "false")
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings.first)
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.skipped.count.should eq(0)
+      MailyHerald::Log.error.count.should eq(0)
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings[1])
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(2)
+      MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.skipped.count.should eq(1)
+      MailyHerald::Log.error.count.should eq(0)
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings[2])
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(3)
+      MailyHerald::Log.delivered.count.should eq(2)
+      MailyHerald::Log.skipped.count.should eq(1)
+      MailyHerald::Log.error.count.should eq(0)
+    end
+
+    it "should skip mailings with errors and create logs for them" do
+      subscription = @sequence.subscription_for(@entity)
+
+      @sequence.mailings[1].update_attribute(:template, "foo {{error =! here bar")
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings.first)
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.skipped.count.should eq(0)
+      MailyHerald::Log.error.count.should eq(0)
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings[1])
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(2)
+      MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.skipped.count.should eq(0)
+      MailyHerald::Log.error.count.should eq(1)
+
+      subscription.pending_mailings.first.should eq(@sequence.mailings[2])
+      Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
+      @sequence.run
+      MailyHerald::Log.count.should eq(3)
+      MailyHerald::Log.delivered.count.should eq(2)
+      MailyHerald::Log.skipped.count.should eq(0)
+      MailyHerald::Log.error.count.should eq(1)
+    end
+
   end
 
   describe "Error handling" do
@@ -189,15 +292,15 @@ describe MailyHerald::Sequence do
       @sequence.start.should be_nil
       @sequence.start_var.should eq("")
       subscription = @sequence.subscription_for @entity
-      subscription.last_delivery_time.should be_nil
-      subscription.next_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
+      subscription.next_processing_time.should be_nil
 
       Timecop.freeze @entity.created_at
       @sequence.run
 
       subscription = @sequence.subscription_for @entity
-      subscription.last_delivery_time.should be_nil
-      subscription.next_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
+      subscription.next_processing_time.should be_nil
     end
 
     it "should allow to set start date via text field" do
@@ -230,7 +333,7 @@ describe MailyHerald::Sequence do
 
       MailyHerald::MailingSubscription.count.should eq(0)
       MailyHerald::SequenceSubscription.count.should eq(0)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
 
       Timecop.freeze @entity.created_at
 
@@ -238,7 +341,7 @@ describe MailyHerald::Sequence do
 
       MailyHerald::MailingSubscription.count.should eq(0)
       MailyHerald::SequenceSubscription.count.should eq(0)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
 
       @sequence.autosubscribe = true
       @sequence.save
@@ -259,25 +362,25 @@ describe MailyHerald::Sequence do
 
       subscription.should be_active
 
-      next_delivery = subscription.next_delivery_time
+      next_processing = subscription.next_processing_time
 
       subscription.deactivate!
       subscription.should_not be_active
 
-      subscription.last_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
 
-      Timecop.freeze subscription.next_delivery_time
+      Timecop.freeze subscription.next_processing_time
 
       @sequence.run
 
-      subscription.last_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
 
 
       @sequence.update_attribute(:override_subscription, true)
 
       @sequence.run
 
-      subscription.last_delivery_time.to_i.should eq(next_delivery.to_i)
+      subscription.last_processing_time.to_i.should eq(next_processing.to_i)
     end
   end
 

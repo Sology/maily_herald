@@ -3,7 +3,6 @@ require 'sidekiq'
 require 'timecop'
 
 if defined?(::Rails::Engine)
-  require 'acts_as_list'
   require "maily_herald/engine"
 end
 
@@ -31,6 +30,7 @@ module MailyHerald
 
   autoload :Utils,              'maily_herald/utils'
   autoload :ConditionEvaluator, 'maily_herald/condition_evaluator'
+  autoload :TemplateRenderer,   'maily_herald/template_renderer'
   autoload :ModelExtensions,    'maily_herald/model_extensions'
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
@@ -162,7 +162,11 @@ module MailyHerald
     Async.perform_async
   end
 
-  def self.simulate period
+  def self.simulate period = 1.year
     Async.perform_async :simulate => period
+  end
+
+  def self.simulation_ongoing?
+    File.exist?("/tmp/maily_herlald_timetravel.lock")
   end
 end

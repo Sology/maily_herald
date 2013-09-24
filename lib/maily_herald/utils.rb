@@ -5,22 +5,47 @@ module MailyHerald
     end
 
     class MarkupEvaluator
+      class DummyDrop < Liquid::Drop
+        def has_key?(name)
+          true
+        end
+
+        def invoke_drop name
+          true
+        end
+
+        alias :[] :invoke_drop
+      end
+
+      def self.test_conditions conditions
+        return true if !conditions || conditions.empty?
+
+        condition = self.create_liquid_condition conditions
+        template = Liquid::Template.parse(conditions)
+        raise StandardError unless template.errors.empty?
+
+        drop = DummyDrop.new
+        liquid_context = Liquid::Context.new([drop, template.assigns], template.instance_assigns, template.registers, true, {})
+        drop.context = liquid_context
+
+        condition.evaluate liquid_context
+      end
+
+
       def initialize drop
         @drop = drop
       end
 
       def evaluate_conditions conditions
-        condition = create_liquid_condition conditions
+        return true if !conditions || conditions.empty?
+
+        condition = MarkupEvaluator.create_liquid_condition conditions
         template = Liquid::Template.parse(conditions)
 
         liquid_context = Liquid::Context.new([@drop, template.assigns], template.instance_assigns, template.registers, true, {})
         @drop.context = liquid_context
 
-        begin
-          condition.evaluate liquid_context
-        rescue
-          false
-        end
+        condition.evaluate liquid_context
       end
 
       def evaluate_variable markup
@@ -33,7 +58,7 @@ module MailyHerald
 
       private
 
-      def create_liquid_condition markup
+      def self.create_liquid_condition markup
         expressions = markup.scan(Liquid::If::ExpressionsAndOperators).reverse
         raise(Liquid::SyntaxError, Liquid::SyntaxHelp) unless expressions.shift =~ Liquid::If::Syntax
 

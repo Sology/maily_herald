@@ -33,7 +33,7 @@ describe MailyHerald::PeriodicalMailing do
       @entity.should be_a(User)
       @mailing.start_var.should_not be_empty
       subscription = @mailing.subscription_for @entity
-      subscription.next_delivery_time.should be_a(Time)
+      subscription.next_processing_time.should be_a(Time)
     end
 
     it "should use absolute start date if possible" do
@@ -42,8 +42,8 @@ describe MailyHerald::PeriodicalMailing do
       @mailing.update_attribute(:start, time)
       @mailing.start.should be_a(Time)
       subscription = @mailing.subscription_for @entity
-      subscription.next_delivery_time.should be_a(Time)
-      subscription.next_delivery_time.should eq(time)
+      subscription.next_processing_time.should be_a(Time)
+      subscription.next_processing_time.should eq(time)
     end
   end
 
@@ -56,69 +56,103 @@ describe MailyHerald::PeriodicalMailing do
       @mailing.period.should eq 7.days
 
       subscription = @mailing.subscription_for @entity
-      subscription.last_delivery_time.should eq nil
-      subscription.next_delivery_time.to_i.should eq((@entity.created_at).to_i)
+      subscription.last_processing_time.should eq nil
+      subscription.next_processing_time.to_i.should eq((@entity.created_at).to_i)
 
       Timecop.freeze @entity.created_at
       @mailing.run
 
       subscription = @mailing.subscription_for @entity
-      subscription.last_delivery_time.to_i.should eq @entity.created_at.to_i
-      subscription.next_delivery_time.to_i.should eq((@entity.created_at + 7.days).to_i)
+      subscription.last_processing_time.to_i.should eq @entity.created_at.to_i
+      subscription.next_processing_time.to_i.should eq((@entity.created_at + 7.days).to_i)
     end
 
     it "should deliver mailings after period" do
       subscription = @mailing.subscription_for @entity
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
 
       Timecop.freeze @entity.created_at
 
       subscription.conditions_met?.should be_true
-      subscription.deliverable?.should be_true
+      subscription.processable?.should be_true
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
+      MailyHerald::Log.count.should eq(1)
 
-      log = MailyHerald::DeliveryLog.first
+      log = MailyHerald::Log.first
       log.entity.should eq(@entity)
       log.mailing.should eq(@mailing)
 
       subscription.logs.last.should eq(log)
-      subscription.last_delivery_time.to_i.should eq(@entity.created_at.to_i)
+      subscription.last_processing_time.to_i.should eq(@entity.created_at.to_i)
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
+      MailyHerald::Log.count.should eq(1)
 
       Timecop.freeze @entity.created_at + @mailing.period + @mailing.period/3
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(2)
+      MailyHerald::Log.count.should eq(2)
 
       Timecop.freeze @entity.created_at + @mailing.period + @mailing.period/2
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(2)
+      MailyHerald::Log.count.should eq(2)
     end
 
     it "should calculate valid next delivery date" do
       subscription = @mailing.subscription_for @entity
       period = @mailing.period
 
-      subscription.last_delivery_time.should be_nil
-      subscription.start_delivery_time.should eq(@entity.created_at)
-      subscription.next_delivery_time.should eq(@entity.created_at)
+      subscription.last_processing_time.should be_nil
+      subscription.start_processing_time.should eq(@entity.created_at)
+      subscription.next_processing_time.should eq(@entity.created_at)
     end
 
+    it "should handle processing with start date evaluated to the past date" do
+      subscription = @mailing.subscription_for @entity
+
+      MailyHerald::MailingSubscription.count.should eq(1)
+      MailyHerald::Log.count.should eq(0)
+
+      subscription.next_processing_time.to_i.should eq(@entity.created_at.to_i)
+      start_at = @entity.created_at + 1.year
+
+      Timecop.freeze start_at
+
+      subscription.conditions_met?.should be_true
+      subscription.processable?.should be_true
+
+      @mailing.run
+
+      MailyHerald::MailingSubscription.count.should eq(1)
+      MailyHerald::Log.count.should eq(1)
+      subscription.last_processing_time.to_i.should eq(start_at.to_i)
+
+      Timecop.freeze start_at +1
+      @mailing.run
+
+      MailyHerald::MailingSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+
+      subscription.next_processing_time.to_i.should eq((start_at + @mailing.period).to_i)
+      Timecop.freeze start_at + @mailing.period
+
+      @mailing.run
+
+      MailyHerald::MailingSubscription.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(2)
+    end
   end
 
   describe "Error handling" do
@@ -133,15 +167,15 @@ describe MailyHerald::PeriodicalMailing do
 
     it "should handle start_var parsing errors or nil start time" do
       subscription = @mailing.subscription_for @entity
-      subscription.last_delivery_time.should be_nil
-      subscription.next_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
+      subscription.next_processing_time.should be_nil
 
       Timecop.freeze @entity.created_at
       @mailing.run
 
       subscription = @mailing.subscription_for @entity
-      subscription.last_delivery_time.should be_nil
-      subscription.next_delivery_time.should be_nil
+      subscription.last_processing_time.should be_nil
+      subscription.next_processing_time.should be_nil
     end
 
     after do
@@ -170,14 +204,14 @@ describe MailyHerald::PeriodicalMailing do
         subscription.should_not be_active
 
         MailyHerald::MailingSubscription.count.should eq(0)
-        MailyHerald::DeliveryLog.count.should eq(0)
+        MailyHerald::Log.count.should eq(0)
 
         Timecop.freeze @entity.created_at
 
         @mailing.run
 
         MailyHerald::MailingSubscription.count.should eq(0)
-        MailyHerald::DeliveryLog.count.should eq(0)
+        MailyHerald::Log.count.should eq(0)
       end
     end
   end
@@ -210,7 +244,7 @@ describe MailyHerald::PeriodicalMailing do
         @mailing.run
 
         MailyHerald::MailingSubscription.count.should eq(1)
-        MailyHerald::DeliveryLog.count.should eq(1)
+        MailyHerald::Log.count.should eq(1)
       end
     end
 
@@ -238,7 +272,7 @@ describe MailyHerald::PeriodicalMailing do
         @mailing.run
 
         MailyHerald::MailingSubscription.count.should eq(0)
-        MailyHerald::DeliveryLog.count.should eq(0)
+        MailyHerald::Log.count.should eq(0)
       end
 
       it "should be able to activate" do
@@ -272,16 +306,16 @@ describe MailyHerald::PeriodicalMailing do
       subscription = @mailing.subscription_for @entity
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(0)
+      MailyHerald::Log.delivered.count.should eq(0)
 
       Timecop.freeze @entity.created_at
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
 
-      @entity.weekly_notifications = false
+      @entity.update_attribute(:weekly_notifications, false)
       @entity.save
 
       Timecop.freeze @entity.created_at + @mailing.period + @mailing.period/3
@@ -289,15 +323,17 @@ describe MailyHerald::PeriodicalMailing do
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.skipped.count.should eq(1)
 
-      @entity.weekly_notifications = true
-      @entity.save
+      @entity.update_attribute(:weekly_notifications, true)
+
+      Timecop.freeze @entity.created_at + @mailing.period*2 + @mailing.period/3
 
       @mailing.run
 
       MailyHerald::MailingSubscription.count.should eq(1)
-      MailyHerald::DeliveryLog.count.should eq(2)
+      MailyHerald::Log.delivered.count.should eq(2)
     end
   end
 end

@@ -20,8 +20,6 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.2.8"
   s.add_dependency "liquid", "~> 2.6.0"
   s.add_dependency "sidekiq", "~> 2.13.0"
-  s.add_dependency "acts_as_list", "~> 0.2.0"
-  s.add_dependency "acts_as_list", "~> 0.2.0"
   s.add_dependency "clockwork", "~> 0.5.4"
   s.add_dependency "timecop"
   # s.add_dependency "jquery-rails"
