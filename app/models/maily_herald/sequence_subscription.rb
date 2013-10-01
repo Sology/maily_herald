@@ -1,6 +1,6 @@
 module MailyHerald
   class SequenceSubscription < Subscription
-    belongs_to  :sequence
+    belongs_to  :sequence,      :foreign_key => :dispatch_id
 
     validates   :sequence,      :presence => true
 

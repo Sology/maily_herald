@@ -3,7 +3,7 @@ module MailyHerald
     AVAILABLE_STATUSES = [:delivered, :skipped, :error]
 
     belongs_to  :entity,        :polymorphic => true
-    belongs_to  :mailing,       :class_name => "MailyHerald::Mailing"
+    belongs_to  :mailing,       :class_name => "MailyHerald::Mailing", :foreign_key => :mailing_id
 
     validates   :entity,        :presence => true
     validates   :mailing,       :presence => true

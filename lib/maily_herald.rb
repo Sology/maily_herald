@@ -69,6 +69,10 @@ module MailyHerald
     end
   end
 
+  def self.dispatch name
+    Mailing.find_by_name(name) if Mailing.table_exists?
+  end
+
   def self.one_time_mailing name
     if OneTimeMailing.table_exists?
       mailing = OneTimeMailing.find_or_initialize_by_name(name)

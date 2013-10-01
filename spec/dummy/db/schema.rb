@@ -20,6 +20,35 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.boolean "active",      :default => false, :null => false
   end
 
+  create_table "maily_herald_dispatches", :force => true do |t|
+    t.string   "type",                                     :null => false
+    t.integer  "sequence_id"
+    t.string   "context_name"
+    t.text     "conditions"
+    t.string   "trigger"
+    t.string   "mailer_name"
+    t.string   "name",                                     :null => false
+    t.string   "title"
+    t.string   "subject"
+    t.string   "from"
+    t.text     "template"
+    t.integer  "absolute_delay"
+    t.datetime "start"
+    t.text     "start_var"
+    t.integer  "period"
+    t.boolean  "enabled",               :default => false
+    t.boolean  "autosubscribe"
+    t.boolean  "override_subscription"
+    t.integer  "subscription_group_id"
+    t.string   "token_action"
+    t.datetime "created_at",                               :null => false
+    t.datetime "updated_at",                               :null => false
+  end
+
+  add_index "maily_herald_dispatches", ["context_name"], :name => "index_maily_herald_dispatches_on_context_name"
+  add_index "maily_herald_dispatches", ["name"], :name => "index_maily_herald_dispatches_on_name", :unique => true
+  add_index "maily_herald_dispatches", ["trigger"], :name => "index_maily_herald_dispatches_on_trigger"
+
   create_table "maily_herald_logs", :force => true do |t|
     t.integer  "entity_id",                             :null => false
     t.string   "entity_type",                           :null => false
@@ -28,52 +57,6 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.text     "data"
     t.datetime "processed_at"
   end
-
-  create_table "maily_herald_mailings", :force => true do |t|
-    t.string   "type",                                             :null => false
-    t.integer  "sequence_id"
-    t.string   "context_name"
-    t.text     "conditions"
-    t.string   "trigger",               :default => "manual",      :null => false
-    t.string   "mailer_name",           :default => "generic",     :null => false
-    t.string   "name",                                             :null => false
-    t.string   "title",                                            :null => false
-    t.string   "subject",                                          :null => false
-    t.string   "from"
-    t.text     "template",                                         :null => false
-    t.integer  "absolute_delay"
-    t.datetime "start"
-    t.text     "start_var"
-    t.integer  "period"
-    t.boolean  "enabled",               :default => false
-    t.boolean  "autosubscribe",         :default => true
-    t.boolean  "override_subscription", :default => false
-    t.integer  "subscription_group_id"
-    t.string   "token_action",          :default => "unsubscribe", :null => false
-    t.datetime "created_at",                                       :null => false
-    t.datetime "updated_at",                                       :null => false
-  end
-
-  add_index "maily_herald_mailings", ["context_name"], :name => "index_maily_herald_mailings_on_context_name"
-  add_index "maily_herald_mailings", ["name"], :name => "index_maily_herald_mailings_on_name", :unique => true
-  add_index "maily_herald_mailings", ["trigger"], :name => "index_maily_herald_mailings_on_trigger"
-
-  create_table "maily_herald_sequences", :force => true do |t|
-    t.string   "context_name",                                     :null => false
-    t.string   "name",                                             :null => false
-    t.string   "title",                                            :null => false
-    t.datetime "start"
-    t.text     "start_var"
-    t.boolean  "enabled",               :default => false
-    t.boolean  "autosubscribe",         :default => true
-    t.boolean  "override_subscription", :default => false
-    t.integer  "subscription_group_id"
-    t.string   "token_action",          :default => "unsubscribe", :null => false
-    t.datetime "created_at",                                       :null => false
-    t.datetime "updated_at",                                       :null => false
-  end
-
-  add_index "maily_herald_sequences", ["context_name"], :name => "index_maily_herald_sequences_on_context_name"
 
   create_table "maily_herald_subscription_groups", :force => true do |t|
     t.string "name",  :null => false
@@ -84,8 +67,7 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.string   "type",                            :null => false
     t.integer  "entity_id",                       :null => false
     t.string   "entity_type",                     :null => false
-    t.integer  "mailing_id"
-    t.integer  "sequence_id"
+    t.integer  "dispatch_id"
     t.string   "token",                           :null => false
     t.text     "settings"
     t.text     "data"
@@ -94,8 +76,6 @@ ActiveRecord::Schema.define(:version => 20130723074347) do
     t.datetime "created_at",                      :null => false
     t.datetime "updated_at",                      :null => false
   end
-
-  add_index "maily_herald_subscriptions", ["type", "entity_id", "entity_type", "mailing_id", "sequence_id"], :name => "index_maliy_herald_subscriptions_unique", :unique => true
 
   create_table "users", :force => true do |t|
     t.string   "name"

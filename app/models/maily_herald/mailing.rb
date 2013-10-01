@@ -1,28 +1,35 @@
 module MailyHerald
   MailyHerald::SubscriptionGroup
 
-  class Mailing < ActiveRecord::Base
-
+  class Mailing < Dispatch
     attr_accessible :title, :subject, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start, :start_var, :period
 
-    has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "mailing_id", :dependent => :destroy
+    has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "dispatch_id", :dependent => :destroy
     has_many    :logs,          :class_name => "MailyHerald::Log", :dependent => :destroy
 
     belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
     
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
-    validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
     validates   :title,         :presence => true
     validates   :subject,       :presence => true
     validates   :template,      :presence => true
     validate    :template_syntax
     validate    :validate_conditions
 
-    scope       :enabled,       where(:enabled => true)
+    scope       :enabled,       lambda { where(:enabled => true) }
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
+
+    after_initialize do
+      if self.new_record?
+        self.autosubscribe = true
+        self.override_subscription = false
+        self.token_action = :unsubscribe
+        self.mailer_name = :generic
+      end
     end
 
     def subscription_group= g
@@ -63,7 +70,7 @@ module MailyHerald
     end
 
     def trigger
-      read_attribute(:trigger).to_sym
+      (read_attribute(:trigger) || :manual).to_sym
     end
     def trigger=(value)
       write_attribute(:trigger, value.to_s)

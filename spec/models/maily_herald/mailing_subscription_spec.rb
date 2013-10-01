@@ -15,6 +15,7 @@ describe MailyHerald::MailingSubscription do
       @subscription.entity.should eq(@entity)
       @subscription.mailing.should eq(@mailing)
       @subscription.should be_valid
+      @mailing.autosubscribe?.should be_true
       @subscription.should_not be_a_new_record
     end
   end

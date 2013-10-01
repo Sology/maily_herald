@@ -77,6 +77,7 @@ describe MailyHerald::PeriodicalMailing do
 
       subscription.conditions_met?.should be_true
       subscription.processable?.should be_true
+      subscription.next_processing_time.should be <= @entity.created_at
 
       @mailing.run
 

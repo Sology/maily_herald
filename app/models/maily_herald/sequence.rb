@@ -1,11 +1,11 @@
 module MailyHerald
   MailyHerald::Subscription #TODO fix this autoload for dev
 
-  class Sequence < ActiveRecord::Base
+  class Sequence < Dispatch
     attr_accessible :title, :context_name, :autosubscribe, :subscription_group, :override_subscription,
                     :token_action, :conditions, :start, :start_text, :start_var, :period
 
-    has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :dependent => :destroy
+    has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :foreign_key => "dispatch_id", :dependent => :destroy
     has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "absolute_delay ASC", :dependent => :destroy
     has_many    :logs,                :class_name => "MailyHerald::Log", :through => :mailings
 

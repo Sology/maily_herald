@@ -2,7 +2,7 @@ module MailyHerald
   class MailingSubscription < Subscription
     include MailyHerald::TemplateRenderer
 
-    belongs_to  :mailing
+    belongs_to  :mailing,       :foreign_key => :dispatch_id
 
     validates   :mailing,       :presence => true
 

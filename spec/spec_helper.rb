@@ -37,7 +37,7 @@ Spork.prefork do
   # in spec/support/ and its subdirectories.
   Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
 
-  keep_tables = %w[maily_herald_mailings maily_herald_sequences maily_herald_subscription_groups]
+  keep_tables = %w[maily_herald_dispatches maily_herald_subscription_groups]
   RSpec.configure do |config|
     config.use_transactional_fixtures = false
     config.before(:suite) do
