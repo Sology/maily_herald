@@ -31,4 +31,23 @@ describe MailyHerald::MailingSubscription do
       expect {@subscription.render_template}.to raise_error
     end
   end
+
+  describe "Without autosubscribe" do
+    before(:each) do
+      @mailing.update_attribute(:autosubscribe, false)
+      @entity = FactoryGirl.create :user
+      @subscription = @mailing.subscription_for @entity
+    end
+
+    after(:each) do
+      @mailing.update_attribute(:autosubscribe, true)
+    end
+
+    it "should initialize token" do
+      @mailing.autosubscribe.should be_false
+      @subscription.should_not be_active
+      @subscription.activate!
+      @subscription.should be_active
+    end
+  end
 end

@@ -85,6 +85,9 @@ describe MailyHerald::Sequence do
       subscription.pending_mailings.length.should eq(@sequence.mailings.length)
       subscription.next_mailing.absolute_delay.should_not eq(0)
       subscription.next_processing_time.should eq(@entity.created_at + @sequence.mailings.first.absolute_delay)
+      subscription.should be_active
+      subscription.should be_processable
+      subscription.should_not be_a_new_record
 
       Timecop.freeze @entity.created_at
 

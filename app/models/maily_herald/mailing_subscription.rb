@@ -48,7 +48,7 @@ module MailyHerald
       self.mailing.enabled? && (self.mailing.override_subscription? || active?)
     end
 
-    def conditions_met?
+    def conditions_met? mailing = nil
       evaluator = Utils::MarkupEvaluator.new(self.mailing.context.drop_for(self.entity, self))
       evaluator.evaluate_conditions(self.mailing.conditions)
     end

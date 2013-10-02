@@ -11,10 +11,10 @@ module MailyHerald
     serialize   :data,          Hash
     serialize   :settings,      Hash
 
-    before_validation :generate_token
-
-    def generate_token
-      self.token = MailyHerald::Utils.random_hex(20) if new_record?
+    after_initialize do
+      if self.new_record?
+        self.token = MailyHerald::Utils.random_hex(20)
+      end
     end
 
     def active?

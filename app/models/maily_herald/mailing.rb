@@ -88,6 +88,26 @@ module MailyHerald
       self.conditions && !self.conditions.empty?
     end
 
+    def deliver_to entity
+      subscription = subscription_for entity
+      raise StandardError.new("Subscription not processable") unless subscription.processable?
+      unless subscription.conditions_met?(self)
+        Log.create_for self, entity, :skipped
+        return
+      end
+
+      if self.mailer_name == 'generic'
+        # TODO make it atomic
+        mail = Mailer.generic(self, entity, subscription)
+        mail.deliver
+        Log.create_for self, entity, :delivered, {:content => mail.to_s}
+      else
+        raise StandardError.new("Mailer not recognized")
+      end
+    rescue StandardError => e
+      Log.create_for self, entity, :error, {:msg => e.to_s}
+    end
+
     private
 
     def template_syntax

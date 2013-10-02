@@ -59,7 +59,7 @@ describe MailyHerald::TokensController do
     end
   end
 
-  describe "Custom action" do
+  pending "Custom action" do
     before(:each) do
       @mailing.token_action = :custom
       @mailing.should be_valid

@@ -19,6 +19,14 @@ module MailyHerald
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
     end
 
+    after_initialize do
+      if self.new_record?
+        self.autosubscribe = true
+        self.override_subscription = false
+        self.token_action = :unsubscribe
+      end
+    end
+
     def subscription_group= g
       g = MailyHerald::SubscriptionGroup.find_by_name(g.to_s) if g.is_a?(String) || g.is_a?(Symbol)
       super(g)
@@ -43,19 +51,6 @@ module MailyHerald
 
     def context
       @context ||= MailyHerald.context context_name
-    end
-
-    def subscription_for entity
-      sequence_subscription = self.subscriptions.for_entity(entity).first
-      unless sequence_subscription 
-        sequence_subscription = self.subscriptions.build
-        sequence_subscription.entity = entity
-        if self.autosubscribe && context.scope.include?(entity)
-          sequence_subscription.active = true
-          sequence_subscription.save!
-        end
-      end
-      sequence_subscription
     end
 
     def destination_for entity

@@ -24,26 +24,6 @@ module MailyHerald
       self.sequence.subscription_for entity
     end
 
-    def deliver_to entity
-      subscription = subscription_for entity
-      return unless subscription.processable?
-      unless subscription.conditions_met?(self)
-        Log.create_for self, entity, :skipped
-        return
-      end
-
-      if self.mailer_name == 'generic'
-        # TODO make it atomic
-        mail = Mailer.generic(self, entity, subscription)
-        mail.deliver
-        Log.create_for self, entity, :delivered, {:content => mail.to_s}
-      else
-        # TODO
-      end
-    rescue StandardError => e
-      Log.create_for self, entity, :error, {:msg => e.to_s}
-    end
-
     def processed_to? entity
       self.sequence.processed_mailings_for(entity).include?(self)
     end
