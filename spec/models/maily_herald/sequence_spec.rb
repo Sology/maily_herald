@@ -5,6 +5,8 @@ describe MailyHerald::Sequence do
     @sequence = MailyHerald.sequence(:newsletters)
     @sequence.should be_a MailyHerald::Sequence
     @sequence.should_not be_a_new_record
+    @sequence.autosubscribe.should be_true
+    @sequence.start_var.should_not be_empty
   end
 
   after(:all) do
@@ -35,6 +37,17 @@ describe MailyHerald::Sequence do
       subscription = @sequence.subscription_for @entity
       subscription.should be_valid
       subscription.should_not be_a_new_record
+      subscription.should be_a(MailyHerald::SequenceSubscription)
+      subscription.sequence.should eq(@sequence)
+    end
+
+    it "should find or initialize sequence subscription via mailing" do
+      subscription = @sequence.mailings.first.subscription_for @entity
+      subscription.should be_valid
+      subscription.should_not be_a_new_record
+      subscription.should be_a(MailyHerald::SequenceSubscription)
+      subscription.should eq(@sequence.subscription_for(@entity))
+      subscription.sequence.should eq(@sequence)
     end
   end
 
@@ -50,6 +63,7 @@ describe MailyHerald::Sequence do
     it "should parse start_var" do
       @entity.should be_a(User)
       subscription = @sequence.subscription_for @entity
+      subscription.logs.should be_empty
       subscription.next_processing_time.should be_a(Time)
     end
 
@@ -85,6 +99,7 @@ describe MailyHerald::Sequence do
       subscription.pending_mailings.length.should eq(@sequence.mailings.length)
       subscription.next_mailing.absolute_delay.should_not eq(0)
       subscription.next_processing_time.should eq(@entity.created_at + @sequence.mailings.first.absolute_delay)
+      subscription.should_not be_a_new_record
       subscription.should be_active
       subscription.should be_processable
       subscription.should_not be_a_new_record
@@ -253,6 +268,7 @@ describe MailyHerald::Sequence do
       @sequence.mailings[1].update_attribute(:template, "foo {{error =! here bar")
 
       subscription.pending_mailings.first.should eq(@sequence.mailings.first)
+      subscription.should be_processable
       Timecop.freeze @entity.created_at + subscription.pending_mailings.first.absolute_delay
       @sequence.run
       MailyHerald::Log.count.should eq(1)
@@ -321,21 +337,23 @@ describe MailyHerald::Sequence do
     end
   end
 
-  describe "Autosubscribe" do
+  describe "Without autosubscribe" do
     before(:each) do
-      @sequence.autosubscribe = false
+      @sequence.update_attribute(:autosubscribe, false)
       @sequence.should be_valid
       @sequence.save.should be_true
       @entity = FactoryGirl.create :user
     end
 
-    it "should not create subscription without autosubscribe" do
+    after(:each) do
+      @sequence.update_attribute(:autosubscribe, true)
+    end
+
+    it "should create inactive subscription" do
       subscription = @sequence.subscription_for @entity
 
-      subscription.should be_new_record
-
       MailyHerald::MailingSubscription.count.should eq(0)
-      MailyHerald::SequenceSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
       MailyHerald::Log.count.should eq(0)
 
       Timecop.freeze @entity.created_at
@@ -343,11 +361,8 @@ describe MailyHerald::Sequence do
       @sequence.run
 
       MailyHerald::MailingSubscription.count.should eq(0)
-      MailyHerald::SequenceSubscription.count.should eq(0)
+      MailyHerald::SequenceSubscription.count.should eq(1)
       MailyHerald::Log.count.should eq(0)
-
-      @sequence.autosubscribe = true
-      @sequence.save
     end
   end
 

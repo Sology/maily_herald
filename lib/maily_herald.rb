@@ -70,7 +70,7 @@ module MailyHerald
   end
 
   def self.dispatch name
-    Mailing.find_by_name(name) if Mailing.table_exists?
+    Dispatch.find_by_name(name) if Dispatch.table_exists?
   end
 
   def self.one_time_mailing name

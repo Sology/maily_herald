@@ -198,20 +198,20 @@ describe MailyHerald::PeriodicalMailing do
         @mailing.update_attribute(:autosubscribe, true)
       end
 
-      it "should not be created without autosubscribe" do
+      it "should not be active without autosubscribe" do
         subscription = @mailing.subscription_for @entity
 
-        subscription.should be_new_record
+        #subscription.should be_new_record
         subscription.should_not be_active
 
-        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::MailingSubscription.count.should eq(1)
         MailyHerald::Log.count.should eq(0)
 
         Timecop.freeze @entity.created_at
 
         @mailing.run
 
-        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::MailingSubscription.count.should eq(1)
         MailyHerald::Log.count.should eq(0)
       end
     end
@@ -261,7 +261,7 @@ describe MailyHerald::PeriodicalMailing do
       it "should be inactive after create" do
         subscription = @mailing.subscription_for @entity
 
-        subscription.should be_new_record
+        #subscription.should be_new_record
         subscription.should_not be_active
 
         aggregate = subscription.aggregate
@@ -272,7 +272,7 @@ describe MailyHerald::PeriodicalMailing do
 
         @mailing.run
 
-        MailyHerald::MailingSubscription.count.should eq(0)
+        MailyHerald::MailingSubscription.count.should eq(1)
         MailyHerald::Log.count.should eq(0)
       end
 
@@ -280,10 +280,10 @@ describe MailyHerald::PeriodicalMailing do
         subscription = @mailing.subscription_for @entity
         aggregate = subscription.aggregate
 
-        subscription.should be_new_record
+        #subscription.should be_new_record
         subscription.should_not be_active
 
-        aggregate.should be_new_record
+        #aggregate.should be_new_record
         aggregate.should_not be_active
 
         subscription.activate!

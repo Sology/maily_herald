@@ -7,10 +7,8 @@ module MailyHerald
       unless subscription 
         subscription = self.subscriptions.build
         subscription.entity = entity
-        if self.autosubscribe && context.scope.include?(entity)
-          subscription.active = true
-          subscription.save!
-        end
+        subscription.active = self.autosubscribe && self.context.scope.include?(entity)
+        subscription.save!
       end
       subscription
     end

@@ -76,10 +76,8 @@ module MailyHerald
         unless aggregate
           aggregate = self.mailing.subscription_group.aggregated_subscriptions.build
           aggregate.entity = self.entity
-          if self.mailing.autosubscribe && self.mailing.context.scope.include?(self.entity)
-            aggregate.active = true
-            aggregate.save!
-          end
+          aggregate.active = true if self.mailing.autosubscribe && self.mailing.context.scope.include?(self.entity)
+          aggregate.save!
         end
         aggregate
       end
