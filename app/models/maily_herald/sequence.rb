@@ -70,16 +70,11 @@ module MailyHerald
     end
 
     def run
-      current_time = Time.now
       self.context.scope.each do |entity|
         subscription = subscription_for entity
         next unless subscription.processable?
-
         mailing = subscription.next_mailing
-
-        if mailing && subscription.processing_time_for(mailing) && subscription.processing_time_for(mailing) <= current_time
-          mailing.deliver_to entity
-        end
+        mailing.deliver_to entity
       end
     end
 

@@ -27,8 +27,14 @@ module MailyHerald
     end
 
     def self.run_all
-      PeriodicalMailing.all.each {|m| m.run}
-      Sequence.all.each {|m| m.run}
+      require 'redis'
+      redis = Redis.new
+      unless redis.get("maily_herald_running") == "true"
+        redis.set("maily_herald_running", true)
+        PeriodicalMailing.all.each {|m| m.run}
+        Sequence.all.each {|m| m.run}
+        redis.set("maily_herald_running", false)
+      end
     end
 
     def self.simulate period

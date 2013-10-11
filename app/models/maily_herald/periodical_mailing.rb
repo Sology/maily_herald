@@ -28,15 +28,21 @@ module MailyHerald
       @context ||= MailyHerald.context self.context_name
     end
 
-    def run
+    def deliver_to entity
       current_time = Time.now
-      self.context.scope.each do |entity|
-        subscription = subscription_for entity
-        next unless subscription.processable?
+      subscription = subscription_for entity
+      return unless subscription.processable?
 
+      subscription.with_lock do
         if subscription.next_processing_time && (subscription.next_processing_time <= current_time)
-          deliver_to entity
+          super entity
         end
+      end
+    end
+
+    def run
+      self.context.scope.each do |entity|
+        deliver_to entity
       end
     end
   end

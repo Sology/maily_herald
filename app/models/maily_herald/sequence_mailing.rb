@@ -27,5 +27,17 @@ module MailyHerald
     def processed_to? entity
       self.sequence.processed_mailings_for(entity).include?(self)
     end
+
+    def deliver_to entity
+      current_time = Time.now
+      subscription = subscription_for entity
+      return unless subscription.processable?
+
+      subscription.with_lock do
+        if subscription.next_mailing == self && subscription.processing_time_for(self) && subscription.processing_time_for(self) <= current_time
+          super entity
+        end
+      end
+    end
   end
 end

@@ -15,5 +15,12 @@ module MailyHerald
         deliver_to entity
       end
     end
+
+    def deliver_to entity
+      subscription = subscription_for entity
+      subscription.with_lock do
+        super entity
+      end
+    end
   end
 end

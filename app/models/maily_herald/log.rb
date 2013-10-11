@@ -32,5 +32,17 @@ module MailyHerald
     def status
       read_attribute(:status).to_sym
     end
+
+    def delivered?
+      self.status == :delivered
+    end
+
+    def skipped?
+      self.status == :skipped
+    end
+
+    def error?
+      self.status == :error
+    end
   end
 end
