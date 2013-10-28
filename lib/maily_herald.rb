@@ -34,6 +34,7 @@ module MailyHerald
   autoload :ModelExtensions,    'maily_herald/model_extensions'
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
+	autoload :Config,							'maily_herald/config'
 
   mattr_reader :default_from
 

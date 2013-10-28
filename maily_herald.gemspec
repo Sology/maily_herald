@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.test_files   = `git ls-files -- {spec,features}/**/`.split("\n")
 
   s.add_dependency "rails", "~> 3.2.8"
-  s.add_dependency "liquid", "~> 3.0.0"
+  s.add_dependency "liquid"
   s.add_dependency "sidekiq", "~> 2.13.0"
   s.add_dependency "timecop"
 	s.add_dependency "daemons"

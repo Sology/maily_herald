@@ -1,6 +1,6 @@
 require 'maily_herald'
 module MailyHerald
-	class Config
+	module Config
 		def self.time
 			2
 		end
