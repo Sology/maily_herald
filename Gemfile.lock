@@ -9,6 +9,7 @@ PATH
   specs:
     maily_herald (0.0.1)
       clockwork (~> 0.5.4)
+      daemons
       liquid (~> 2.6.0)
       rails (~> 3.2.8)
       sidekiq (~> 2.13.0)
@@ -48,8 +49,8 @@ GEM
     bourne (1.5.0)
       mocha (>= 0.13.2, < 0.15)
     builder (3.0.4)
-    celluloid (0.14.1)
-      timers (>= 1.0.0)
+    celluloid (0.15.2)
+      timers (~> 1.1.0)
     childprocess (0.3.9)
       ffi (~> 1.0, >= 1.0.11)
     clockwork (0.5.4)
@@ -57,6 +58,7 @@ GEM
       tzinfo (~> 0.3.35)
     coderay (1.0.9)
     connection_pool (1.1.0)
+    daemons (1.1.9)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
     erubis (2.7.0)
@@ -97,7 +99,7 @@ GEM
       treetop (~> 1.4.8)
     metaclass (0.0.1)
     method_source (0.8.1)
-    mime-types (1.23)
+    mime-types (1.25)
     mocha (0.14.0)
       metaclass (~> 0.0.1)
     multi_json (1.7.7)
@@ -179,10 +181,10 @@ GEM
     tilt (1.4.1)
     timecop (0.6.2.2)
     timers (1.1.0)
-    treetop (1.4.14)
+    treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.37)
+    tzinfo (0.3.38)
 
 PLATFORMS
   ruby
