@@ -35,6 +35,7 @@ module MailyHerald
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
 	autoload :Config,							'maily_herald/config'
+	autoload :Webui, 							'maily_herald/webui/app'
 
   mattr_reader :default_from
 

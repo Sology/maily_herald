@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'daemons'
+require 'maily_herald'
+
+Daemons.run_proc('MailyHerald') do
+	loop do
+		MailyHerald.run_all
+		sleep(MailyHerald::Config.time)
+	end
+end
