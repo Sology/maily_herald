@@ -8,6 +8,7 @@ PATH
   remote: .
   specs:
     maily_herald (0.0.1)
+      coffee-rails (~> 3.2.1)
       daemons
       haml
       liquid (~> 2.6.0.rc1)
@@ -55,11 +56,19 @@ GEM
     childprocess (0.3.9)
       ffi (~> 1.0, >= 1.0.11)
     coderay (1.0.9)
+    coffee-rails (3.2.2)
+      coffee-script (>= 2.2.0)
+      railties (~> 3.2.0)
+    coffee-script (2.2.0)
+      coffee-script-source
+      execjs
+    coffee-script-source (1.6.3)
     connection_pool (1.1.0)
     daemons (1.1.9)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
     erubis (2.7.0)
+    execjs (2.0.2)
     factory_girl (4.2.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.2.1)

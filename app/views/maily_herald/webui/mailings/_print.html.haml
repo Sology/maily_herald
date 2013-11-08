@@ -1,0 +1,75 @@
+%ul.nav.nav-list
+- if @mailing.class == MailyHerald::OneTimeMailing
+  %li.nav-header One-times
+  - if @one_time_mailings.any?
+    - @one_time_mailings.each do |mailing|
+      %li
+        - if @mailing != mailing
+          = link_to webui_mailing_path(mailing) do
+            = mailing.title
+            - unless mailing.enabled?
+              %span.label off
+        - else
+          %strong= mailing.title
+          - unless mailing.enabled?
+            %span.label off
+  - else
+  No mailings
+
+
+- if @mailing.class == MailyHerald::PeriodicalMailing
+  %li.nav-header Periodicals
+  - if @periodical_mailings.any?
+    - @periodical_mailings.each do |mailing|
+      %li
+        - if @mailing != mailing
+          = link_to webui_mailing_path(mailing) do
+            = mailing.title
+            %span.label.label-info= "every " + distance_of_time_in_words(mailing.period)
+            - unless mailing.enabled?
+              %span.label off
+        - else
+          %strong= mailing.title
+          %span.label.label-info= "every " + distance_of_time_in_words(mailing.period)
+          - unless mailing.enabled?
+            %span.label off
+  - else
+  No mailings
+
+
+- if @mailing.class == MailyHerald::SequenceMailing
+  %li.nav-header Sequences
+  - if @sequences.any?
+    - @sequences.scoped.each do |sequence|
+      %li
+        - if @sequence == sequence && !@mailing
+          %strong= sequence.title
+          - unless sequence.enabled?
+            %span.label off
+        - else
+          = link_to webui_sequence_path(sequence) do
+            = sequence.title
+            - unless sequence.enabled?
+              %span.label off
+
+        - unless sequence.mailings.empty?
+          %ul.nav.nav-list
+            - sequence.mailings.each do |mailing|
+              %li
+                - if @mailing != mailing
+                  = link_to webui_mailing_path(mailing) do
+                    = mailing.title
+                    %span.label.label-info= "after " + distance_of_time_in_words(mailing.absolute_delay)
+                    - unless mailing.enabled?
+                      %span.label off
+                - else
+                  %strong= mailing.title
+                  %span.label.label-info= "after " + distance_of_time_in_words(mailing.absolute_delay)
+                  - unless mailing.enabled?
+                    %span.label off
+  - else
+  No sequences
+
+
+.span9
+  = yield

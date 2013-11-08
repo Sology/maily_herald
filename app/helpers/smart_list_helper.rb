@@ -1,33 +1,9 @@
-module MailyHeraldHelper
-  def maily_herald_context_options_for_select selected = nil, options = {}
-    MailyHerald.contexts.keys.collect {|c| [c, c] }
-  end
-
-  def maily_herald_mailer_options_for_select selected = nil, options = {}
-    [
-      ['generic', 'generic']
-    ]
-  end
-
-  def maily_herald_context_attributes_list name
-    MailyHerald.context(name).each
-  end
-
-  def maily_herald_token_action_options_for_select selected = nil, options = {}
-    [
-      ['Unsubscribe', 'unsubscribe'],
-      ['Custom', 'custom'],
-    ]
-  end
-
-  def maily_herald_subscription_group_options_for_select selected = nil, options = {}
-    [["none", ""]] + MailyHerald::SubscriptionGroup.all.collect {|sg| [sg.title, sg.name] }
-  end
+module SmartListHelper
   module ControllerExtensions
     def smart_list_create name, collection, options = {}
       name = name.to_sym
 
-      list = MailyHerald::SmartList.new(name, collection, options)
+      list = SmartList.new(name, collection, options)
       list.setup(params, cookies)
 
       @smart_lists ||= {}
@@ -46,7 +22,7 @@ module MailyHeraldHelper
     UNSAFE_PARAMS = {:authenticity_token => nil, :utf8 => nil}
 
     class_attribute :smart_list_helpers
-    self.smart_list_helpers = (MailyHeraldHelper.instance_method_names - ['smart_list_for'])
+    self.smart_list_helpers = (SmartListHelper.instance_method_names - ['smart_list_for'])
 
     def initialize(smart_list_name, smart_list, template, options, proc)
       @smart_list_name, @smart_list, @template, @options, @proc = smart_list_name, smart_list, template, options, proc
@@ -64,9 +40,9 @@ module MailyHeraldHelper
 
     def pagination_per_page_links options = {}
       @template.content_tag(:div, :class => "pagination_per_page #{'disabled' if empty?}") do
-        if @smart_list.count > MailyHerald::SmartList::PAGE_SIZES.first
+        if @smart_list.count > SmartList::PAGE_SIZES.first
           @template.concat(@template.t('views.pagination.per_page'))
-          per_page_sizes = MailyHerald::SmartList::PAGE_SIZES.clone
+          per_page_sizes = SmartList::PAGE_SIZES.clone
           per_page_sizes.push(0) if @smart_list.unlimited_per_page?
           per_page_sizes.each do |p|
             name = p == 0 ? @template.t('views.pagination.unlimited') : p
@@ -170,7 +146,7 @@ module MailyHeraldHelper
     options = args.extract_options!
     bare = options.delete(:bare)
 
-    builder = MailyHeraldHelper::SmartListBuilder.new(name, @smart_lists[name], self, options, block)
+    builder = SmartListBuilder.new(name, @smart_lists[name], self, options, block)
 
     output =""
 
@@ -259,7 +235,7 @@ module MailyHeraldHelper
     name = name.to_sym
     smart_list = @smart_lists[name]
 
-    builder = MailyHeraldHelper::SmartListBuilder.new(name, smart_list, self, {}, nil)
+    builder = SmartListBuilder.new(name, smart_list, self, {}, nil)
 
     render(:partial => 'smart_list/update_list', :locals => {
       :name => smart_list.name, 
