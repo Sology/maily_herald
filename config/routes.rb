@@ -24,7 +24,7 @@ MailyHerald::Engine.routes.draw do
 				get "context_attributes/(:context_name)", :to => :context_attributes, :as => :context_attributes
 			end
 		end
-		resources "sequences_mailings", :only => [:index], :controller => "mailings", :mailing_type => :sequence
+		resources "sequences_mailings", :only => [:index, :new], :controller => "mailings", :mailing_type => :sequence
 		resources "one_time_mailings", :only => [:index, :new, :create], :controller => "mailings", :mailing_type => :one_time
 		resources "periodical_mailings", :only => [:index, :new, :create], :controller => "mailings", :mailing_type => :periodical
 		resources "subscription_groups" do
@@ -32,7 +32,7 @@ MailyHerald::Engine.routes.draw do
 				get "subscription/:subscription_id/toggle", :to => :toggle_subscription, :as => :toggle_subscription
 			end
 		end
-		resources "dashboard", :only => [:show] do
+		resources "dashboard", :only => [:index, :show] do
 			collection do 
 				get "time_travel"
 				get "forget"

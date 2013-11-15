@@ -1,0 +1,11 @@
+%td= object.id
+%td= object.to_s
+%td= @sequence.destination_for object
+%td= @sequence.subscription_for(object).logs.length
+%td
+  - if @sequence.subscription_for(object).active?
+    %span.glyphicon.glyphicon-ok
+  - else
+    %span.glyphicon.glyphicon-remove
+%td.actions
+  = smart_list_item_actions sequence_entity_list_actions(object)

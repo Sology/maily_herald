@@ -6,20 +6,24 @@ module MailyHerald
 		before_filter :determine_mailing_type, :only => [:index, :new, :create]
 
 		def index
-			@mailing = @klass.new
-			#@logs = smart_list_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "/webui/mailings/log_list")
-			@last_deliveries = {
-				:hour => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.hour).count,
-				:day => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.day).count,
-				:week => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.week).count,
-			}
+			if @klass.nil?
+				redirect_to webui_dashboard_index_path
+			else
+				@mailing = @klass.new
+				#@logs = smart_list_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "/webui/mailings/log_list")
+				@last_deliveries = {
+					:hour => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.hour).count,
+					:day => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.day).count,
+					:week => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.week).count,
+				}
+			end
 		end
 
 		def show
 			entities = @context.scope
-			entities = entities.filter_by(params[:filter]) if params[:filter]
+		  entities = entities.filter_by(params[:filter]) if params[:filter]
 
-			@entities = smart_list_create(:entities, entities, :array => true, :partial => "/webui/mailings/entity_list")
+			@entities = smart_list_create(:entities, entities, :array => true, :partial => "maily_herald/webui/mailings/entity_list")
 		end
 
 		def new
@@ -55,8 +59,10 @@ module MailyHerald
 			@mailing.destroy
 			if @sequence
 				redirect_to webui_sequence_path(@sequence)
-			else
-				redirect_to webui_mailings_path
+			elsif	@mailing.periodical?
+				redirect_to webui_periodical_mailings_path
+			elsif @mailing.one_time?
+				redirect_to webui_one_time_mailings_path
 			end
 		end
 
@@ -144,6 +150,8 @@ module MailyHerald
 				@klass = MailyHerald::PeriodicalMailing
 			when :sequence
 				@klass = MailyHerald::SequenceMailing
+			else
+				@klass = nil
 			end
 		end
 	end

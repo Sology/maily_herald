@@ -1,0 +1,4 @@
+%td= object.title
+%td= distance_of_time_in_words object.absolute_delay 
+%td.actions
+  = smart_list_item_actions sequence_mailing_list_actions(object)

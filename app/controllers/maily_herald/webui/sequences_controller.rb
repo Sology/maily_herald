@@ -3,11 +3,12 @@ module MailyHerald
 		before_filter :find_sequence, :except => [:index, :new, :create]
 
 		def show
+			@mailing = MailyHerald::SequenceMailing.new
 			entities = @context.scope
 			entities = entities.filter_by(params[:filter]) if params[:filter]
 
-			@sequence_entities = smart_list_create(:sequence_entities, entities, :array => true, :partial => "/webui/sequences/entity_list")
-			@sequence_mailings = smart_list_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "/webui/sequences/mailing_list")
+			@sequence_entities = smart_list_create(:sequence_entities, entities, :array => true, :partial => "maily_herald/webui/sequences/entity_list")
+			@sequence_mailings = smart_list_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "maily_herald/webui/sequences/mailing_list")
 		end
 
 		def edit

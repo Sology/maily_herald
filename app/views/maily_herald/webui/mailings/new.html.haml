@@ -1,4 +1,14 @@
-%ul.nav.nav-pills.nav-stacked
-  %li= link_to "New one time mailing", new_webui_one_time_mailing_path
+%ul.breadcrumb
+  - if @sequence
+    Sequence
+    %em
+      /= link_to @mailing.sequence.title, admin_newsletters_sequence_path(@mailing.sequence)
+    %span.divider
+      &raquo;
+  %li 
+    New mailing
 
-= "COS"
+.row
+  .col-xs-1
+  .col-xs-10
+    = render :partial => 'form'

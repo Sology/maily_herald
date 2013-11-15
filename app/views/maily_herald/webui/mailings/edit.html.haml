@@ -1,0 +1,24 @@
+%ul.breadcrumb
+  - if @sequence
+    Sequence
+    %em
+      = link_to @mailing.sequence.title, webui_sequence_path(@mailing.sequence)
+    %span.divider
+      &raquo;
+  %li 
+    = link_to webui_mailing_path do
+      Mailing
+      %em
+        = @mailing.title
+    %span.divider
+      &raquo;
+  %li 
+    Edit
+  %li.pull-right
+    = link_to webui_mailing_path do
+      %i.icon.icon-arrow-left
+      Back
+
+%h4= @mailing.title
+
+= render :partial => 'form'

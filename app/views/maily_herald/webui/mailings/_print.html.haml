@@ -1,6 +1,7 @@
 %ul.nav.nav-list
 - if @mailing.class == MailyHerald::OneTimeMailing
-  %li.nav-header One-times
+  .row
+    %h4 One-time mailings
   - if @one_time_mailings.any?
     - @one_time_mailings.each do |mailing|
       %li
@@ -14,11 +15,12 @@
           - unless mailing.enabled?
             %span.label off
   - else
-  No mailings
+    No mailings
 
 
 - if @mailing.class == MailyHerald::PeriodicalMailing
-  %li.nav-header Periodicals
+  .row
+    %h4 Periodicals
   - if @periodical_mailings.any?
     - @periodical_mailings.each do |mailing|
       %li
@@ -34,11 +36,12 @@
           - unless mailing.enabled?
             %span.label off
   - else
-  No mailings
+    No mailings
 
 
 - if @mailing.class == MailyHerald::SequenceMailing
-  %li.nav-header Sequences
+  .row
+    %h4 Sequences
   - if @sequences.any?
     - @sequences.scoped.each do |sequence|
       %li
@@ -68,8 +71,6 @@
                   - unless mailing.enabled?
                     %span.label off
   - else
-  No sequences
-
-
-.span9
-  = yield
+    No sequences
+    
+= yield

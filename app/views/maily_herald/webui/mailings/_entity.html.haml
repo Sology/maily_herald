@@ -1,0 +1,17 @@
+%td= object.id
+%td= object.to_s
+%td= @mailing.subscription_for(object).destination
+%td= @sequence ? @sequence.subscription_for(object).logs_for(@mailing).length : @mailing.subscription_for(object).logs.length
+- unless @sequence
+  %td
+    - if @mailing.subscription_for(object).active?
+      %span.glyphicon.glyphicon-ok
+    - else
+      %span.glyphicon.glyphicon-remove
+%td
+  - if @sequence ? @mailing.subscription_for(object).conditions_met?(@mailing) : @mailing.subscription_for(object)
+    %span.glyphicon.glyphicon-ok
+  - else
+    %span.glyphicon.glyphicon-remove
+%td.actions
+  = smart_list_item_actions mailing_entity_list_actions(@mailing, object)

@@ -3,7 +3,7 @@ module SmartListHelper
     def smart_list_create name, collection, options = {}
       name = name.to_sym
 
-      list = SmartList.new(name, collection, options)
+      list = MailyHerald::SmartList.new(name, collection, options)
       list.setup(params, cookies)
 
       @smart_lists ||= {}
@@ -40,9 +40,9 @@ module SmartListHelper
 
     def pagination_per_page_links options = {}
       @template.content_tag(:div, :class => "pagination_per_page #{'disabled' if empty?}") do
-        if @smart_list.count > SmartList::PAGE_SIZES.first
+        if @smart_list.count > MailyHerald::SmartList::PAGE_SIZES.first
           @template.concat(@template.t('views.pagination.per_page'))
-          per_page_sizes = SmartList::PAGE_SIZES.clone
+          per_page_sizes = MailyHerald::SmartList::PAGE_SIZES.clone
           per_page_sizes.push(0) if @smart_list.unlimited_per_page?
           per_page_sizes.each do |p|
             name = p == 0 ? @template.t('views.pagination.unlimited') : p
@@ -72,9 +72,9 @@ module SmartListHelper
       @template.link_to(sanitize_params(@template.params.merge(sort_params)), :class => "sortable", :data => {:attr => attribute}, :remote => true) do
         @template.concat(title)
         if @smart_list.sort_attr == attribute && (!@smart_list.sort_extra || @smart_list.sort_extra == extra.to_s)
-          @template.concat(@template.content_tag(:span, "", :class => (@smart_list.sort_order == "asc" ? "icon-chevron-up" : "icon-chevron-down"))) 
+          @template.concat(@template.content_tag(:span, "", :class => (@smart_list.sort_order == "asc" ? "glyphicon glyphicon-chevron-up" : "glyphicon glyphicon-chevron-down"))) 
         else
-          @template.concat(@template.content_tag(:span, "", :class => "icon-resize-vertical"))
+          @template.concat(@template.content_tag(:span, "", :class => "glyphicon glyphicon-resize-vertical"))
         end
       end
     end
@@ -112,7 +112,7 @@ module SmartListHelper
             @template.concat(options.delete(:no_items_text))
           end)
           @template.concat(@template.link_to(options.delete(:link), :remote => true, :class => "btn pull-right #{'disabled' if max_count?}") do
-            @template.concat(@template.content_tag(:i, '', :class => "icon-plus"))
+            @template.concat(@template.content_tag(:i, '', :class => "glyphicon glyphicon-plus"))
             @template.concat(" ")
             @template.concat(options.delete(:text))
           end)
@@ -176,7 +176,7 @@ module SmartListHelper
 
         if action.has_key?(:if)
           unless action[:if]
-            concat(content_tag(:i, '', :class => "icon-remove-circle"))
+            concat(content_tag(:i, '', :class => "glyphicon glyphicon-remove-circle"))
             next
           end
         end
@@ -191,11 +191,11 @@ module SmartListHelper
           }.merge(action)
 
           concat(link_to(url, html_options) do
-            concat(content_tag(:i, '', :class => "icon-pencil"))
+            concat(content_tag(:i, '', :class => "glyphicon glyphicon-pencil"))
           end)
         when :destroy
           url = action.delete(:url)
-          icon = action.delete(:icon) || "icon-trash"
+          icon = action.delete(:icon) || "glyphicon glyphicon-trash"
           html_options = {
             :remote => true, 
             :class => "destroy",
@@ -234,9 +234,7 @@ module SmartListHelper
   def smart_list_update name
     name = name.to_sym
     smart_list = @smart_lists[name]
-
     builder = SmartListBuilder.new(name, smart_list, self, {}, nil)
-
     render(:partial => 'smart_list/update_list', :locals => {
       :name => smart_list.name, 
       :part => smart_list.partial, 

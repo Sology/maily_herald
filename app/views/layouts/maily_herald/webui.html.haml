@@ -1,11 +1,12 @@
 .hero-unit
   %h3= 'Admin Panel'
+.row
+  .col-md-6
+    %ul.nav.nav-pills
+      %li{:class => ((@logs.nil? && @log.nil?) ? "" : "active")}= link_to "Dashboard", webui_dashboard_index_path
+      %li= link_to "Subscription groups", webui_subscription_groups_path
+      %li{:class => (@mailing.class == MailyHerald::SequenceMailing ? "active" : "")}= link_to "Sequences", webui_sequences_mailings_path
+      %li{:class => (@mailing.class == MailyHerald::PeriodicalMailing ? "active" : "")}= link_to "Periodicals", webui_periodical_mailings_path
+      %li{:class => (@mailing.class == MailyHerald::OneTimeMailing ? "active" : "")}= link_to "One-times", webui_one_time_mailings_path
 
-  %ul.nav.nav-pills
-    %li{:class => (params[:controller] == 'maily_herald/webui/mailings' && params[:action] == 'blah' ? "active" : "")}= link_to "Dashboard", webui_mailings_path
-    %li= link_to "Subscription groups", webui_subscription_groups_path
-    %li{:class => (@mailing.class == MailyHerald::SequenceMailing ? "active" : "")}= link_to "Sequences", webui_sequences_mailings_path
-    %li{:class => (@mailing.class == MailyHerald::PeriodicalMailing ? "active" : "")}= link_to "Periodicals", webui_periodical_mailings_path
-    %li{:class => (@mailing.class == MailyHerald::OneTimeMailing ? "active" : "")}= link_to "One-times", webui_one_time_mailings_path
-
-= render :template => 'layouts/maily_herald/application'
+= yield

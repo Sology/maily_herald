@@ -1,0 +1,22 @@
+- unless smart_list.collection.empty?
+  %table.table.table-striped
+    %thead
+      %tr
+        %th Id
+        %th Name
+        %th Destination
+        %th.span2.span1
+          %span.glyphicon.glyphicon-download-alt{:title => "Deliveries count"}
+        %th.span2.span1 
+          %span.glyphicon.glyphicon-book{:title => "Subscription active?"}
+        %th.span1
+        
+    %tbody
+      - smart_list.collection.each do |entity|
+        %tr.editable{:data => {"id" => entity.id}}
+          = render :partial => "maily_herald/webui/sequences/entity", :locals => {:object => entity}
+
+  = smart_list.paginate 
+  = smart_list.pagination_per_page_links
+- else
+  %p.alert No entities in the scope 

@@ -1,10 +1,10 @@
 module MailyHerald
   class WebuiController < MailyHerald::ApplicationController
-		include MailyHeraldHelper::ControllerExtensions
+		include SmartListHelper::ControllerExtensions
 
 		helper :maily_herald
 
-		layout 'maily_herald/webui'
+		layout 'maily_herald/application'
 
 		before_filter :prepare_data
 

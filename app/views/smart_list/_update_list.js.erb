@@ -1,0 +1,2 @@
+var smart_list = $('#<%= name %>').smart_list();
+smart_list.update_list("<%= escape_javascript(render(:partial => part, :locals => {:smart_list => smart_list})) %>", <%= smart_list_data.to_json.html_safe %>);
