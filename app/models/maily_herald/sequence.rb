@@ -74,7 +74,7 @@ module MailyHerald
         subscription = subscription_for entity
         next unless subscription.processable?
         mailing = subscription.next_mailing
-        mailing.deliver_to entity
+        mailing.deliver_to entity if mailing
       end
     end
 
