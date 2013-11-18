@@ -1,0 +1,79 @@
+%ul.breadcrumb
+  %li
+    Sequence
+    %em
+      = link_to @sequence.title, webui_sequence_path(:id => @sequence)
+    %span.divider
+      &raquo;
+  %li 
+    Entity
+    %em
+      = @context.model
+      = "##{@entity.id}: #{@entity}"
+  %li.pull-right
+    = link_to toggle_subscription_webui_sequence_path do
+      %i.icon.icon-edit
+      = @subscription.active? ? "Unsubscribe" : "Subscribe"
+    %span.divider
+    = link_to webui_sequence_path do
+      %i.icon.icon-arrow-left
+      Back
+
+- unless @subscription.processable?
+  .alert
+    This sequence 
+    %strong
+      will not be sent
+    to this entity. See the status.
+
+%h4 Status
+
+%dl.dl-horizontal
+  %dt Sequence enabled
+  %dd
+    - if @sequence.enabled?
+      %i.icon.icon-ok
+    - else
+      %i.icon.icon-remove
+  %dt Subscription active
+  %dd
+    - if @subscription.active?
+      %i.icon.icon-ok
+    - else
+      %i.icon.icon-remove
+  %dt Last processing:
+  - if @subscription.last_processing_time
+    %dd= @subscription.last_processing_time
+  - else
+    %dd Never
+  %dt Scheduled processing
+  %dd 
+    = @subscription.next_processing_time || "None"
+    - if @subscription.next_processing_time
+      = "(#{"in " if @subscription.next_processing_time > Time.now}#{distance_of_time_in_words(@subscription.next_processing_time, Time.now)}#{" ago" if @subscription.next_processing_time < Time.now})"
+
+.sequence-mailings
+  %h6 Processed mailings
+
+  = smart_list_for(:processed_mailings) do |smart_list|
+    = smart_list.render_list
+
+  %h6 Pending mailings
+
+  = smart_list_for(:pending_mailings) do |smart_list|
+    = smart_list.render_list
+
+  %h4 Preview
+  .previews
+    - @sequence.mailings.each do |m|
+      .preview{:id => "mailing-#{m.id}", :data => {:id => m.id}}
+        %h6
+          Mailing
+          %strong= m.title
+        %pre= @subscription.render_template m
+  %br
+
+%h4 Logs
+
+= smart_list_for(:logs) do |smart_list|
+  = smart_list.render_list

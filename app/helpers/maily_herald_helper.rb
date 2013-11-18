@@ -62,7 +62,64 @@ module MailyHeraldHelper
 		})
 		actions
 	end
-		
+	
+	def time_tag(time)
+		return unless time
+		text = distance_of_time_in_words(Time.now, time)
+		content_tag('abbr', text, :title => format_time(time))
+	end
+
+	def time_tag_ago(time)
+		return unless time
+		text = distance_of_time_in_words(Time.now, time)
+	  content_tag('abbr', t('time_distance.ago', :text => text), :title => time)
+	 end
+	
+	def time_tag_to(time)
+		return unless time
+		text = distance_of_time_in_words(Time.now, time)
+		content_tag('abbr', t('time_distance.in', :text => text), :title => time)
+	end
+
+	def delivery_log_list_actions delivery_log
+		mailing = delivery_log.mailing
+		entity = delivery_log.entity
+
+		actions = []
+		actions.push({
+			:name => :custom,
+			:url => webui_dashboard_path(delivery_log),
+			:icon => "icon-search",
+			:title => "Show log details"
+		})
+		actions.push({
+			:name => :custom,
+			:url => mailing.sequence? ? subscription_webui_sequence_path(:id => mailing.sequence, :entity_id => entity) : subscription_webui_mailing_path(:id => mailing, :entity_id => entity),
+			:icon => "icon-hand-right",
+			:title => "Subscription"
+		}) unless @subscription
+		actions
+	end
+
+	def subscription_group_subscription_actions subscription
+		[{
+			:name => :custom,
+			:url => toggle_subscription_webui_subscription_group_path(:subscription_id => subscription),
+			:method => :get,
+			:confirm => "Are you sure you want to change this subscription?",
+			:icon => "icon-refresh",
+			:title => "Toggle subscription"
+		}]
+	end
+
+	def time_tag_relative(time)
+		if time > Time.now
+			 time_tag_to time
+		else
+			 time_tag_ago time
+		end
+	end
+
 	def display_context_attributes attributes
 		content_tag(:ul) do
 			attributes.each do |k, v|

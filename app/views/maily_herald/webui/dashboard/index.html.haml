@@ -11,8 +11,8 @@
 
 Deliveries in last:
 
-.row-fluid
-  .span12
+.row
+  .col-xs-12
     %dl.dl-horizontal
       %dt hour:
       %dd= @last_deliveries[:hour]
@@ -22,3 +22,5 @@ Deliveries in last:
       %dd= @last_deliveries[:week]
 
 %h4 Logs
+= smart_list_for(:logs) do |smart_list|
+  = smart_list.render_list

@@ -1,7 +1,7 @@
 .row
   .col-xs-1
     %ul.nav.nav-pills.nav-stacked
-      %li= link_to "New mailing"
+      %li= link_to "New mailing", new_webui_sequence_mailing_path(:sequence_id => @sequence) 
   .col-xs-10
     %ul.breadcrumb
       %li 
@@ -99,6 +99,5 @@
           %span.glyphicon.glyphicon-plus
           Add mailing
     %h4 Mailings
-    %span.glyphicon.glyphicon-star
     = smart_list_for(:sequence_mailings) do |smart_list|
       = smart_list.render_list

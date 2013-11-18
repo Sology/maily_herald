@@ -1,0 +1,33 @@
+%ul.breadcrumb
+  %li 
+    Subscription group
+    %em
+      = @subscription_group.title
+  %li.pull-right
+    = link_to edit_webui_subscription_group_path do
+      %i.icon.icon-pencil
+      Edit
+    %span.divider
+    = link_to webui_subscription_group_path, :method => :delete, :confirm => 'Are you sure?' do
+      %i.icon.icon-trash
+      Delete
+
+%h4= @subscription_group.title
+
+.row-fluid
+  .span12
+    %dl.dl-horizontal
+      %dt Name:
+      %dd= @subscription_group.name
+
+%h4 Entities
+= form_tag({}, :remote => true, :method => :get, :class => 'smart_list_controls form-inline pull-right', :data => {:smart_list => "subscriptions"}) do
+  .filter.input-append
+    = text_field_tag :filter, '', :class => "search", :placeholder => "Type filter here ", :autocomplete => "off"
+    %button.btn.disabled{:type => "submit"}
+      %i.icon.icon-search
+%p 
+  List of all subscriptions in this group
+
+= smart_list_for(:subscriptions) do |smart_list|
+  = smart_list.render_list

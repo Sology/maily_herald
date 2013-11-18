@@ -1,1 +1,15 @@
-= "COS"
+.row
+  .col-xs-1
+    = link_to "NEW", new_webui_subscription_group_path
+  .col-xs-10
+    %ul.nav.nav-list
+      %li.nav-header Subscription groups
+      - if @subscription_groups.any?
+        - @subscription_groups.each do |group|
+          %li
+            - if @subscription_group != group
+              = link_to group.title, webui_subscription_group_path(group)
+            - else
+              %strong= group.title
+      - else
+        No subscription groups

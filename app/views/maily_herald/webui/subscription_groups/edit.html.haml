@@ -1,0 +1,18 @@
+%ul.breadcrumb
+  %li 
+    = link_to webui_sequence_path do
+      Subscription Group
+      %em
+        = @subscription_group.title
+    %span.divider
+      &raquo;
+  %li 
+    Edit
+  %li.pull-right
+    = link_to webui_sequence_path do
+      %i.icon.icon-arrow-left
+      Back
+
+%h4= @subscription_group.title
+
+= render :partial => 'form'
