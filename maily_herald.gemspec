@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
 	s.add_dependency "sinatra"
 	s.add_dependency "haml"
 	s.add_dependency "coffee-rails", "~>3.2.1"
+	s.add_dependency "smart_list", "~>0.9"
   # s.add_dependency "jquery-rails"
 
   s.add_development_dependency "sqlite3"

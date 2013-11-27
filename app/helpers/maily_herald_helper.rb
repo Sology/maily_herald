@@ -1,5 +1,4 @@
 require 'maily_herald/webui/labelled_form_builder'
-require 'smart_list_helper'
 
 module MailyHeraldHelper
    def sequence_mailing_list_actions mailing
