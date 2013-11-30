@@ -6,7 +6,7 @@ module MailyHerald
 			subs = @subscription_group.aggregated_subscriptions
 			subs = subs.select{|s| s.entity.to_s.downcase.include?(params[:filter].downcase)} if params[:filter]
 
-			@subscriptions = smart_list_create(:subscriptions, subs, :array => true, :partial => "maily_herald/webui/subscription_groups/subscription_list")
+			@subscriptions = smart_listing_create(:subscriptions, subs, :array => true, :partial => "maily_herald/webui/subscription_groups/subscription_list")
 		end
 
 		def new

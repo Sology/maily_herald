@@ -7,8 +7,8 @@ module MailyHerald
 			entities = @context.scope
 			entities = entities.filter_by(params[:filter]) if params[:filter]
 
-			@sequence_entities = smart_list_create(:sequence_entities, entities, :array => true, :partial => "maily_herald/webui/sequences/entity_list")
-			@sequence_mailings = smart_list_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "maily_herald/webui/sequences/mailing_list")
+			@sequence_entities = smart_listing_create(:sequence_entities, entities, :array => true, :partial => "maily_herald/webui/sequences/entity_list")
+			@sequence_mailings = smart_listing_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "maily_herald/webui/sequences/mailing_list")
 		end
 
 		def edit
@@ -57,9 +57,9 @@ module MailyHerald
 
 		def subscription
 			@subscription = @sequence.subscription_for @entity
-			@processed_mailings = smart_list_create(:processed_mailings, @subscription.processed_mailings, :array => true, :partial => "/webui/sequences/mailing_list")
-			@pending_mailings = smart_list_create(:pending_mailings, @subscription.pending_mailings, :array => true, :partial => "/webui/sequences/mailing_list")
-			@logs = smart_list_create(:logs, @subscription.logs, :array => true, :partial => "/webui/mailings/log_list")
+			@processed_mailings = smart_listing_create(:processed_mailings, @subscription.processed_mailings, :array => true, :partial => "/webui/sequences/mailing_list")
+			@pending_mailings = smart_listing_create(:pending_mailings, @subscription.pending_mailings, :array => true, :partial => "/webui/sequences/mailing_list")
+			@logs = smart_listing_create(:logs, @subscription.logs, :array => true, :partial => "/webui/mailings/log_list")
 		end
 
 		private

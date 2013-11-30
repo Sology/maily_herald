@@ -80,7 +80,7 @@
         = context_attributes_link(:context => @sequence.context ? @sequence.context.name : "")
 
     %h4 Entities
-    = form_tag({}, :remote => true, :method => :get, :class => 'smart_list_controls form-inline pull-right', :data => {:smart_list => "sequence_entities"}) do
+    = form_tag({}, :remote => true, :method => :get, :class => 'smart_listing_controls form-inline pull-right', :data => {:smart_listing => "sequence_entities"}) do
       .filter.input-append
         = text_field_tag :filter, '', :class => "search", :placeholder => "Type filter here ", :autocomplete => "off"
         %button.btn.disabled{:type => "submit"}
@@ -90,8 +90,8 @@
       %strong= @context.model
       entities in the scope
 
-    = smart_list_for(:sequence_entities) do |smart_list|
-      = smart_list.render_list
+    = smart_listing_for(:sequence_entities) do |smart_listing|
+      = smart_listing.render_list
 
     %ul.nav.nav-pills.pull-right
       %li
@@ -99,5 +99,5 @@
           %span.glyphicon.glyphicon-plus
           Add mailing
     %h4 Mailings
-    = smart_list_for(:sequence_mailings) do |smart_list|
-      = smart_list.render_list
+    = smart_listing_for(:sequence_mailings) do |smart_listing|
+      = smart_listing.render_list

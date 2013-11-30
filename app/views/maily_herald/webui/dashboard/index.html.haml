@@ -22,5 +22,5 @@ Deliveries in last:
       %dd= @last_deliveries[:week]
 
 %h4 Logs
-= smart_list_for(:logs) do |smart_list|
-  = smart_list.render_list
+= smart_listing_for(:logs) do |smart_listing|
+  = smart_listing.render_list

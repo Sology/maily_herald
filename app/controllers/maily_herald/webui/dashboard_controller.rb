@@ -1,7 +1,7 @@
 module MailyHerald
 	class Webui::DashboardController < MailyHerald::WebuiController
 		def index
-			@logs = smart_list_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "maily_herald/webui/dashboard/log_list")
+			@logs = smart_listing_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "maily_herald/webui/dashboard/log_list")
 			@last_deliveries = {
 			:hour => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.hour).count,
 			:day => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.day).count,

@@ -19,7 +19,7 @@
         %tr.editable{:data => {"id" => entity.id}}
           = render :partial => "maily_herald/webui/mailings/entity", :locals => {:object => entity}
 
-  = smart_list.paginate 
-  = smart_list.pagination_per_page_links
+  = smart_listing.paginate 
+  = smart_listing.pagination_per_page_links
 - else
   %p.alert No entities in the scope 

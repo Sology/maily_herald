@@ -55,13 +55,13 @@
 .sequence-mailings
   %h6 Processed mailings
 
-  = smart_list_for(:processed_mailings) do |smart_list|
-    = smart_list.render_list
+  = smart_listing_for(:processed_mailings) do |smart_listing|
+    = smart_listing.render_list
 
   %h6 Pending mailings
 
-  = smart_list_for(:pending_mailings) do |smart_list|
-    = smart_list.render_list
+  = smart_listing_for(:pending_mailings) do |smart_listing|
+    = smart_listing.render_list
 
   %h4 Preview
   .previews
@@ -75,5 +75,5 @@
 
 %h4 Logs
 
-= smart_list_for(:logs) do |smart_list|
-  = smart_list.render_list
+= smart_listing_for(:logs) do |smart_listing|
+  = smart_listing.render_list

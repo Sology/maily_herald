@@ -10,7 +10,7 @@ module MailyHerald
 				redirect_to webui_dashboard_index_path
 			else
 				@mailing = @klass.new
-				#@logs = smart_list_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "/webui/mailings/log_list")
+				#@logs = smart_listing_create(:logs, MailyHerald::Log.unscoped.order("processed_at desc"), :partial => "/webui/mailings/log_list")
 				@last_deliveries = {
 					:hour => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.hour).count,
 					:day => MailyHerald::Log.unscoped.order("processed_at desc").where("processed_at > (?)", Time.now - 1.day).count,
@@ -23,7 +23,7 @@ module MailyHerald
 			entities = @context.scope
 		  entities = entities.filter_by(params[:filter]) if params[:filter]
 
-			@entities = smart_list_create(:entities, entities, :array => true, :partial => "maily_herald/webui/mailings/entity_list")
+			@entities = smart_listing_create(:entities, entities, :array => true, :partial => "maily_herald/webui/mailings/entity_list")
 		end
 
 		def new
@@ -78,7 +78,7 @@ module MailyHerald
 
 		def subscription
 			@subscription = @mailing.subscription_for @entity
-			@logs = smart_list_create(:logs, @subscription.logs, :array => true, :partial => "/webui/mailings/logs")
+			@logs = smart_listing_create(:logs, @subscription.logs, :array => true, :partial => "/webui/mailings/logs")
 		end
 
 		def deliver
@@ -112,7 +112,7 @@ module MailyHerald
 				@mailing.move_lower
 			end
 
-			@sequence_mailings = smart_list_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "/webui/sequences/mailing_list")
+			@sequence_mailings = smart_listing_create(:sequence_mailings, @sequence.mailings, :array => true, :partial => "/webui/sequences/mailing_list")
 
 			respond_to do |format|
 				format.js {render "refresh_list"} 

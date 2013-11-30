@@ -1,4 +1,4 @@
-- unless smart_list.collection.empty?
+- unless smart_listing.collection.empty?
   %table.table.table-striped
     %thead
       %tr
@@ -9,11 +9,11 @@
         %th.span1
         
     %tbody
-      - smart_list.collection.each do |log|
+      - smart_listing.collection.each do |log|
         %tr
           = render :partial => "maily_herald/webui/dashboard/log", :locals => {:object => log}
 
-  = smart_list.paginate 
-  = smart_list.pagination_per_page_links
+  = smart_listing.paginate 
+  = smart_listing.pagination_per_page_links
 - else
   %p.alert No delivery logs

@@ -21,7 +21,7 @@
       %dd= @subscription_group.name
 
 %h4 Entities
-= form_tag({}, :remote => true, :method => :get, :class => 'smart_list_controls form-inline pull-right', :data => {:smart_list => "subscriptions"}) do
+= form_tag({}, :remote => true, :method => :get, :class => 'smart_listing_controls form-inline pull-right', :data => {:smart_listing => "subscriptions"}) do
   .filter.input-append
     = text_field_tag :filter, '', :class => "search", :placeholder => "Type filter here ", :autocomplete => "off"
     %button.btn.disabled{:type => "submit"}
@@ -29,5 +29,5 @@
 %p 
   List of all subscriptions in this group
 
-= smart_list_for(:subscriptions) do |smart_list|
-  = smart_list.render_list
+= smart_listing_for(:subscriptions) do |smart_listing|
+  = smart_listing.render_list

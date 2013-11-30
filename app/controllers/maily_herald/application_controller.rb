@@ -1,5 +1,5 @@
 module MailyHerald
   class ApplicationController < ActionController::Base
-		helper SmartList::SmartListHelper
+		helper SmartListing::SmartListingHelper
   end
 end
