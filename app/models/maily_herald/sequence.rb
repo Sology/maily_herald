@@ -63,8 +63,8 @@ module MailyHerald
         mailing.sequence = self
         if block_given?
           yield(mailing)
+          mailing.save! if mailing.new_record?
         end
-        mailing.save!
         mailing
       end
     end

@@ -197,6 +197,32 @@ describe MailyHerald::Sequence do
       MailyHerald::Log.delivered.count.should eq(2)
     end
 
+    it "should calculate delivery times relatively based on existing logs" do
+      @sequence.mailings.length.should eq(3)
+      @sequence.start.should be_nil
+
+      subscription = @sequence.subscription_for(@entity)
+
+      Timecop.freeze @entity.created_at + @sequence.mailings[0].absolute_delay
+
+      @sequence.run
+
+      MailyHerald::Log.delivered.count.should eq(1)
+
+      Timecop.freeze @entity.created_at + @sequence.mailings[2].absolute_delay
+
+      @sequence.run
+      @sequence.run
+
+      MailyHerald::Log.delivered.count.should eq(2)
+
+      Timecop.freeze @entity.created_at + @sequence.mailings[2].absolute_delay + (@sequence.mailings[2].absolute_delay - @sequence.mailings[1].absolute_delay)
+
+      @sequence.run
+
+      MailyHerald::Log.delivered.count.should eq(3)
+    end
+
     it "should skip disabled mailings and go on with processing" do
       @sequence.mailings.length.should eq(3)
       @sequence.start.should be_nil

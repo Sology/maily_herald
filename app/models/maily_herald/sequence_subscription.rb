@@ -40,7 +40,7 @@ module MailyHerald
 
     def processing_time_for mailing
       if logs.first
-        logs.first.processed_at - logs.first.mailing.absolute_delay + mailing.absolute_delay
+        logs.last.processed_at + (mailing.absolute_delay - logs.last.mailing.absolute_delay)
       else
         evaluator = Utils::MarkupEvaluator.new(self.sequence.context.drop_for(self.entity, self))
         evaluated_start = evaluator.evaluate_variable(self.sequence.start_var)
