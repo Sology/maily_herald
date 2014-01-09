@@ -1,6 +1,6 @@
 module MailyHerald
   class WebuiController < MailyHerald::ApplicationController
-		include SmartListing::Helper::ControllerExtensions
+		include ::SmartListing::Helper::ControllerExtensions
 
 		helper :maily_herald
 

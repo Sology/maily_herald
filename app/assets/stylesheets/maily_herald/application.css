@@ -10,7 +10,7 @@
  *
  *= require_self
  *= require_tree .
- *= require maily_herald/bootstrap
+ *= require maily_herald/webui-bootstrap
  */
 
 /*** Smart List ***/

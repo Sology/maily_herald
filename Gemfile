@@ -8,7 +8,7 @@ gemspec
 # jquery-rails is used by the dummy application
 gem "jquery-rails"
 
-gem "smart_listing", "~> 0.9", :github => "Sology/smart_listing", :branch => 'master'
+gem "smart_listing"#, :github => "Sology/smart_listing", :branch => 'master'
 gem "liquid", "~> 2.6.0", :git => "git@github.com:Shopify/liquid.git"
 
 # Declare any dependencies that are still in development here instead of in

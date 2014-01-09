@@ -13,6 +13,6 @@
 //= require jquery
 //= require jquery_ujs
 //= require_tree .
-//= require maily_herald/bootstrap
+//= require bootstrap
 //= require maily_herald/webui
 //= require smart_listing/smart_listing
