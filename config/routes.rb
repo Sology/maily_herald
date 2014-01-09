@@ -1,6 +1,5 @@
 MailyHerald::Engine.routes.draw do
 	match 'webui', :to => 'webui#index', :via => :get
-	match "sinatra", :to => MailyHerald::Webui::App, :anchor => false
   get ":token", :to => "tokens#get", :as => :token
 	namespace :webui do
 		resources "sequences" do
