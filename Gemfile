@@ -16,4 +16,4 @@ gem "liquid", "~> 2.6.0", :git => "git@github.com:Shopify/liquid.git"
 # your gem to rubygems.org.
 
 # To use debugger
-# gem 'debugger'
+gem 'debugger'

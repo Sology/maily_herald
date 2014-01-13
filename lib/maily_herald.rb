@@ -173,4 +173,9 @@ module MailyHerald
   def self.simulation_ongoing?
     File.exist?("/tmp/maily_herlald_timetravel.lock")
   end
+
+  def self.find_subscription_for mailer_name, mailing_name, entity
+    mailing = MailyHerald::Mailing.where(:mailer_name => mailer_name, :name => mailing_name).first
+    mailing.subscription_for entity
+  end
 end

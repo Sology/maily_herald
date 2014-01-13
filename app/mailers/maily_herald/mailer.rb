@@ -1,14 +1,47 @@
 module MailyHerald
   class Mailer < ActionMailer::Base
-    def generic mailing, entity, subscription
+    attr_reader :entity
+
+    def generic entity, mailing, subscription
       destination = subscription.destination
       subject = mailing.subject
       from = mailing.sender
-      content = subscription.is_a?(SequenceSubscription) ? subscription.render_template(mailing) : subscription.render_template
+      content = subscription.is_a?(MailyHerald::SequenceSubscription) ? subscription.render_template(mailing) : subscription.render_template
 
       mail(to: destination, from: from, subject: subject) do |format|
         format.text { render text: content }
       end
+    end
+
+    class << self
+      #TODO make it instance method so we get access to instance attributes
+      def deliver_mail(mail) #:nodoc:
+        mailing = mail.maily_herald_data[:mailing]
+        entity = mail.maily_herald_data[:entity]
+
+        mailing.deliver_to(entity) do
+          ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
+            self.set_payload_for_mail(payload, mail)
+            yield # Let Mail do the delivery actions
+          end
+        end
+      end
+    end
+
+    protected
+
+    def process(*args) #:nodoc:
+      class << @_message
+        attr_accessor :maily_herald_data
+      end
+
+      @_message.maily_herald_data = {
+        :mailing => args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0]),
+        :entity => args[1]
+      }
+
+      lookup_context.skip_default_locale!
+      super
     end
   end
 end

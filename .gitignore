@@ -12,5 +12,5 @@ tmp
 *.swo
 *.swp
 *.rvmrc
-*.ruby-version
 *.ruby-gemset
+*.ruby-version

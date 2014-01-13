@@ -21,7 +21,7 @@ describe MailyHerald::OneTimeMailing do
     @mailing.run
 
     MailyHerald::MailingSubscription.count.should eq(1)
-    MailyHerald::Log.count.should eq(1)
+    MailyHerald::Log.delivered.count.should eq(1)
 
     log = MailyHerald::Log.first
     log.entity.should eq(@entity)

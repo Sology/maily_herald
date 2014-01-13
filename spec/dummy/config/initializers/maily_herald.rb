@@ -41,6 +41,13 @@ MailyHerald.setup do |config|
     end
   end
 
+  config.one_time_mailing :sample_mail do |mailing|
+    mailing.title = "Sample mailing"
+    mailing.context_name = :all_users
+    mailing.mailer_name = "TestMailer"
+    mailing.enabled = true
+  end
+
   config.sequence :newsletters do |seq|
     seq.title = "Newsletters"
     seq.context_name = :all_users

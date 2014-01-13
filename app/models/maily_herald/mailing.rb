@@ -12,8 +12,8 @@ module MailyHerald
     
     validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
     validates   :title,         :presence => true
-    validates   :subject,       :presence => true
-    validates   :template,      :presence => true
+    validates   :subject,       :presence => true, :if => :generic_mailer?
+    validates   :template,      :presence => true, :if => :generic_mailer?
     validate    :template_syntax
     validate    :validate_conditions
 
@@ -88,22 +88,33 @@ module MailyHerald
       self.conditions && !self.conditions.empty?
     end
 
+    def generic_mailer?
+      self.mailer_name == "generic"
+    end
+
     protected
 
     def deliver_to entity
-      subscription = subscription_for entity
-      raise StandardError.new("Subscription not processable") unless subscription.processable?
-      unless subscription.conditions_met?(self)
-        Log.create_for self, entity, :skipped
-        return
-      end
+      if block_given?
+        # Called from Mailer
+        subscription = subscription_for entity
+        return unless subscription.processable?
+        unless subscription.conditions_met?(self)
+          Log.create_for self, entity, :skipped
+          return
+        end
 
-      if self.mailer_name == 'generic'
-        mail = Mailer.generic(self, entity, subscription)
-        mail.deliver
-        Log.create_for self, entity, :delivered, {:content => mail.to_s}
+        mail = yield # Let mailer do his job
+
+        Log.create_for self, entity, :delivered, {:content => mail.first.to_s}
       else
-        raise StandardError.new("Mailer not recognized")
+        if self.mailer_name == 'generic'
+          subscription = subscription_for entity
+          mail = Mailer.generic(entity, self, subscription)
+        else
+          mail = self.mailer_name.constantize.send(self.name, entity)
+        end
+        mail.deliver
       end
     rescue StandardError => e
       Log.create_for self, entity, :error, {:msg => e.to_s}
