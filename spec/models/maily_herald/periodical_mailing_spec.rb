@@ -233,12 +233,17 @@ describe MailyHerald::PeriodicalMailing do
       it "should be created and active" do
         subscription = @mailing.subscription_for @entity
 
+        @mailing.autosubscribe.should be_true
+
         subscription.should_not be_new_record
-        subscription.should be_active
+        subscription.should_not be_active
 
         aggregate = subscription.aggregate
         aggregate.should be_a(MailyHerald::AggregatedSubscription)
-        aggregate.should be_active
+        aggregate.should_not be_active
+        aggregate.activate!
+
+        subscription.should be_active
 
         Timecop.freeze @entity.created_at
 

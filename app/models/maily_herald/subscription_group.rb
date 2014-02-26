@@ -1,6 +1,6 @@
 module MailyHerald
   class SubscriptionGroup < ActiveRecord::Base
-    attr_accessible :name, :title
+    attr_accessible :name, :title, :autosubscribe
 
     has_many        :mailings
     has_many        :sequences
@@ -11,6 +11,29 @@ module MailyHerald
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+    end
+
+    def aggregate_for entity
+      aggregate = self.aggregated_subscriptions.for_entity(entity).first
+
+      unless aggregate 
+        aggregate = self.aggregated_subscriptions.build
+        aggregate.entity = entity
+        if self.autosubscribe 
+          if entity.respond_to?(:maily_herald_autosubscribe)
+            aggregate.active = entity.maily_herald_autosubscribe(self)
+          else
+            aggregate.active = true
+          end
+        end
+        aggregate.save!
+      end
+
+      aggregate
+    end
+
+    def subscription_for entity
+      aggregate_for entity
     end
 
     def to_s

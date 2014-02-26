@@ -2,6 +2,7 @@ module MailyHerald
   class MailingSubscription < Subscription
     include MailyHerald::TemplateRenderer
 
+    belongs_to  :dispatch
     belongs_to  :mailing,       :foreign_key => :dispatch_id
 
     validates   :mailing,       :presence => true
@@ -72,14 +73,7 @@ module MailyHerald
 
     def aggregate
       if aggregated?
-        aggregate = self.mailing.subscription_group.aggregated_subscriptions.for_entity(self.entity).first
-        unless aggregate
-          aggregate = self.mailing.subscription_group.aggregated_subscriptions.build
-          aggregate.entity = self.entity
-          aggregate.active = true if self.mailing.autosubscribe && self.mailing.context.scope.include?(self.entity)
-          aggregate.save!
-        end
-        aggregate
+        self.mailing.subscription_group.aggregate_for(self.entity)
       end
     end
   end

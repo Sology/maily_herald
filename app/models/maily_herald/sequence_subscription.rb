@@ -1,5 +1,6 @@
 module MailyHerald
   class SequenceSubscription < Subscription
+    belongs_to  :dispatch
     belongs_to  :sequence,      :foreign_key => :dispatch_id
 
     validates   :sequence,      :presence => true
@@ -90,14 +91,7 @@ module MailyHerald
 
     def aggregate
       if aggregated?
-        aggregate = self.sequence.subscription_group.aggregated_subscriptions.for_entity(self.entity).first
-        unless aggregate
-          aggregate = self.sequence.subscription_group.aggregated_subscriptions.build
-          aggregate.entity = self.entity
-          aggregate.active = true if self.sequence.autosubscribe && self.sequence.context.scope.include?(self.entity)
-          aggregate.save!
-        end
-        aggregate
+        self.sequence.subscription_group.aggregate_for(self.entity)
       end
     end
   end

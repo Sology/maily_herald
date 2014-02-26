@@ -26,3 +26,5 @@ en:
         start: Start date
         start_var: Start variable (evaluated)
         period: Period
+      subscription_group:
+        autosubscribe: Autosubscribe
