@@ -1,5 +1,5 @@
 - unless smart_listing.collection.empty?
-  %table.table.table-striped
+  %table.table.table-listing
     %thead
       %tr
         %th Entity
@@ -12,7 +12,8 @@
         %tr.editable{:data => {"id" => subscription.id}}
           = render :partial => "maily_herald/webui/subscription_groups/subscription", :locals => {:object => subscription}
 
-  = smart_listing.paginate 
-  = smart_listing.pagination_per_page_links
+  .row
+    .col-xs-6= smart_listing.paginate 
+    .col-xs-6= smart_listing.pagination_per_page_links
 - else
   %p.alert No subscriptions

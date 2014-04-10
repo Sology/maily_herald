@@ -1,11 +1,136 @@
-%h1
-  example page header
-  %small Subtext for header
-  
-%ul.nav.nav-tabs
-  %li.active
-    %a{href: "#"} Home
-  %li
-    %a{href: "#"} Profile
-  %li
-    %a{href: "#"} Messages
+.row
+	.col-md-6 
+		%h3.red breadcrumbs
+		%ul.breadcrumb 
+			%li 
+				%a{:href => ""}
+					Dashboad 
+			%li 
+				%a{:href => ""} 
+					Sequences
+			%li 
+				Some sequence
+
+	.col-md-6 
+		%h3.red BOX 
+		.box
+			%dl.dl-horizontal
+				%dt Name:
+				%dd account
+				%dt Name:
+				%dd account
+				%dt Name:
+				%dd account
+		.box.darken
+			%dl.dl-horizontal
+				%dt Name:
+				%dd account
+				%dt Name:
+				%dd account
+				%dt Name:
+				%dd account
+.row
+	.col-md-6 
+		%h3.red HEADLINES
+		%h1.border Heading 1
+		%h2.border Heading 2
+		%h3.border Heading 3
+		%h1.border 
+			Heading 1 
+			%a.link{:href => ""} view all >>
+
+		%h2.border 
+			Heading 2 
+			%a.link{:href => ""} view all >>
+
+		%h3.border 
+			Heading 3 
+			%a.link{:href => ""} view all >>
+
+		%h3.red Secondary Menu
+
+		%ul.nav.nav-secondary 
+			%li 
+				%a{:href => ""}  Action
+			%li 
+				%a{:href => ""}  Action
+			%li 
+				%a{:href => ""}  Action
+
+		%h3.red Tooltip
+		.control-group
+			%a{:href => '#', :data => { toggle: 'tooltip', placement: 'top'}, :title => 'Tooltip!', :class => 'tooltip-demo' }
+				%i.glyphicon.glyphicon-info-sign
+
+	.col-md-6 
+		%h3.red Form elements
+
+		%form{:action => ""} 
+			.filter.filter-search
+				%input.search{placeholder: "Search", type: "text", value: ""}/
+				%button.btn{type: "submit"}
+					%span.glyphicon.glyphicon-search
+		%br
+		%form{:action => ""} 
+			%input{:type => "text", :placeholder => "Placeholder"} 
+			%%br 
+			%%br 
+			%textarea{:name => "", :cols => "50", :rows => "5"} 
+			%br 
+			%br
+			%select{:name => ""} 
+				%option Some Value
+				%option Some Value
+				%option Some Value
+				%option Some Value
+			%br 
+			%br
+
+			%label{:for => "c1", :class => "checkbox"} 
+				Checkbox 
+				%input{:type => "checkbox", :id => "c1"} 
+
+			%label{:for => "c2", :class => "checkbox"} 
+				Checkbox
+				%input{:type => "checkbox", :checked => "checked", :id => "c2"}  
+			
+			%label{:for => "c3", :class => 'checkbox has-error'} 
+				Checkbox
+				%input{:type => "checkbox", :id => "c3"} 
+
+			  
+			%br 
+			%br
+			
+			%label{:for => "r1", :class => 'radio'} 
+				Radio 
+				%input{:type => "radio", :name => "rr", :id => "r1"} 
+			
+			%label{:for => "r2", :class => 'radio'} 
+				Radio
+				%input{:type => "radio", :checked => "checked", :name => "rr", :id => "r2"}
+			
+			%label{:for => "r3", :class => 'radio has-error'} 
+				Radio
+				%input{:type => "radio", :name => "rr", :id => "r3"} 
+
+.row
+	.col-md-6 
+		%h3.red Buttons
+		%a.btn.btn-webui{:href => ""} Do some action 
+		%a.btn.btn-webui-alternative{:href => ""} Do some action
+	.col-md-6
+		%h3.red Modal
+
+		%a.btn.btn-webui{:href => '#', :data => { toggle: 'modal', target: '#myModal'}}
+			Modal button Click Here
+
+.modal#myModal.fade
+	.modal-dialog
+		.modal-content
+			.modal-header
+				%button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} 
+					×
+				%h3.modal-title Modal title
+			.modal-body
+				%p One fine body…

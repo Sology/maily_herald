@@ -1,5 +1,5 @@
 - unless @entities.empty?
-  %table.table.table-striped
+  %table.table.table-listing
     %thead
       %tr
         %th Id
@@ -19,7 +19,8 @@
         %tr.editable{:data => {"id" => entity.id}}
           = render :partial => "maily_herald/webui/mailings/entity", :locals => {:object => entity}
 
-  = smart_listing.paginate 
-  = smart_listing.pagination_per_page_links
+  .row
+    .col-xs-6= smart_listing.paginate 
+    .col-xs-6= smart_listing.pagination_per_page_links
 - else
   %p.alert No entities in the scope 

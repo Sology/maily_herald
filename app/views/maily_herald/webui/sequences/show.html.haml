@@ -1,18 +1,22 @@
 .row
-  .col-xs-1
-    %ul.nav.nav-pills.nav-stacked
-      %li= link_to "New mailing", new_webui_sequence_mailing_path(:sequence_id => @sequence) 
-  .col-xs-10
+  .col-xs-4
     %ul.breadcrumb
       %li 
-        Sequence
-        %em
-          = @sequence.title
-      %li.pull-right
+        %a= link_to 'Sequence', webui_sequences_mailings_path  
+      %li.active
+        = @sequence.title
+
+  .col-xs-8
+    %ul.nav.nav-secondary.pull-right
+      %li
+        = link_to new_webui_sequence_mailing_path(:sequence_id => @sequence) do
+          %span.glyphicon.glyphicon-plus
+          New mailing
+
+      %li
         - if @sequence.enabled?
           %strong.text-success 
             Enabled
-          %span.divider
           = link_to toggle_webui_sequence_path do
             %span.glyphicon.glyphicon-off
             Disable
@@ -23,65 +27,70 @@
           = link_to toggle_webui_sequence_path do
             %span.glyphicon.glyphicon-repeat
             Enable
-        %span.divider
+      %li
         = link_to edit_webui_sequence_path do
           %span.glyphicon.glyphicon-pencil
           Edit
-        %span.divider
+      %li
         = link_to webui_sequence_path, :method => :delete, :confirm => 'Are you sure?' do
           %span.glyphicon.glyphicon-trash
           Delete
+.row  
+  .col-xs-12
+    %h2.border= @sequence.title
+    .box
+      - unless @sequence.enabled?
+        .alert
+          This sequence 
+          %strong
+            will not be delivered
+          because it is disabled.
 
-    %h4= @sequence.title
+      %dl.dl-horizontal
+        %dt Name:
+        %dd= @sequence.name
+        %dt Start:
+        %dd= @sequence.start ? "#{@sequence.start_text} #{Time.zone}" : "none"
+        %dt Start variable:
+        %dd= @sequence.start_var && !@sequence.start_var.empty? ? @sequence.start_var : "none"
+        %dt Autosubscribe:
+        %dd
+          - if @sequence.autosubscribe?
+            %span.glyphicon.glyphicon-ok
+          - else
+            %span.glyphicon.glyphicon-remove
+        %dt Subscription group:
+        %dd
+          - if @sequence.subscription_group
+            = @sequence.subscription_group
+          - else
+            %span.glyphicon.glyphicon-minus
+        %dt Subscription override:
+        %dd
+          - if @sequence.override_subscription?
+            %span.glyphicon.glyphicon-ok
+          - else
+            %span.glyphicon.glyphicon-remove
+        %dt Token action
+        %dd= @sequence.token_action
 
-    - unless @sequence.enabled?
-      .alert
-        This sequence 
-        %strong
-          will not be delivered
-        because it is disabled.
-
-    %dl.dl-horizontal
-      %dt Name:
-      %dd= @sequence.name
-      %dt Start:
-      %dd= @sequence.start ? "#{@sequence.start_text} #{Time.zone}" : "none"
-      %dt Start variable:
-      %dd= @sequence.start_var && !@sequence.start_var.empty? ? @sequence.start_var : "none"
-      %dt Autosubscribe:
-      %dd
-        - if @sequence.autosubscribe?
-          %span.glyphicon.glyphicon-ok
-        - else
-          %span.glyphicon.glyphicon-remove
-      %dt Subscription group:
-      %dd
-        - if @sequence.subscription_group
-          = @sequence.subscription_group
-        - else
-          %span.glyphicon.glyphicon-minus
-      %dt Subscription override:
-      %dd
-        - if @sequence.override_subscription?
-          %span.glyphicon.glyphicon-ok
-        - else
-          %span.glyphicon.glyphicon-remove
-      %dt Token action
-      %dd= @sequence.token_action
-
-    %h4 Context
-    %dl.dl-horizontal
-      %dt Name:
-      %dd= @sequence.context.name
-      %dt Model name:
-      %dd= @context.model
-      %dt Context attributes:
-      %dd
-        = context_attributes_link(:context => @sequence.context ? @sequence.context.name : "")
-
-    %h4 Entities
+.row
+  .col-xs-12
+    %h2.border Context
+    .box
+      %dl.dl-horizontal
+        %dt Name:
+        %dd= @sequence.context.name
+        %dt Model name:
+        %dd= @context.model
+        %dt Context attributes:
+        %dd
+          = context_attributes_link(:context => @sequence.context ? @sequence.context.name : "")
+.row
+  .col-xs-12
+    %h2.border Entities
     = form_tag({}, :remote => true, :method => :get, :class => 'smart_listing_controls form-inline pull-right', :data => {:smart_listing => "sequence_entities"}) do
-      .filter.input-append
+      .filter.input-append.filter-search
         = text_field_tag :filter, '', :class => "search", :placeholder => "Type filter here ", :autocomplete => "off"
         %button.btn.disabled{:type => "submit"}
           %span.glyphicon.glyphicon-search
@@ -93,11 +102,21 @@
     = smart_listing_for(:sequence_entities) do |smart_listing|
       = smart_listing.render_list
 
-    %ul.nav.nav-pills.pull-right
-      %li
-        = link_to new_webui_sequence_mailing_path(:sequence_id => @sequence) do
-          %span.glyphicon.glyphicon-plus
-          Add mailing
-    %h4 Mailings
-    = smart_listing_for(:sequence_mailings) do |smart_listing|
-      = smart_listing.render_list
+.row
+  .col-xs-12
+    .row
+      .col-xs-10
+        %h2.border Mailings
+
+      .col-xs-2
+        %ul.nav.nav-secondary.no-margin.pull-right
+          %li
+            = link_to new_webui_sequence_mailing_path(:sequence_id => @sequence) do
+              %span.glyphicon.glyphicon-plus
+              Add mailing
+
+      .col-xs-12
+        = smart_listing_for(:sequence_mailings) do |smart_listing|
+          = smart_listing.render_list
+    
+    

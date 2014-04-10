@@ -1,24 +1,16 @@
-%ul.breadcrumb
-  - if @sequence
-    Sequence
-    %em
-      = link_to @mailing.sequence.title, webui_sequence_path(@mailing.sequence)
-    %span.divider
-      &raquo;
-  %li 
-    = link_to webui_mailing_path do
-      Mailing
-      %em
-        = @mailing.title
-    %span.divider
-      &raquo;
-  %li 
-    Edit
-  %li.pull-right
-    = link_to webui_mailing_path do
-      %i.icon.icon-arrow-left
-      Back
+.row
+  .col-xs-6
+    %h2.border
+      %a= link_to '<<', webui_mailing_path
+      = @mailing.title
 
-%h4= @mailing.title
+  .col-xs-6
+    %ul.breadcrumb.pull-right
+      %li 
+        %a= link_to 'Mailing', webui_periodical_mailings_path
+      %li 
+        = link_to @mailing.title, webui_mailing_path
+      %li 
+        Edit
 
 = render :partial => 'form'

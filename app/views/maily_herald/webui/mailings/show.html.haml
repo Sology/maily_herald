@@ -1,41 +1,37 @@
 .row
-  .col-xs-11
+  .col-xs-4
     %ul.breadcrumb
-      - if @sequence
-        Sequence
-        %em
-          = link_to @mailing.sequence.title, webui_sequence_path(:id => @mailing.sequence)
-        %span.divider
-          &raquo;
       %li 
-        Mailing
-        %em
-          = @mailing.title
-      %li.pull-right
+        %a= link_to 'Mailing', webui_periodical_mailings_path
+      %li 
+        = @mailing.title
+
+
+  .col-xs-8
+    %ul.nav.nav-secondary.pull-right        
+      %li
         - if @mailing.enabled?
           %strong.text-success 
             Enabled
-          %span.divider
           = link_to toggle_webui_mailing_path do
             %span.glyphicon.glyphicon-off
             Disable mailing
         - else
           %strong.text-warning 
             Disabled
-          %span.divider
           = link_to toggle_webui_mailing_path do
             %span.glyphicon.glyphicon-repeat
             Enable mailing
-        %span.divider
+      %li
         - if @mailing.one_time? && @mailing.enabled?
           = link_to deliver_webui_mailing_path, :confirm => 'Are you sure you want to deliver this mailing NOW to entities?' do
             %span.glyphicon.glyphicon-share-alt
             Force delivery to all now
-            %span.divider
+      %li
         = link_to edit_webui_mailing_path do
           %span.glyphicon.glyphicon-pencil
           Edit
-        %span.divider
+      %li
         = link_to webui_mailing_path, :method => :delete, :confirm => 'Are you sure?' do
           %span.glyphicon.glyphicon-trash
           Delete
@@ -48,76 +44,81 @@
     because it is disabled.
 
 .row
-  .col-xs-8
-    %dl.dl-horizontal
-      %dt Name:
-      %dd= @mailing.name
-      %dt Subject:
-      %dd= @mailing.subject
-      %dt From:
-      %dd= !@mailing.from || @mailing.from.empty? ? 'default' : @mailing.from
-      %dt Mailer:
-      %dd= @mailing.mailer_name
-      - if @mailing.periodical?
-        %dt Start:
-        %dd= @mailing.start ? "#{@mailing.start_text} #{Time.zone}" : "none"
-        %dt Start variable:
-        %dd= @mailing.start_var && !@mailing.start_var.empty? ? @mailing.start_var : "none"
-        %dt Period:
-        %dd= distance_of_time_in_words(@mailing.period)
-      - unless @sequence
-        %dt Autosubscribe:
-        %dd
-          - if @mailing.autosubscribe?
-            %span.glyphicon.glyphicon-ok
-          - else
-            %span.glyphicon.glyphicon-remove
-        %dt Subscription group:
-        %dd
-          - if @mailing.subscription_group
-            = @mailing.subscription_group
-          - else
-            %span.glyphicon.glyphicon-minus
-        %dt Subscription override:
-        %dd
-          - if @mailing.override_subscription?
-            %span.glyphicon.glyphicon-ok
-          - else
-            %span.glyphicon.glyphicon-remove
-        %dt Token action
-        %dd= @mailing.token_action
-      - if @sequence
-        %dt Absolute delay:
-        %dd= distance_of_time_in_words @mailing.absolute_delay
+  .col-xs-12
+    %h2.border= @mailing.title
+    .box
+      %dl.dl-horizontal
+        %dt Name:
+        %dd= @mailing.name
+        %dt Subject:
+        %dd= @mailing.subject
+        %dt From:
+        %dd= !@mailing.from || @mailing.from.empty? ? 'default' : @mailing.from
+        %dt Mailer:
+        %dd= @mailing.mailer_name
+        - if @mailing.periodical?
+          %dt Start:
+          %dd= @mailing.start ? "#{@mailing.start_text} #{Time.zone}" : "none"
+          %dt Start variable:
+          %dd= @mailing.start_var && !@mailing.start_var.empty? ? @mailing.start_var : "none"
+          %dt Period:
+          %dd= distance_of_time_in_words(@mailing.period)
+        - unless @sequence
+          %dt Autosubscribe:
+          %dd
+            - if @mailing.autosubscribe?
+              %span.glyphicon.glyphicon-ok
+            - else
+              %span.glyphicon.glyphicon-remove
+          %dt Subscription group:
+          %dd
+            - if @mailing.subscription_group
+              = @mailing.subscription_group
+            - else
+              %span.glyphicon.glyphicon-minus
+          %dt Subscription override:
+          %dd
+            - if @mailing.override_subscription?
+              %span.glyphicon.glyphicon-ok
+            - else
+              %span.glyphicon.glyphicon-remove
+          %dt Token action
+          %dd= @mailing.token_action
+        - if @sequence
+          %dt Absolute delay:
+          %dd= distance_of_time_in_words @mailing.absolute_delay
 
 .row
   .col-xs-6
-    %h4 Context
-    %dl.dl-horizontal
-      %dt Name:
-      %dd= @context.name
-      %dt Model name:
-      %dd= @context.model
-      %dt Available variables:
-      %dd= context_attributes_link :context => @context.name
-  .col-xs-5
-    %h4 Conditions
-    - if @mailing.has_conditions?
+    %h2.border Context
+    .box
+      %dl.dl-horizontal
+        %dt Name:
+        %dd= @context.name
+        %dt Model name:
+        %dd= @context.model
+        %dt Available variables:
+        %dd= context_attributes_link :context => @context.name
+  .col-xs-6
+    %h2.border Conditions
+    .box
+      - if @mailing.has_conditions?
+        %pre
+          = @mailing.conditions
+      - else
+        No conditions
+.row
+  .col-xs-12
+    %h2.border Template
+    .box
       %pre
-        = @mailing.conditions
-    - else
-      No conditions
+        = @mailing.template
+      %br
 .row
-  .col-xs-11
-    %h4 Template
-    %pre
-      = @mailing.template
-    %br
-.row
-  .col-xs-11
-    %h4 Entities
+  .col-xs-12
+    %h2.border Entities
     = form_tag({}, :remote => true, :method => :get, :class => 'smart_listing_controls form-inline pull-right', :data => {:smart_listing => "entities"}) do
-      .filter.input-append
+      .filter.input-append.filter-search
         = text_field_tag :filter, '', :class => "search", :placeholder => "Type filter here ", :autocomplete => "off"
         %button.btn.disabled{:type => "submit"}
           %span.glyphicon.glyphicon-search
@@ -128,6 +129,7 @@
       = smart_listing_for(:entities) do |smart_listing|
         = smart_listing.render_list
 .row
-  .col-xs-11
-    %h4 Template Preview
-    %pre.template_preview Choose entity above to see a preview
+  .col-xs-12
+    %h2.border Template Preview
+    .box
+      %pre.template_preview Choose entity above to see a preview

@@ -1,12 +1,54 @@
-.hero-unit
-  %h3= 'Admin Panel'
-.row
-  .col-md-6
-    %ul.nav.nav-pills
+.container
+  .hero
+    .row
+      .col-sm-6
+        %h1= 'Admin Panel'
+      .col-sm-6
+
+        .dropdown.pull-right
+          %a{:href => '#', :data => { toggle: 'dropdown'}, :class => 'account'} 
+            =image_tag( 'maily_herald/user.png')
+            %span Some Admin
+          %ul.dropdown-menu{'role' => 'menu'}
+            %li 
+              %a{:href => '#'} Something
+            %li 
+              %a{:href => '#'} Something
+            %li 
+              %a{:href => '#'} Logout
+
+  .row
+    .col-sm-12
+      %ul.breadcrumb 
+        %li 
+          %a{:href => ""}
+            Dashboad 
+        %li 
+          %a{:href => ""} 
+            Sequences
+        %li 
+          Some sequence
+  
+  .section-wrapper
+    %ul.nav.nav-main.nav-justified
       %li{:class => ((@logs.nil? && @log.nil?) ? "" : "active")}= link_to "Dashboard", webui_dashboard_index_path
-      %li= link_to "Subscription groups", webui_subscription_groups_path
+      %li{:class => (@mailing.class == MailyHerald::SubscriptionGroup ? "active" : "")}= link_to "Subscription groups", webui_subscription_groups_path
       %li{:class => (@mailing.class == MailyHerald::SequenceMailing ? "active" : "")}= link_to "Sequences", webui_sequences_mailings_path
       %li{:class => (@mailing.class == MailyHerald::PeriodicalMailing ? "active" : "")}= link_to "Periodicals", webui_periodical_mailings_path
       %li{:class => (@mailing.class == MailyHerald::OneTimeMailing ? "active" : "")}= link_to "One-times", webui_one_time_mailings_path
 
-= yield
+    .content-container
+      = yield
+  
+
+  .footer.text-center 
+    %p 
+      © Maily Herald | 
+      %a{:href => ""}
+        Help 
+      | 
+      %a{:href => ""}
+        GitHub 
+      | 
+      %a{:href => ""}
+        Official website

@@ -1,5 +1,5 @@
 - unless smart_listing.collection.empty?
-  %table.table.table-striped
+  %table.table.table-listing
     %thead
       %tr
         %th Title
@@ -10,8 +10,10 @@
       - smart_listing.collection.each do |mailing|
         %tr.editable{:data => {"id" => mailing.id}}
           = render :partial => "maily_herald/webui/sequences/mailing", :locals => {:object => mailing}
-
-  = smart_listing.paginate 
-  = smart_listing.pagination_per_page_links
+  
+  .row
+    .col-xs-6= smart_listing.paginate 
+    .col-xs-6= smart_listing.pagination_per_page_links
+  
 - else
   %p.alert No mailings 

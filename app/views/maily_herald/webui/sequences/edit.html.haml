@@ -1,18 +1,14 @@
 %ul.breadcrumb
   %li 
-    = link_to webui_sequence_path do
+    = link_to webui_sequences_mailings_path do
       Sequence
-      %em
-        = @sequence.title
-    %span.divider
-      &raquo;
   %li 
-    Edit
-  %li.pull-right
     = link_to webui_sequence_path do
-      %i.icon.icon-arrow-left
-      Back
+      = @sequence.title
+  %li.active
+    Edit
 
-%h4= @sequence.title
+%h2.border
+  = @sequence.title
 
 = render :partial => 'form'

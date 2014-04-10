@@ -1,7 +1,11 @@
-%ul.breadcrumb
-  %li 
-    New subscription group
+.row
+	.col-sm-6 
+		%ul.breadcrumb
+			%li 
+				%a= link_to 'Sequence'
+			%li.active
+				New sequence
 
-%h4 New subscription group
+%h2.border New subscription group
 
 = render :partial => 'form'

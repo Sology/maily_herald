@@ -1,31 +1,28 @@
-GIT
-  remote: git@github.com:Shopify/liquid.git
-  revision: fbfda1a1895bfb5bd9477248008f60fc1953c297
-  specs:
-    liquid (2.6.0)
-
 PATH
   remote: .
   specs:
     maily_herald (0.0.1)
+      bootstrap-sass (~> 3.0.3.0)
       coffee-rails (~> 3.2.1)
       daemons
       haml
-      liquid (~> 2.6.0.rc1)
+      liquid (~> 2.6.0)
       rails (~> 3.2.8)
+      sass-rails
       sidekiq (~> 2.13.0)
       sinatra
+      smart_listing (~> 0.9.8)
       timecop
 
 GEM
   remote: http://rubygems.org/
   specs:
-    actionmailer (3.2.13)
-      actionpack (= 3.2.13)
-      mail (~> 2.5.3)
-    actionpack (3.2.13)
-      activemodel (= 3.2.13)
-      activesupport (= 3.2.13)
+    actionmailer (3.2.16)
+      actionpack (= 3.2.16)
+      mail (~> 2.5.4)
+    actionpack (3.2.16)
+      activemodel (= 3.2.16)
+      activesupport (= 3.2.16)
       builder (~> 3.0.0)
       erubis (~> 2.7.0)
       journey (~> 1.0.4)
@@ -33,21 +30,23 @@ GEM
       rack-cache (~> 1.2)
       rack-test (~> 0.6.1)
       sprockets (~> 2.2.1)
-    activemodel (3.2.13)
-      activesupport (= 3.2.13)
+    activemodel (3.2.16)
+      activesupport (= 3.2.16)
       builder (~> 3.0.0)
-    activerecord (3.2.13)
-      activemodel (= 3.2.13)
-      activesupport (= 3.2.13)
+    activerecord (3.2.16)
+      activemodel (= 3.2.16)
+      activesupport (= 3.2.16)
       arel (~> 3.0.2)
       tzinfo (~> 0.3.29)
-    activeresource (3.2.13)
-      activemodel (= 3.2.13)
-      activesupport (= 3.2.13)
-    activesupport (3.2.13)
-      i18n (= 0.6.1)
+    activeresource (3.2.16)
+      activemodel (= 3.2.16)
+      activesupport (= 3.2.16)
+    activesupport (3.2.16)
+      i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
-    arel (3.0.2)
+    arel (3.0.3)
+    bootstrap-sass (3.0.3.0)
+      sass (~> 3.2)
     bourne (1.5.0)
       mocha (>= 0.13.2, < 0.15)
     builder (3.0.4)
@@ -62,8 +61,8 @@ GEM
     coffee-script (2.2.0)
       coffee-script-source
       execjs
-    coffee-script-source (1.6.3)
-    connection_pool (1.1.0)
+    coffee-script-source (1.7.0)
+    connection_pool (2.0.0)
     daemons (1.1.9)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
@@ -75,6 +74,7 @@ GEM
       factory_girl (~> 4.2.0)
       railties (>= 3.0.0)
     ffi (1.9.0)
+    ffi (1.9.0-x86-mingw32)
     formatador (0.2.4)
     guard (1.8.1)
       formatador (>= 0.2.4)
@@ -89,15 +89,20 @@ GEM
       childprocess (>= 0.2.3)
       guard (>= 1.1)
       spork (>= 0.8.4)
-    haml (4.0.3)
+    haml (4.0.5)
       tilt
     hike (1.2.3)
-    i18n (0.6.1)
+    i18n (0.6.9)
     journey (1.0.4)
     jquery-rails (3.0.2)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
-    json (1.8.0)
+    json (1.8.1)
+    kaminari (0.15.1)
+      actionpack (>= 3.0.0)
+      activesupport (>= 3.0.0)
+    libv8 (3.11.8.17)
+    liquid (2.6.1)
     listen (1.2.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
@@ -108,40 +113,45 @@ GEM
       treetop (~> 1.4.8)
     metaclass (0.0.1)
     method_source (0.8.1)
-    mime-types (1.25)
+    mime-types (1.25.1)
     mocha (0.14.0)
       metaclass (~> 0.0.1)
-    multi_json (1.7.7)
-    polyglot (0.3.3)
+    multi_json (1.8.4)
+    polyglot (0.3.4)
     pry (0.9.12.2)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
       slop (~> 3.4)
+    pry (0.9.12.2-x86-mingw32)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+      win32console (~> 1.3)
     rack (1.4.5)
     rack-cache (1.2)
       rack (>= 0.4)
-    rack-protection (1.5.0)
+    rack-protection (1.5.3)
       rack
     rack-ssl (1.3.3)
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
-    rails (3.2.13)
-      actionmailer (= 3.2.13)
-      actionpack (= 3.2.13)
-      activerecord (= 3.2.13)
-      activeresource (= 3.2.13)
-      activesupport (= 3.2.13)
+    rails (3.2.16)
+      actionmailer (= 3.2.16)
+      actionpack (= 3.2.16)
+      activerecord (= 3.2.16)
+      activeresource (= 3.2.16)
+      activesupport (= 3.2.16)
       bundler (~> 1.0)
-      railties (= 3.2.13)
-    railties (3.2.13)
-      actionpack (= 3.2.13)
-      activesupport (= 3.2.13)
+      railties (= 3.2.16)
+    railties (3.2.16)
+      actionpack (= 3.2.16)
+      activesupport (= 3.2.16)
       rack-ssl (~> 1.3.2)
       rake (>= 0.8.7)
       rdoc (~> 3.4)
       thor (>= 0.14.6, < 2.0)
-    rake (10.1.0)
+    rake (10.1.1)
     rb-fsevent (0.9.3)
     rb-inotify (0.9.0)
       ffi (>= 0.5.0)
@@ -149,9 +159,10 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
-    redis (3.0.5)
-    redis-namespace (1.3.1)
-      redis (~> 3.0.0)
+    redis (3.0.7)
+    redis-namespace (1.4.1)
+      redis (~> 3.0.4)
+    ref (1.0.5)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
@@ -167,6 +178,11 @@ GEM
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
       rspec-mocks (~> 2.13.0)
+    sass (3.3.4)
+    sass-rails (3.2.6)
+      railties (~> 3.2.0)
+      sass (>= 3.1.10)
+      tilt (~> 1.3)
     shoulda-matchers (1.5.6)
       activesupport (>= 3.0.0)
       bourne (~> 1.3)
@@ -180,11 +196,15 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.7.1)
     simplecov-html (0.7.1)
-    sinatra (1.4.3)
+    sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (~> 1.3, >= 1.3.4)
     slop (3.4.5)
+    smart_listing (0.9.8)
+      coffee-rails
+      kaminari
+      rails (>= 3.2)
     spork (0.9.2)
     sprockets (2.2.2)
       hike (~> 1.2)
@@ -192,17 +212,23 @@ GEM
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
     sqlite3 (1.3.7)
+    sqlite3 (1.3.7-x86-mingw32)
+    therubyracer (0.11.4)
+      libv8 (~> 3.11.8.12)
+      ref
     thor (0.18.1)
     tilt (1.4.1)
-    timecop (0.6.3)
+    timecop (0.7.1)
     timers (1.1.0)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.38)
+    tzinfo (0.3.39)
+    win32console (1.3.2-x86-mingw32)
 
 PLATFORMS
   ruby
+  x86-mingw32
 
 DEPENDENCIES
   database_cleaner
@@ -211,10 +237,10 @@ DEPENDENCIES
   guard-rspec
   guard-spork
   jquery-rails
-  liquid (~> 2.6.0)!
   maily_herald!
   rspec-rails
   shoulda-matchers (~> 1.0)
   simplecov
   spork
   sqlite3
+  therubyracer

@@ -34,3 +34,39 @@ $('.btn-default a').click  (e) ->
      key_timeout = setTimeout(->
        keyChange()
      , 400)
+
+$ ->
+  $('.control-group').tooltip
+    selector: 'a[data-toggle=tooltip]'
+
+  # form ui
+
+  $('input[type="radio"]').wrap '<span class="radio-btn"></span>'
+  $('.radio-btn').on 'click', ->
+    _this = $(this)
+    block = _this.parent().parent()
+    block.find('input:radio').attr 'checked', false
+    block.find('.radio-btn').removeClass 'checkedRadio'
+    _this.addClass 'checkedRadio'
+    _this.find('input:radio').attr 'checked', true
+    return
+
+  $('input[type="checkbox"]').wrap '<span class="check-box"></span>'
+  $.fn.toggleCheckbox = ->
+    @attr 'checked', not @attr('checked')
+    return
+
+  $('.check-box').on 'click', ->
+    $(this).find(':checkbox').toggleCheckbox()
+    $(this).toggleClass 'checkedBox'
+    return
+
+  $('input[type="radio"]:checked').parent().addClass 'checkedRadio'
+  $('input[type="checkbox"]:checked').parent().addClass 'checkedBox'
+  $('select').wrap '<span class="select-wrap"></span>'
+  $(".select-wrap").click ->
+    $(this).toggleClass "select-btn"
+  return
+
+
+
