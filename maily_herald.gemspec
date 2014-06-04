@@ -10,19 +10,15 @@ Gem::Specification.new do |s|
   s.authors     = ["Łukasz Jachymczyk"]
   s.email       = ["lukasz@sology.eu"]
   s.homepage    = "https://github.com/Sology/maily_herald"
-  s.summary     = "Mailing framework for Ruby on Rails applications"
-  #s.description = ""
+  s.description = s.summary = "Mailing framework for Ruby on Rails applications"
 
   s.files        = `git ls-files`.split("\n")
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files   = `git ls-files -- {spec,features}/**/`.split("\n")
 
-  s.add_dependency "rails", "~> 3.2.8"
-  s.add_dependency "liquid", "~> 2.6.0"
+  s.add_dependency "rails", "~> 3.2"
+  s.add_dependency "liquid", "~> 2.6.1"
   s.add_dependency "sidekiq", "~> 2.13.0"
-  s.add_dependency "clockwork", "~> 0.5.4"
-  s.add_dependency "timecop"
-  # s.add_dependency "jquery-rails"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
@@ -34,5 +30,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-spork"
   s.add_development_dependency "spork"
   s.add_development_dependency "simplecov"
-  #s.add_development_dependency "timecop"
+  s.add_development_dependency "timecop"
 end

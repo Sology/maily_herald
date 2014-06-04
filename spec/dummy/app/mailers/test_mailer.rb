@@ -4,4 +4,8 @@ class TestMailer < MailyHerald::Mailer
   def sample_mail user
     mail :to => user.email, :subject => "Test"
   end
+
+  def sample_mail_error user
+    mail :to => user.email, :subject => "Test"
+  end
 end

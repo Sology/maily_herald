@@ -5,7 +5,7 @@ require_relative '../lib/maily_herald/cli'
 begin
   cli = MailyHerald::CLI.instance
   cli.parse
-  cli.run
+  cli.paperboy
 rescue => e
   raise e if $DEBUG
   STDERR.puts e.message

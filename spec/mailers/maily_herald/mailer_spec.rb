@@ -14,5 +14,6 @@ describe MailyHerald::Mailer do
   end
 
   pending "should handle missing mailer" do
+    expect { TestMailer.sample_mail_error(@entity).deliver }.to raise_error
   end
 end

@@ -1,18 +1,10 @@
-GIT
-  remote: git@github.com:Shopify/liquid.git
-  revision: fbfda1a1895bfb5bd9477248008f60fc1953c297
-  specs:
-    liquid (2.6.0)
-
 PATH
   remote: .
   specs:
     maily_herald (0.0.1)
-      clockwork (~> 0.5.4)
-      liquid (~> 2.6.0)
-      rails (~> 3.2.8)
+      liquid (~> 2.6.1)
+      rails (~> 3.2)
       sidekiq (~> 2.13.0)
-      timecop
 
 GEM
   remote: http://rubygems.org/
@@ -52,9 +44,6 @@ GEM
       timers (~> 1.1.0)
     childprocess (0.3.9)
       ffi (~> 1.0, >= 1.0.11)
-    clockwork (0.5.4)
-      activesupport
-      tzinfo (~> 0.3.35)
     coderay (1.0.9)
     columnize (0.3.6)
     connection_pool (1.2.0)
@@ -94,6 +83,7 @@ GEM
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     json (1.8.0)
+    liquid (2.6.1)
     listen (1.2.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
@@ -202,10 +192,10 @@ DEPENDENCIES
   guard-rspec
   guard-spork
   jquery-rails
-  liquid (~> 2.6.0)!
   maily_herald!
   rspec-rails
   shoulda-matchers (~> 1.0)
   simplecov
   spork
   sqlite3
+  timecop

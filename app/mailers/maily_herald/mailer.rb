@@ -19,11 +19,15 @@ module MailyHerald
         mailing = mail.maily_herald_data[:mailing]
         entity = mail.maily_herald_data[:entity]
 
-        mailing.deliver_to(entity) do
-          ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
-            self.set_payload_for_mail(payload, mail)
-            yield # Let Mail do the delivery actions
+        if mailing && entity
+          mailing.deliver_to(entity) do
+            ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
+              self.set_payload_for_mail(payload, mail)
+              yield # Let Mail do the delivery actions
+            end
           end
+        elsif mail.raise_delivery_errors
+          raise ArgumentError.new("MailyHerald: unable to find mailing and/or entity associated to this mailer action")
         end
       end
     end

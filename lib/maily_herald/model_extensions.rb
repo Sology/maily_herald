@@ -1,14 +1,14 @@
 module MailyHerald
   module ModelExtensions
     module TriggerPatch
-      def self.included(base)
-        base.class_eval do
-          after_create :maily_herald_trigger_create
-          after_save :maily_herald_trigger_save
-          after_update :maily_herald_trigger_update
-          after_destroy :maily_herald_trigger_destroy
-        end
-      end
+      #def self.included(base)
+        #base.class_eval do
+          #after_create :maily_herald_trigger_create
+          #after_save :maily_herald_trigger_save
+          #after_update :maily_herald_trigger_update
+          #after_destroy :maily_herald_trigger_destroy
+        #end
+      #end
 
       def maily_herald_trigger_create
         MailyHerald::Manager.handle_trigger :create, self

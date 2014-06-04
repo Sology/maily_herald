@@ -27,13 +27,18 @@ module MailyHerald
     end
 
     def self.run_all
-      require 'redis'
-      redis = Redis.new
-      unless redis.get("maily_herald_running") == "true"
-        redis.set("maily_herald_running", true)
+      redis = MailyHerald.redis
+      lock = redis.setnx("maily_herald_running", Time.now + 10.minutes)
+
+      if lock
         PeriodicalMailing.all.each {|m| m.run}
         Sequence.all.each {|m| m.run}
-        redis.set("maily_herald_running", false)
+
+        redis.del("maily_herald_running")
+      else
+        if Time.parse(redis.setnx("maily_herald_running")) > Time.now
+          redis.del("maily_herald_running")
+        end
       end
     end
 
