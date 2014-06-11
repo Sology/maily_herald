@@ -2,9 +2,6 @@ require 'spec_helper'
 
 describe MailyHerald::Mailing do
   describe "Validations" do
-    it {should validate_presence_of(:name)}
-    it {should validate_presence_of(:title)}
-
     it "should validate template syntax" do
       @mailing = MailyHerald.one_time_mailing :test_mailing
       @mailing.should be_valid
@@ -22,9 +19,5 @@ describe MailyHerald::Mailing do
       @mailing.errors.messages.keys.should include(:conditions)
       @mailing.errors.messages[:conditions].should_not be_empty
     end
-  end
-
-  describe "Associations" do
-    it {should have_many(:subscriptions)}
   end
 end

@@ -1,6 +1,5 @@
 --color
---format=nested
+--format=documentation
 --backtrace
 --profile
 --order random
---drb

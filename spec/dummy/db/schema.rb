@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130723074347) do
+ActiveRecord::Schema.define(:version => 20140225103244) do
 
   create_table "maily_herald_aggregated_subscriptions", :force => true do |t|
     t.integer "entity_id",                      :null => false

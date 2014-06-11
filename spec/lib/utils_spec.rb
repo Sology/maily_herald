@@ -15,17 +15,17 @@ describe MailyHerald::Utils do
       expect {MailyHerald::Utils::MarkupEvaluator.test_conditions(@mailing.conditions)}.to raise_error(Liquid::Error)
     end
 
-    it "should validate numerical conditions" do
+    pending "should validate numerical conditions" do
       @mailing.conditions = "(2 * 3) - 1"
-      @evaluator.evaluate_conditions(@mailing.conditions).should be_false
+      @evaluator.evaluate_conditions(@mailing.conditions).should be_falsy
       expect {@mailing.test_conditions}.not_to raise_error(Liquid::Error)
 
       @mailing.conditions = "2 == 3"
-      @evaluator.evaluate_conditions(@mailing.conditions).should be_false
+      @evaluator.evaluate_conditions(@mailing.conditions).should be_falsy
       expect {@mailing.test_conditions}.not_to raise_error(Liquid::Error)
 
       @mailing.conditions = "1 * 2 + 3"
-      @evaluator.evaluate_conditions(@mailing.conditions).should be_true
+      @evaluator.evaluate_conditions(@mailing.conditions).should be_truthy
       expect {@mailing.test_conditions}.not_to raise_error(Liquid::Error)
     end
 

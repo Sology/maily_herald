@@ -7,9 +7,6 @@ describe MailyHerald::SequenceSubscription do
   end
 
   describe "Associations" do
-    it {should belong_to(:entity)}
-    it {should belong_to(:sequence)}
-
     it "should have valid associations" do
       subscription = @sequence.subscription_for @entity
       subscription.entity.should eq(@entity)

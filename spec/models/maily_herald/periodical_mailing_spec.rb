@@ -11,15 +11,6 @@ describe MailyHerald::PeriodicalMailing do
     Timecop.return
   end
 
-  describe "Validations" do
-    it {should validate_presence_of(:context_name)}
-    it {should validate_presence_of(:name)}
-  end
-
-  describe "Associations" do
-    it {should have_many(:subscriptions)}
-  end
-
   describe "Start time evaluation" do
     before(:each) do
       @entity = FactoryGirl.create :user
@@ -75,8 +66,8 @@ describe MailyHerald::PeriodicalMailing do
 
       Timecop.freeze @entity.created_at
 
-      subscription.conditions_met?.should be_true
-      subscription.processable?.should be_true
+      subscription.conditions_met?.should be_truthy
+      subscription.processable?.should be_truthy
       subscription.next_processing_time.should be <= @entity.created_at
 
       @mailing.run
@@ -131,8 +122,8 @@ describe MailyHerald::PeriodicalMailing do
 
       Timecop.freeze start_at
 
-      subscription.conditions_met?.should be_true
-      subscription.processable?.should be_true
+      subscription.conditions_met?.should be_truthy
+      subscription.processable?.should be_truthy
 
       @mailing.run
 

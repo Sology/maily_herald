@@ -5,7 +5,7 @@ describe MailyHerald::Sequence do
     @sequence = MailyHerald.sequence(:newsletters)
     @sequence.should be_a MailyHerald::Sequence
     @sequence.should_not be_a_new_record
-    @sequence.autosubscribe.should be_true
+    @sequence.autosubscribe.should be_truthy
     @sequence.start_var.should_not be_empty
   end
 
@@ -13,16 +13,7 @@ describe MailyHerald::Sequence do
     Timecop.return
   end
 
-  describe "Validations" do
-    it {should validate_presence_of(:context_name)}
-    it {should validate_presence_of(:name)}
-  end
-
-
   describe "Associations" do
-    it {should have_many(:subscriptions)}
-    it {should have_many(:mailings)}
-
     it "should have valid 'through' associations" do
       @sequence.mailings.length.should_not be_zero
     end
@@ -367,7 +358,7 @@ describe MailyHerald::Sequence do
     before(:each) do
       @sequence.update_attribute(:autosubscribe, false)
       @sequence.should be_valid
-      @sequence.save.should be_true
+      @sequence.save.should be_truthy
       @entity = FactoryGirl.create :user
     end
 

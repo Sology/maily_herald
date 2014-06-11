@@ -13,7 +13,7 @@ describe MailyHerald::Mailer do
     MailyHerald::Log.delivered.count.should eq(1)
   end
 
-  pending "should handle missing mailer" do
+  it "should handle missing mailer" do
     expect { TestMailer.sample_mail_error(@entity).deliver }.to raise_error
   end
 end

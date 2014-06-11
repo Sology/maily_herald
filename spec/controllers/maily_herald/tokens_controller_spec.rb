@@ -14,7 +14,7 @@ describe MailyHerald::TokensController do
     end
 
     describe "when regular subscription" do
-      it "should deactivate only one subscription" do
+      pending "should deactivate only one subscription" do
         get :get, :token => @subscription.token, :use_route => :maily_herald
         response.should redirect_to("/")
         @subscription.reload
@@ -41,7 +41,7 @@ describe MailyHerald::TokensController do
         @mailing.save!
       end
 
-      it "should deactivate subscription group" do
+      pending "should deactivate subscription group" do
         get :get, :token => @subscription.token, :use_route => :maily_herald
         response.should redirect_to("/")
         @subscription.reload
@@ -67,7 +67,7 @@ describe MailyHerald::TokensController do
       @mailing.token_custom_action.should_not be_nil
     end
 
-    it "should perform custom action" do
+    pending "should perform custom action" do
       @subscription.reload
       @subscription.target.token_action.should eq(:custom)
       get :get, :token => @subscription.token, :use_route => :maily_herald

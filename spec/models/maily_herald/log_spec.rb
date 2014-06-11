@@ -7,9 +7,6 @@ describe MailyHerald::Log do
   end
 
   describe "Associations" do
-    it {should belong_to(:entity)}
-    it {should belong_to(:mailing)}
-
     it "should have proper scopes" do
       log = MailyHerald::Log.create_for @mailing, @entity
       log.should be_valid
@@ -23,15 +20,10 @@ describe MailyHerald::Log do
     end
   end
 
-  describe "Validations" do
-    it {should validate_presence_of(:entity)}
-    it {should validate_presence_of(:mailing)}
-  end
-
   it "should have proper scopes" do
     log1 = MailyHerald::Log.create_for @mailing, @entity
     log2 = MailyHerald::Log.create_for @mailing, @entity
-    MailyHerald::Log.count.should eq(2)
+    expect(MailyHerald::Log.count).to eq(2)
 
     log1.update_attribute(:status, :skipped)
     MailyHerald::Log.count.should eq(2)

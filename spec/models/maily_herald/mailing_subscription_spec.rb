@@ -8,14 +8,11 @@ describe MailyHerald::MailingSubscription do
   end
 
   describe "Associations" do
-    it {should belong_to(:entity)}
-    it {should belong_to(:mailing)}
-
     it "should have valid associations" do
       @subscription.entity.should eq(@entity)
       @subscription.mailing.should eq(@mailing)
       @subscription.should be_valid
-      @mailing.autosubscribe?.should be_true
+      @mailing.autosubscribe?.should be_truthy
       @subscription.should_not be_a_new_record
     end
   end
@@ -44,7 +41,7 @@ describe MailyHerald::MailingSubscription do
     end
 
     it "should initialize token" do
-      @mailing.autosubscribe.should be_false
+      @mailing.autosubscribe.should be_falsy
       @subscription.should_not be_active
       @subscription.activate!
       @subscription.should be_active

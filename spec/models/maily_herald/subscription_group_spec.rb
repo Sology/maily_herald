@@ -16,10 +16,6 @@ describe MailyHerald::SubscriptionGroup do
   end
 
   describe "Associations" do
-    it {should have_many(:mailings)}
-    it {should have_many(:sequences)}
-    it {should have_many(:aggregated_subscriptions)}
-
     it "should have correct associations" do
       @sequence.subscription_group.should eq(@group)
       @group.sequences.should include(@sequence)

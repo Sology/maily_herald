@@ -15,8 +15,8 @@ describe MailyHerald::OneTimeMailing do
     MailyHerald::MailingSubscription.count.should eq(1)
     MailyHerald::Log.count.should eq(0)
 
-    subscription.conditions_met?.should be_true
-    subscription.processable?.should be_true
+    subscription.conditions_met?.should be_truthy
+    subscription.processable?.should be_truthy
 
     @mailing.run
 

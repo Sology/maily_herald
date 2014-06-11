@@ -7,8 +7,6 @@ describe MailyHerald::SequenceMailing do
   end
 
   describe "Validations" do
-    it {should validate_presence_of(:absolute_delay)}
-
     it do
       @mailing.absolute_delay = nil
       @mailing.should_not be_valid
