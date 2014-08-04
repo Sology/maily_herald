@@ -32,7 +32,6 @@
   .section-wrapper
     %ul.nav.nav-main.nav-justified
       %li{:class => ((@logs.nil? && @log.nil?) ? "" : "active")}= link_to "Dashboard", webui_dashboard_index_path
-      %li{:class => (@mailing.class == MailyHerald::SubscriptionGroup ? "active" : "")}= link_to "Subscription groups", webui_subscription_groups_path
       %li{:class => (@mailing.class == MailyHerald::SequenceMailing ? "active" : "")}= link_to "Sequences", webui_sequences_mailings_path
       %li{:class => (@mailing.class == MailyHerald::PeriodicalMailing ? "active" : "")}= link_to "Periodicals", webui_periodical_mailings_path
       %li{:class => (@mailing.class == MailyHerald::OneTimeMailing ? "active" : "")}= link_to "One-times", webui_one_time_mailings_path

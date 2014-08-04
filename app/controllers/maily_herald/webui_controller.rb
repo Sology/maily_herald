@@ -19,7 +19,6 @@ module MailyHerald
 			@one_time_mailings = MailyHerald::OneTimeMailing.scoped
 			@periodical_mailings = MailyHerald::PeriodicalMailing.scoped
 			@sequences = MailyHerald::Sequence.scoped
-			@subscription_groups = MailyHerald::SubscriptionGroup.scoped
 		end
   end
 end
