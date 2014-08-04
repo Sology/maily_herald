@@ -1,0 +1,20 @@
+%td
+  = time_tag_relative(object.processed_at)
+%td
+  = object.entity 
+  = "<#{object.entity.email}>"
+%td
+  - if object.mailing.sequence?
+    = link_to object.mailing.sequence.title, webui_sequence_path(object.mailing.sequence)
+    &raquo;
+  = link_to object.mailing.title, webui_mailing_path(object.mailing)
+%td
+  - case object.status
+  - when :delivered
+    %span.glyphicon.glyphicon-ok{:title => "Delivered"}
+  - when :skipped
+    %span.glyphicon.glyphicon-warning-sign{:title => "Skipped"}
+  - when :error
+    %span.glyphicon.glyphicon-remove{:title => "ERROR"}
+%td.actions
+  = smart_listing_item_actions delivery_log_list_actions(object)

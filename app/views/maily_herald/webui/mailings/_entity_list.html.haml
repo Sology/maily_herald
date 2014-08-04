@@ -1,0 +1,26 @@
+- unless @entities.empty?
+  %table.table.table-listing
+    %thead
+      %tr
+        %th Id
+        %th Name
+        %th Destination
+        %th.span2.span1
+          %span.glyphicon.glyphicon-download-alt{:title => "Deliveries count"}
+        - unless @sequence
+          %th.span2.span1 
+            %span.glyphicon.glyphicon-book{:title => "Subscription active?"}
+        %th.span2.span1
+          %span.glyphicon.glyphicon-check{:title => "Conditions met?"}
+        %th.span1
+        
+    %tbody
+      - @entities.each do |entity|
+        %tr.editable{:data => {"id" => entity.id}}
+          = render :partial => "maily_herald/webui/mailings/entity", :locals => {:object => entity}
+
+  .row
+    .col-xs-6= smart_listing.paginate 
+    .col-xs-6= smart_listing.pagination_per_page_links
+- else
+  %p.alert No entities in the scope 

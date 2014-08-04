@@ -1,0 +1,17 @@
+= labelled_form_for @sequence, :url => @sequence.new_record? ? webui_sequences_path : webui_sequence_path(@sequence) do |f|
+  = f.text_field :title
+  %hr
+  = f.check_box :autosubscribe, :help => "Check this if you want new entities within the scope to be automatically subscribed"
+  = f.check_box :override_subscription, :help => "Check this if you want to send this mailing regardless of entity subscription"
+  = f.select :subscription_group, maily_herald_subscription_group_options_for_select
+  = f.select :token_action, maily_herald_token_action_options_for_select
+  %hr
+  = f.select :context_name, maily_herald_context_options_for_select
+  %hr
+  %p
+    %em Please supply here sequence start date. You can specify this either as an absolute date or evaluated context variable. If both specified, absolute start date will be taken under consideration.
+  = f.datetime :start_text, :comment => Time.zone
+  = f.text_field :start_var, :comment => context_attributes_link(:notext => true, :context => @sequence.context ? @sequence.context.name : ""), :help => "Type here valid context variable that will be evaluated into start date (i.e. 'user.activated_at')"
+  %hr
+  -#= f.text_field :delay
+  = f.buttons :submit

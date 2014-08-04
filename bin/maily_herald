@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/maily_herald/cli'
+require 'rubygems'
+require 'maily_herald'
 
 begin
   cli = MailyHerald::CLI.instance

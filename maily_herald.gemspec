@@ -19,6 +19,11 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.2"
   s.add_dependency "liquid", "~> 2.6.1"
   s.add_dependency "sidekiq", "~> 2.13.0"
+	s.add_dependency "haml"
+	s.add_dependency "coffee-rails", "~>3.2.1"
+	s.add_dependency "smart_listing", "~>0.9.8"
+	s.add_dependency 'bootstrap-sass', "~> 3.0.3.0"
+	s.add_dependency 'sass-rails'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
@@ -29,4 +34,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "timecop"
   s.add_development_dependency "spring-commands-rspec"
+  s.add_development_dependency "therubyracer"
 end

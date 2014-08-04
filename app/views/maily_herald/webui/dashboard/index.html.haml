@@ -1,0 +1,27 @@
+- unless Rails.env.production?
+  %ul.nav.nav-secondary.pull-right
+    %li
+      - if MailyHerald.simulation_ongoing?
+        %a.btn.disabled Time travel in progress...
+      - else
+        = link_to "Time travel", {:controller => "webui/dashboard", :action => "time_travel"}
+    %li= link_to "Forget all logs and subscriptions", {:controller => "webui/dashboard", :action => "forget"}
+
+.row
+  .col-xs-12
+    %h2.border Statistics
+
+    %h2.border Deliveries in last:
+    .box
+      %dl.dl-horizontal
+        %dt hour:
+        %dd= @last_deliveries[:hour]
+        %dt day:
+        %dd= @last_deliveries[:day]
+        %dt month:
+        %dd= @last_deliveries[:week]
+
+    %h2.border Logs
+    .box 
+      = smart_listing_for(:logs) do |smart_listing|
+        = smart_listing.render_list

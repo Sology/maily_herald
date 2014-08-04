@@ -1,0 +1,35 @@
+.row
+  .col-sm-10
+    %h2.border 
+      Subscription groups
+  
+  .col-sm-2
+    %ul.nav.nav-secondary.pull-right
+      %li= link_to "NEW Group", new_webui_subscription_group_path
+    
+.row
+  .col-sm-12
+
+    %table.table.table-listing 
+      %thead 
+        %tr 
+          %th
+            Name
+          %th 
+            Actions
+      %tbody
+        - if @subscription_groups.any?
+          - @subscription_groups.each do |group| 
+            %tr 
+              %td 
+                - if @subscription_group != group
+                  = link_to group.title, webui_subscription_group_path(group)
+                - else
+                  %strong= group.title
+              %td 
+                - if @subscription_group != group
+                  = link_to 'Show', webui_subscription_group_path(group)
+
+        - else
+          No subscription groups
+      %tfoot

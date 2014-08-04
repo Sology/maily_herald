@@ -1,0 +1,16 @@
+.row
+  .col-sm-6 
+    %ul.breadcrumb
+      %li 
+        - if @sequence
+          Sequence
+          = link_to @mailing.sequence.title, admin_newsletters_sequence_path(@mailing.sequence)
+         
+      %li.active 
+        New mailing
+  .col-sm-6 
+
+
+.row
+  .col-xs-12
+    = render :partial => 'form'

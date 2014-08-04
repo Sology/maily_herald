@@ -1,0 +1,16 @@
+.row
+  .col-xs-6
+    %h2.border
+      %a= link_to '<<', webui_mailing_path
+      = @mailing.title
+
+  .col-xs-6
+    %ul.breadcrumb.pull-right
+      %li 
+        %a= link_to 'Mailing', webui_periodical_mailings_path
+      %li 
+        = link_to @mailing.title, webui_mailing_path
+      %li 
+        Edit
+
+= render :partial => 'form'

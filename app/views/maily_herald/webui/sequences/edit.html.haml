@@ -1,0 +1,14 @@
+%ul.breadcrumb
+  %li 
+    = link_to webui_sequences_mailings_path do
+      Sequence
+  %li 
+    = link_to webui_sequence_path do
+      = @sequence.title
+  %li.active
+    Edit
+
+%h2.border
+  = @sequence.title
+
+= render :partial => 'form'

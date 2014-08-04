@@ -1,0 +1,19 @@
+- unless smart_listing.collection.empty?
+  %table.table.table-listing
+    %thead
+      %tr
+        %th Entity
+        %th.span2.span1 
+          %i.icon.icon-book{:title => "Subscription active?"}
+        %th.span1
+        
+    %tbody
+      - smart_listing.collection.each do |subscription|
+        %tr.editable{:data => {"id" => subscription.id}}
+          = render :partial => "maily_herald/webui/subscription_groups/subscription", :locals => {:object => subscription}
+
+  .row
+    .col-xs-6= smart_listing.paginate 
+    .col-xs-6= smart_listing.pagination_per_page_links
+- else
+  %p.alert No subscriptions

@@ -1,0 +1,28 @@
+en:
+  activerecord:
+    attributes:
+      one_time_mailing: 
+        name: Name
+        context_name: Context
+        sequence: Sequence
+        conditions: Conditions
+        title: Title
+        from: Sender
+        relative_delay: Delay
+        template: Template
+      periodical_mailing: 
+        name: Name
+        context_name: Context
+        sequence: Sequence
+        conditions: Conditions
+        title: Title
+        from: Sender
+        relative_delay: Delay
+        template: Template
+      sequence: 
+        name: Name
+        context_name: Context
+        mode: Mode
+        start: Start date
+        start_var: Start variable (evaluated)
+        period: Period

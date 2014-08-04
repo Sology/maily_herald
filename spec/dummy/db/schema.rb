@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140612101023) do
+ActiveRecord::Schema.define(:version => 20140804152250) do
 
   create_table "maily_herald_dispatches", :force => true do |t|
     t.string   "type",                                     :null => false
