@@ -73,7 +73,7 @@ module MailyHerald
     end
 
     def model
-      @model ||= @scope.call.table.engine
+      @model ||= @scope.call.klass
     end
 
     def scope &block

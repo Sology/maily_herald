@@ -3,14 +3,32 @@ require 'spec_helper'
 describe MailyHerald::Mailer do
   before(:each) do
     @entity = FactoryGirl.create :user
+    @mailing = MailyHerald.dispatch(:sample_mail)
+    @list = @mailing.list
   end
 
-  it "should deliver" do
-    MailyHerald::Log.count.should eq(0)
+  describe "without subscription" do
+    it "should not deliver" do
+      MailyHerald::Log.delivered.count.should eq(0)
 
-    TestMailer.sample_mail(@entity).deliver
+      TestMailer.sample_mail(@entity).deliver
 
-    MailyHerald::Log.delivered.count.should eq(1)
+      MailyHerald::Log.delivered.count.should eq(0)
+    end
+  end
+
+  describe "with subscription" do
+    before(:each) do
+      @list.subscribe! @entity
+    end
+
+    it "should deliver" do
+      MailyHerald::Log.delivered.count.should eq(0)
+
+      TestMailer.sample_mail(@entity).deliver
+
+      MailyHerald::Log.delivered.count.should eq(1)
+    end
   end
 
   it "should handle missing mailer" do

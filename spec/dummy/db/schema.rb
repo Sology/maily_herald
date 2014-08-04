@@ -11,21 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140225103244) do
-
-  create_table "maily_herald_aggregated_subscriptions", :force => true do |t|
-    t.integer "entity_id",                      :null => false
-    t.string  "entity_type",                    :null => false
-    t.integer "group_id",                       :null => false
-    t.boolean "active",      :default => false, :null => false
-  end
+ActiveRecord::Schema.define(:version => 20140612101023) do
 
   create_table "maily_herald_dispatches", :force => true do |t|
     t.string   "type",                                     :null => false
     t.integer  "sequence_id"
     t.string   "context_name"
     t.text     "conditions"
-    t.string   "trigger"
     t.string   "mailer_name"
     t.string   "name",                                     :null => false
     t.string   "title"
@@ -33,48 +25,47 @@ ActiveRecord::Schema.define(:version => 20140225103244) do
     t.string   "from"
     t.text     "template"
     t.integer  "absolute_delay"
-    t.datetime "start"
-    t.text     "start_var"
     t.integer  "period"
     t.boolean  "enabled",               :default => false
-    t.boolean  "autosubscribe"
     t.boolean  "override_subscription"
-    t.integer  "subscription_group_id"
-    t.string   "token_action"
     t.datetime "created_at",                               :null => false
     t.datetime "updated_at",                               :null => false
+    t.text     "start_at"
+    t.integer  "list_id"
   end
 
   add_index "maily_herald_dispatches", ["context_name"], :name => "index_maily_herald_dispatches_on_context_name"
   add_index "maily_herald_dispatches", ["name"], :name => "index_maily_herald_dispatches_on_name", :unique => true
-  add_index "maily_herald_dispatches", ["trigger"], :name => "index_maily_herald_dispatches_on_trigger"
 
-  create_table "maily_herald_logs", :force => true do |t|
-    t.integer  "entity_id",                             :null => false
-    t.string   "entity_type",                           :null => false
-    t.integer  "mailing_id"
-    t.string   "status",       :default => "delivered", :null => false
-    t.text     "data"
-    t.datetime "processed_at"
+  create_table "maily_herald_lists", :force => true do |t|
+    t.string "name",         :null => false
+    t.string "title"
+    t.string "context_name"
+    t.string "token_action"
   end
 
-  create_table "maily_herald_subscription_groups", :force => true do |t|
-    t.string "name",  :null => false
-    t.string "title", :null => false
+  create_table "maily_herald_logs", :force => true do |t|
+    t.integer  "entity_id",     :null => false
+    t.string   "entity_type",   :null => false
+    t.integer  "mailing_id"
+    t.string   "status",        :null => false
+    t.text     "data"
+    t.datetime "processing_at"
+    t.integer  "sequence_id"
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|
-    t.string   "type",                            :null => false
-    t.integer  "entity_id",                       :null => false
-    t.string   "entity_type",                     :null => false
-    t.integer  "dispatch_id"
-    t.string   "token",                           :null => false
+    t.integer  "entity_id",                           :null => false
+    t.string   "entity_type",                         :null => false
+    t.string   "token",                               :null => false
     t.text     "settings"
     t.text     "data"
-    t.boolean  "active",       :default => false, :null => false
+    t.boolean  "active",           :default => false, :null => false
     t.datetime "delivered_at"
-    t.datetime "created_at",                      :null => false
-    t.datetime "updated_at",                      :null => false
+    t.datetime "created_at",                          :null => false
+    t.datetime "updated_at",                          :null => false
+    t.integer  "list_id"
+    t.datetime "next_delivery_at"
   end
 
   create_table "users", :force => true do |t|

@@ -5,8 +5,10 @@ describe MailyHerald::Utils do
     before(:each) do
       @mailing = MailyHerald.one_time_mailing :test_mailing
       @user = FactoryGirl.create :user
+      @list = @mailing.list
+      @list.subscribe!(@user)
       @subscription = @mailing.subscription_for(@user)
-      @evaluator = MailyHerald::Utils::MarkupEvaluator.new(@mailing.context.drop_for(@user, @subscription))
+      @evaluator = MailyHerald::Utils::MarkupEvaluator.new(@list.context.drop_for(@user, @subscription))
     end
 
     it "should validate syntax" do

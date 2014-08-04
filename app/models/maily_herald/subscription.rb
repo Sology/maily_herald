@@ -1,10 +1,10 @@
 module MailyHerald
   class Subscription < ActiveRecord::Base
     belongs_to  :entity,        :polymorphic => true
+    belongs_to  :list,          :class_name => "MailyHerald::List"
 
     validates   :entity,        :presence => true
     validates   :token,         :presence => true, :uniqueness => true
-    validate    :aggregate_presence
 
     scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
 
@@ -17,22 +17,18 @@ module MailyHerald
       end
     end
 
+    after_create :create_schedules
+
     def active?
-      if aggregated?
-        aggregate.active?
-      else
-        !new_record? && read_attribute(:active)
-      end
+      !new_record? && read_attribute(:active)
     end
 
     def deactivate!
-      aggregated? ? aggregate.deactivate! : update_attribute(:active, false)
-      save!
+      update_attribute(:active, false)
     end
 
     def activate!
-      aggregated? ? aggregate.activate! : update_attribute(:active, true)
-      save!
+      update_attribute(:active, true)
     end
 
     def toggle!
@@ -46,10 +42,13 @@ module MailyHerald
       }
     end
 
-    private
-
-    def aggregate_presence
-      self.errors.add(:base, "aggregate not present") if aggregated? && !aggregate
+    def create_schedules
+      PeriodicalMailing.where(:list_id => self.list).each do |m|
+        m.set_schedule_for self.entity
+      end
+      Sequence.where(:list_id => self.list).each do |s|
+        s.set_schedule_for self.entity
+      end
     end
   end
 end

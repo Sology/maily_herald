@@ -2,11 +2,11 @@ module MailyHerald
   class Mailer < ActionMailer::Base
     attr_reader :entity
 
-    def generic entity, mailing, subscription
-      destination = subscription.destination
+    def generic entity, mailing
+      destination = mailing.destination(entity)
       subject = mailing.subject
       from = mailing.sender
-      content = subscription.is_a?(MailyHerald::SequenceSubscription) ? subscription.render_template(mailing) : subscription.render_template
+      content = mailing.render_template(entity)
 
       mail(to: destination, from: from, subject: subject) do |format|
         format.text { render text: content }
@@ -20,7 +20,7 @@ module MailyHerald
         entity = mail.maily_herald_data[:entity]
 
         if mailing && entity
-          mailing.deliver_to(entity) do
+          mailing.deliver_with_mailer_to(entity) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
               self.set_payload_for_mail(payload, mail)
               yield # Let Mail do the delivery actions

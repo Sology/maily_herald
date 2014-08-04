@@ -1,28 +1,36 @@
 module MailyHerald
   class Log < ActiveRecord::Base
-    AVAILABLE_STATUSES = [:delivered, :skipped, :error]
+    AVAILABLE_STATUSES = [:scheduled, :delivered, :skipped, :error]
 
     belongs_to  :entity,        :polymorphic => true
     belongs_to  :mailing,       :class_name => "MailyHerald::Mailing", :foreign_key => :mailing_id
+    belongs_to  :sequence,      :class_name => "MailyHerald::Sequence", :foreign_key => :sequence_id
 
     validates   :entity,        :presence => true
     validates   :mailing,       :presence => true
     validates   :status,        :presence => true, :inclusion => {:in => AVAILABLE_STATUSES}
 
-    default_scope               order("processed_at asc")
+    validates   :processing_at, :presence => true, :if => :scheduled?
+
+    default_scope               order("processing_at asc")
     scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
     scope       :for_mailing,   lambda {|mailing| where(:mailing_id => mailing.id) }
+    scope       :for_sequence,  lambda {|sequence| where(:sequence_id => sequence.id) }
     scope       :delivered,     where(:status => :delivered)
     scope       :skipped,       where(:status => :skipped)
     scope       :error,         where(:status => :error)
+    scope       :scheduled,     where(:status => :scheduled)
+    scope       :processed,     where(:status => [:delivered, :skipped, :error])
 
     serialize   :data,          Hash
+
+    attr_accessible :status, :data
 
     def self.create_for mailing, entity, status = :delivered, data = nil
       log = Log.new
       log.mailing = mailing
       log.entity = entity
-      log.processed_at = DateTime.now
+      log.processing_at = DateTime.now
       log.status = status
       log.data = data if data
       log.save!
@@ -43,6 +51,10 @@ module MailyHerald
 
     def error?
       self.status == :error
+    end
+
+    def scheduled?
+      self.status == :scheduled
     end
   end
 end

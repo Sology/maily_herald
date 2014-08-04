@@ -1,22 +1,19 @@
 module MailyHerald
   class Dispatch < ActiveRecord::Base
-    validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
+    belongs_to  :list,          :class_name => "MailyHerald::List"
 
-    def subscription_for entity
-      subscription = self.subscriptions.for_entity(entity).first
-      unless subscription 
-        subscription = self.subscriptions.build
-        subscription.entity = entity
-        if self.autosubscribe && self.context.scope.include?(entity)
-          if entity.respond_to?(:maily_herald_autosubscribe)
-            subscription.active = entity.maily_herald_autosubscribe(self)
-          else
-            subscription.active = true
-          end
-        end
-        subscription.save!
-      end
-      subscription
+    validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
+    validates   :list,          :presence => true
+
+    delegate :subscription_for, :to => :list
+
+    def list= l
+      l = MailyHerald::List.find_by_name(l.to_s) if l.is_a?(String) || l.is_a?(Symbol)
+      super(l)
+    end
+
+    def processable? entity
+      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity))
     end
 
   end

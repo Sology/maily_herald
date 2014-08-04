@@ -11,7 +11,7 @@ module MailyHerald
 
     class Formatter < Logger::Formatter
       def call(severity, time, program_name, message)
-        "#{time.utc.iso8601} #{Process.pid} [#{"%3s" % program_name}] #{severity}: #{message}\n"
+        "#{time.utc.iso8601} #{Process.pid} [Maily##{"%3s" % program_name}] #{severity}: #{message}\n"
       end
     end
 

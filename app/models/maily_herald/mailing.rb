@@ -1,16 +1,12 @@
 module MailyHerald
-  MailyHerald::SubscriptionGroup
-
   class Mailing < Dispatch
-    attr_accessible :title, :subject, :context_name, :autosubscribe, :subscription_group, :override_subscription,
-                    :token_action, :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start, :start_var, :period
+    include MailyHerald::TemplateRenderer
 
-    has_many    :subscriptions, :class_name => "MailyHerald::MailingSubscription", :foreign_key => "dispatch_id", :dependent => :destroy
+    attr_accessible :title, :subject, :context_name, :override_subscription,
+                    :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
+
     has_many    :logs,          :class_name => "MailyHerald::Log", :dependent => :destroy
-
-    belongs_to  :subscription_group, :class_name => "MailyHerald::SubscriptionGroup"
     
-    validates   :trigger,       :presence => true, :inclusion => {:in => [:manual, :create, :save, :update, :destroy]}
     validates   :title,         :presence => true
     validates   :subject,       :presence => true, :if => :generic_mailer?
     validates   :template,      :presence => true, :if => :generic_mailer?
@@ -25,20 +21,9 @@ module MailyHerald
 
     after_initialize do
       if self.new_record?
-        self.autosubscribe = true
         self.override_subscription = false
-        self.token_action = :unsubscribe
         self.mailer_name = :generic
       end
-    end
-
-    def subscription_group= g
-      g = MailyHerald::SubscriptionGroup.find_by_name(g.to_s) if g.is_a?(String) || g.is_a?(Symbol)
-      super(g)
-    end
-
-    def token_action
-      read_attribute(:token_action).to_sym
     end
 
     def enabled?
@@ -57,30 +42,11 @@ module MailyHerald
       self.class == SequenceMailing
     end
 
-    def context
-      @context ||= MailyHerald.context context_name
-    end
-
     def sender
       if self.from && !self.from.empty?
         self.from
       else
         MailyHerald.default_from
-      end
-    end
-
-    def trigger
-      (read_attribute(:trigger) || :manual).to_sym
-    end
-    def trigger=(value)
-      write_attribute(:trigger, value.to_s)
-    end
-
-    def token_custom_action &block
-      if block_given?
-        MailyHerald.token_custom_action :mailing, self.id, &block
-      else
-        MailyHerald.token_custom_action :mailing, self.id
       end
     end
 
@@ -92,32 +58,51 @@ module MailyHerald
       self.mailer_name == "generic"
     end
 
+    def conditions_met? entity
+      subscription = self.list.subscription_for(entity)
+      return false unless subscription
+
+      evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
+      evaluator.evaluate_conditions(self.conditions)
+    end
+
+    def destination entity
+      self.list.context.destination.call(entity)
+    end
+
+    def render_template entity
+      subscription = self.list.subscription_for(entity)
+      return unless subscription
+
+      drop = self.list.context.drop_for entity, subscription
+      perform_template_rendering drop, self.template
+    end
+
     protected
 
     def deliver_to entity
-      if block_given?
-        # Called from Mailer
-        subscription = subscription_for entity
-        return unless subscription.processable?
-        unless subscription.conditions_met?(self)
-          Log.create_for self, entity, :skipped
-          return
-        end
-
-        mail = yield # Let mailer do his job
-
-        Log.create_for self, entity, :delivered, {:content => mail.first.to_s}
+      if self.mailer_name == 'generic'
+        subscription = self.list.subscription_for entity
+        mail = Mailer.generic(entity, self)
       else
-        if self.mailer_name == 'generic'
-          subscription = subscription_for entity
-          mail = Mailer.generic(entity, self, subscription)
-        else
-          mail = self.mailer_name.constantize.send(self.name, entity)
-        end
-        mail.deliver
+        mail = self.mailer_name.constantize.send(self.name, entity)
       end
+
+      mail.deliver
+    end
+
+    # Called from Mailer, block required
+    def deliver_with_mailer_to entity
+      return unless processable?(entity)
+      unless conditions_met?(entity)
+        return {status: :skipped}
+      end
+
+      mail = yield # Let mailer do his job
+
+      return {status: :delivered, data: {:content => mail.to_s}}
     rescue StandardError => e
-      Log.create_for self, entity, :error, {:msg => e.to_s}
+      return {status: :error, data: {:msg => e.to_s}}
     end
 
     private

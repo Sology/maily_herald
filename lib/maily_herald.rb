@@ -81,14 +81,13 @@ module MailyHerald
     @@contexts ||= {}
     @@token_custom_actions ||= {}
 
+    logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([Dispatch, List, Log, Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
+
     yield self
 
-    ActionDispatch::Callbacks.to_prepare do
+    Rails.application.config.to_prepare do
       @@contexts.each do|n, c|
         if c.model
-          unless c.model.included_modules.include?(MailyHerald::ModelExtensions::TriggerPatch)
-            c.model.send(:include, MailyHerald::ModelExtensions::TriggerPatch)
-          end
           unless c.model.included_modules.include?(MailyHerald::ModelExtensions::AssociationsPatch)
             c.model.send(:include, MailyHerald::ModelExtensions::AssociationsPatch)
           end
@@ -110,51 +109,43 @@ module MailyHerald
   end
 
   def self.dispatch name
-    Dispatch.find_by_name(name) if Dispatch.table_exists?
+    Dispatch.find_by_name(name)
   end
 
   def self.one_time_mailing name
-    if OneTimeMailing.table_exists?
-      mailing = OneTimeMailing.find_or_initialize_by_name(name)
-      if block_given? 
-        yield(mailing)
-        mailing.save! if mailing.new_record?
-      end
-      mailing
+    mailing = OneTimeMailing.find_or_initialize_by_name(name)
+    if block_given? 
+      yield(mailing)
+      mailing.save! if mailing.new_record?
     end
+    mailing
   end
 
   def self.periodical_mailing name
-    if PeriodicalMailing.table_exists?
-      mailing = PeriodicalMailing.find_or_initialize_by_name(name)
-      if block_given? 
-        yield(mailing)
-        mailing.save! if mailing.new_record?
-      end
-      mailing
+    mailing = PeriodicalMailing.find_or_initialize_by_name(name)
+    if block_given? 
+      yield(mailing)
+      mailing.save! if mailing.new_record?
     end
+    mailing
   end
 
   def self.sequence name
-    if Sequence.table_exists?
-      sequence = Sequence.find_or_initialize_by_name(name)
-      if block_given? 
-        yield(sequence)
-        sequence.save! if sequence.new_record?
-      end
-      sequence
+    sequence = Sequence.find_or_initialize_by_name(name)
+    if block_given? 
+      yield(sequence)
+      sequence.save! if sequence.new_record?
     end
+    sequence
   end
 
-  def self.subscription_group name
-    if SubscriptionGroup.table_exists?
-      group = SubscriptionGroup.find_or_initialize_by_name(name)
-      if block_given? 
-        yield(group)
-        group.save! if group.new_record?
-      end
-      group
+  def self.list name
+    list = List.find_or_initialize_by_name(name)
+    if block_given? 
+      yield(list)
+      list.save! if list.new_record?
     end
+    list
   end
 
   def self.contexts

@@ -1,25 +1,33 @@
 module MailyHerald
   class OneTimeMailing < Mailing
-    validates   :context_name,  :presence => true
+    validates   :list,          :presence => true
 
-    def context
-      @context ||= MailyHerald.context self.context_name
-    end
-
+    # Returns array of Mail::Message
     def run
-      current_time = Time.now
-      self.context.scope.each do |entity|
-        subscription = subscription_for entity
-        next unless subscription.processable?
+      self.list.subscriptions.collect do |subscription|
+        entity = subscription.entity
+
+        next unless processable?(entity)
 
         deliver_to entity
       end
     end
 
-    def deliver_to entity
-      subscription = subscription_for entity
+    # Returns single Mail::Message
+    def deliver_with_mailer_to entity
+      subscription = self.list.subscription_for entity
+      return unless subscription
+
       subscription.with_lock do
-        super entity
+        attrs = super entity
+        if attrs
+          log = Log.new
+          log.mailing = self
+          log.entity = entity
+          log.processing_at = Time.now
+          log.attributes = attrs
+          log.save!
+        end
       end
     end
   end
