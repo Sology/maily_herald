@@ -1,9 +1,0 @@
-
-%ul.nav.nav-secondary.pull-right
-  - unless params[:mailing_type] == :sequence
-    %li= link_to "New mailing", :action => :new, :controller => "mailings", :mailing_type => params[:mailing_type]
-  - else
-    %li= link_to "New sequence", :action => :new, :controller => "sequences"
-
-
-= render :partial => 'print'

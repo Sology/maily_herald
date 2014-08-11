@@ -1,5 +1,0 @@
-= labelled_form_for @subscription_group, :url => @subscription_group.new_record? ? webui_subscription_groups_path : webui_subscription_group_path(@subscription_group) do |f|
-  = f.text_field :title
-  - unless f.object.new_record?
-    = f.text_field :name
-  = f.buttons :submit

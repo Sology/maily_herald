@@ -3,9 +3,6 @@ require "maily_herald/logging"
 require 'liquid'
 require 'sidekiq'
 require 'redis'
-require 'bootstrap-sass'
-require 'smart_listing'
-require 'haml'
 
 if defined?(::Rails::Engine)
   require "maily_herald/engine"
@@ -50,7 +47,6 @@ module MailyHerald
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
 	autoload :Config,							'maily_herald/config'
-	autoload :FormBuilder,				'maily_herald/webui/labelled_form_builder'
 
   mattr_reader :default_from
 
