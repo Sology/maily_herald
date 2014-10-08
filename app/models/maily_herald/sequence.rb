@@ -26,10 +26,6 @@ module MailyHerald
     end
     after_update :update_schedules, :if => Proc.new{|m| m.start_at_changed?}
 
-    def destination_for entity
-      context.destination.call(entity)
-    end
-
     def mailing name
       if SequenceMailing.table_exists?
         mailing = SequenceMailing.find_or_initialize_by_name(name)
@@ -49,7 +45,7 @@ module MailyHerald
     end
 
     def processed_logs entity
-      Log.processed.for_entity(entity).where("mailing_id in (?)", self.mailings)
+      Log.processed.for_entity(entity).for_mailings(self.mailings)
     end
 
     def processed_logs_for entity, mailing
@@ -88,7 +84,6 @@ module MailyHerald
       return unless mailing
 
       log = schedule_for(entity) || Log.new
-      log.sequence = self
       log.mailing = mailing
       log.entity = entity
       log.status = :scheduled
@@ -98,7 +93,7 @@ module MailyHerald
     end
 
     def update_schedules
-      Log.scheduled.for_sequence(self).each do |log|
+      schedules.each do |log|
         log.update_attribute :processing_at, calculate_processing_time_for(log.entity)
       end
     end
@@ -108,7 +103,7 @@ module MailyHerald
     end
 
     def schedules
-      Log.scheduled.for_sequence(self)
+      Log.scheduled.for_mailings(self.mailings)
     end
 
     def calculate_processing_time_for entity, mailing = nil

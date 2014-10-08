@@ -25,7 +25,6 @@ class CreateLists < ActiveRecord::Migration
     drop_table :maily_herald_subscription_groups
     drop_table :maily_herald_aggregated_subscriptions
 
-    add_column    :maily_herald_logs, :sequence_id, :integer
     rename_column :maily_herald_logs, :processed_at, :processing_at
     change_column :maily_herald_logs, :status, :string, :default => nil
   end

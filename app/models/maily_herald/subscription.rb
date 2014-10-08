@@ -4,9 +4,15 @@ module MailyHerald
     belongs_to  :list,          :class_name => "MailyHerald::List"
 
     validates   :entity,        :presence => true
+    validates   :list,          :presence => true
     validates   :token,         :presence => true, :uniqueness => true
+    validate do
+      self.errors.add(:entity, :wrong_type) if self.entity_type != self.list.context.model.base_class.to_s
+    end
 
-    scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
+    scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class.to_s) }
+    scope       :active,        lambda { where(:active => true) }
+    scope       :for_model,     lambda {|model| joins("JOIN #{model.table_name} ON #{model.table_name}.id = #{Subscription.table_name}.entity_id AND #{Subscription.table_name}.entity_type = '#{model.base_class.to_s}'") }
 
     serialize   :data,          Hash
     serialize   :settings,      Hash
@@ -49,6 +55,10 @@ module MailyHerald
       Sequence.where(:list_id => self.list).each do |s|
         s.set_schedule_for self.entity
       end
+    end
+
+    def logs
+      self.list.logs.for_entity(self.entity)
     end
   end
 end

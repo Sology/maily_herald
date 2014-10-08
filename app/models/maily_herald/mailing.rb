@@ -67,7 +67,7 @@ module MailyHerald
     end
 
     def destination entity
-      self.list.context.destination.call(entity)
+      self.list.context.destination_attribute ? entity.send(self.list.context.destination_attribute) : self.list.context.destination.call(entity)
     end
 
     def render_template entity

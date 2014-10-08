@@ -7,5 +7,11 @@ class CreateUsers < ActiveRecord::Migration
 
       t.timestamps
     end
+
+    create_table :products do |t|
+      t.string      :name
+
+      t.timestamps
+    end
   end
 end

@@ -47,6 +47,7 @@ module MailyHerald
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
 	autoload :Config,							'maily_herald/config'
+	autoload :Autonaming,					'maily_herald/autonaming'
 
   mattr_reader :default_from
 

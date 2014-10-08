@@ -4,6 +4,7 @@ MailyHerald.setup do |config|
 
   config.context :all_users do |context|
     context.scope {User.scoped}
+    context.destination_attribute = :email
     context.destination {|user| user.email}
     context.attributes do |user| 
       attribute_group(:user) do

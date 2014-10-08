@@ -65,7 +65,7 @@ module MailyHerald
       end
     end
 
-    attr_accessor :entity
+    attr_accessor :destination_attribute, :title
     attr_reader :name
 
     def initialize name
@@ -82,6 +82,25 @@ module MailyHerald
       else
         @scope.call
       end
+    end
+
+    def scope_like q
+      if destination_attribute
+        scope.where("#{model.table_name}.#{destination_attribute} LIKE (?)", "%#{q}%")
+      end
+    end
+
+    def scope_with_subscription mode = :inner
+      join_mode = case mode
+                  when :outer
+                    "LEFT OUTER JOIN"
+                  else
+                    "INNER JOIN"
+                  end
+
+      scope.joins(
+        "#{join_mode} #{Subscription.table_name} ON #{Subscription.table_name}.entity_id = #{model.table_name}.id AND #{Subscription.table_name}.entity_type = '#{model.base_class.to_s}'"
+      )
     end
 
     def destination &block

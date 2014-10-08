@@ -1,8 +1,14 @@
 module MailyHerald
   class List < ActiveRecord::Base
-    attr_accessible :token_action, :context_name
+    include MailyHerald::Autonaming
 
+    attr_accessible :name, :title, :token_action, :context_name
+
+    has_many :dispatches, :class_name => "MailyHerald::Dispatch"
     has_many :subscriptions, :class_name => "MailyHerald::Subscription"
+
+    validates :title, :presence => true
+    validates :name, :presence => true, :format => {:with => /^[A-Za-z0-9_]+$/}
 
     after_initialize do
       if self.new_record?
@@ -44,6 +50,30 @@ module MailyHerald
       else
         MailyHerald.token_custom_action :mailing, self.id
       end
+    end
+
+    def active_subscription_count
+      self.subscriptions.active.count
+    end
+
+    # Returns entities within the context's scope with active subscription
+    def subscribers
+      context.scope_with_subscription.where("#{Subscription.table_name}.active = (?)", true).where("#{Subscription.table_name}.list_id = (?)", self.id)
+    end
+
+    # Returns entities within the context's scope with inactive subscription
+    def opt_outs
+      context.scope_with_subscription.where("#{Subscription.table_name}.active = (?)", false).where("#{Subscription.table_name}.list_id = (?)", self.id)
+    end
+
+    # Returns entities within the context's scope without subscription
+    def potential_subscribers
+      sq = context.scope_with_subscription(:outer).where("#{Subscription.table_name}.list_id = (?)", self.id).pluck("#{context.model.table_name}.id")
+      context.scope.where(context.model.arel_table[:id].not_in(sq))
+    end
+
+    def logs
+      Log.for_mailings(Mailing.where(:id => self.dispatches))
     end
 
     private

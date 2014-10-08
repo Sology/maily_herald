@@ -4,7 +4,6 @@ module MailyHerald
 
     belongs_to  :entity,        :polymorphic => true
     belongs_to  :mailing,       :class_name => "MailyHerald::Mailing", :foreign_key => :mailing_id
-    belongs_to  :sequence,      :class_name => "MailyHerald::Sequence", :foreign_key => :sequence_id
 
     validates   :entity,        :presence => true
     validates   :mailing,       :presence => true
@@ -15,7 +14,7 @@ module MailyHerald
     default_scope               order("processing_at asc")
     scope       :for_entity,    lambda {|entity| where(:entity_id => entity.id, :entity_type => entity.class.base_class) }
     scope       :for_mailing,   lambda {|mailing| where(:mailing_id => mailing.id) }
-    scope       :for_sequence,  lambda {|sequence| where(:sequence_id => sequence.id) }
+    scope       :for_mailings,  lambda {|mailings| where("mailing_id in (?)", mailings) }
     scope       :delivered,     where(:status => :delivered)
     scope       :skipped,       where(:status => :skipped)
     scope       :error,         where(:status => :error)
