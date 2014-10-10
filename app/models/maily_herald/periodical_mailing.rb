@@ -2,10 +2,10 @@ module MailyHerald
   class PeriodicalMailing < Mailing
     attr_accessible :period, :period_in_days
 
-    validates   :list,          :presence => true
-    validates   :period,        :presence => true, :numericality => {:greater_than => 0}
+    validates   :list,          presence: true
+    validates   :period,        presence: true, numericality: {greater_than: 0}
 
-    after_update :update_schedules, :if => Proc.new{|m| m.period_changed? || m.start_at_changed?}
+    after_update :update_schedules, if: Proc.new{|m| m.period_changed? || m.start_at_changed?}
 
     def period_in_days
       "%.2f" % (self.period.to_f / 1.day.seconds)

@@ -1,7 +1,7 @@
 module MailyHerald
   class Manager
     def self.handle_trigger type, entity
-      mailings = Mailing.where(:trigger => type)
+      mailings = Mailing.where(trigger: type)
       mailings.each do |mailing|
         mailing.deliver_to entity
       end

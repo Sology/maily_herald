@@ -4,9 +4,9 @@ require 'logger'
 module MailyHerald
   module Logging
     OPTIONS = {
-      :target => STDOUT,
-      :level => Logger::INFO,
-      :progname => "cli"
+      target: STDOUT,
+      level: Logger::INFO,
+      progname: "cli"
     }
 
     class Formatter < Logger::Formatter

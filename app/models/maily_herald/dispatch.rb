@@ -1,16 +1,16 @@
 module MailyHerald
   class Dispatch < ActiveRecord::Base
-    belongs_to  :list,          :class_name => "MailyHerald::List"
+    belongs_to  :list,          class_name: "MailyHerald::List"
 
-    validates   :name,          :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
-    validates   :list,          :presence => true
-    validates   :state,         :presence => true, :inclusion => {:in => [:enabled, :disabled, :archived]}
+    validates   :name,          presence: true, format: {with: /^\w+$/}, uniqueness: true
+    validates   :list,          presence: true
+    validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
 
-    delegate :subscription_for, :to => :list
+    delegate :subscription_for, to: :list
 
-    scope       :enabled,       lambda { where(:state => :enabled) }
-    scope       :disabled,      lambda { where(:state => :disabled) }
-    scope       :archived,      lambda { where(:state => :archived) }
+    scope       :enabled,       lambda { where(state: :enabled) }
+    scope       :disabled,      lambda { where(state: :disabled) }
+    scope       :archived,      lambda { where(state: :archived) }
 
     def state
       read_attribute(:state).to_sym

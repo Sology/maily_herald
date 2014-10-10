@@ -1,6 +1,6 @@
 module MailyHerald
   class OneTimeMailing < Mailing
-    validates   :list,          :presence => true
+    validates   :list,          presence: true
 
     # Returns array of Mail::Message
     def run

@@ -2,14 +2,14 @@ module MailyHerald
   class SequenceMailing < Mailing
     attr_accessible :absolute_delay_in_days
 
-    belongs_to  :sequence,      :class_name => "MailyHerald::Sequence"
+    belongs_to  :sequence,      class_name: "MailyHerald::Sequence"
 
-    validates   :absolute_delay,:presence => true, :numericality => true
+    validates   :absolute_delay,presence: true, numericality: true
 
-    delegate    :subscription,  :to => :sequence
-    delegate    :list,          :to => :sequence
+    delegate    :subscription,  to: :sequence
+    delegate    :list,          to: :sequence
 
-    after_update :if => Proc.new{|m| m.absolute_delay_changed?} do
+    after_update if: Proc.new{|m| m.absolute_delay_changed?} do
       self.sequence.update_schedules
     end
 

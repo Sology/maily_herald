@@ -15,7 +15,7 @@ describe MailyHerald::TokensController do
 
     describe "when regular subscription" do
       pending "should deactivate only one subscription" do
-        get :get, :token => @subscription.token, :use_route => :maily_herald
+        get :get, token: @subscription.token, use_route: :maily_herald
         response.should redirect_to("/")
         @subscription.reload
 
@@ -42,7 +42,7 @@ describe MailyHerald::TokensController do
       end
 
       pending "should deactivate subscription group" do
-        get :get, :token => @subscription.token, :use_route => :maily_herald
+        get :get, token: @subscription.token, use_route: :maily_herald
         response.should redirect_to("/")
         @subscription.reload
 
@@ -70,7 +70,7 @@ describe MailyHerald::TokensController do
     pending "should perform custom action" do
       @subscription.reload
       @subscription.target.token_action.should eq(:custom)
-      get :get, :token => @subscription.token, :use_route => :maily_herald
+      get :get, token: @subscription.token, use_route: :maily_herald
       response.should redirect_to("/custom")
       @subscription.reload
       @user.reload

@@ -12,7 +12,7 @@ module MailyHerald
   TIME_FORMAT = "%Y-%m-%d %H:%M"
 
   DEFAULTS = {
-    :environment => nil,
+    environment: nil,
   }
 
   class Async
@@ -20,7 +20,7 @@ module MailyHerald
 
     def perform args = {}
       if args["logger"]
-        logger_opts = {:level => args["logger"]["level"], :progname => "bkg"}
+        logger_opts = {level: args["logger"]["level"], progname: "bkg"}
         logger_opts[:target] = args["logger"]["target"]
         MailyHerald::Logging.initialize(logger_opts)
       end
@@ -62,13 +62,13 @@ module MailyHerald
   def self.redis
     @redis ||= begin
                  client = Redis.new(
-                   :url => options[:redis_url] || 'redis://localhost:6379/0',
-                   :driver => options[:redis_driver] || "ruby"
+                   url: options[:redis_url] || 'redis://localhost:6379/0',
+                   driver: options[:redis_driver] || "ruby"
                  )
 
                  if options[:redis_namespace]
                    require 'redis/namespace'
-                   Redis::Namespace.new(options[:redis_namespace], :redis => client)
+                   Redis::Namespace.new(options[:redis_namespace], redis: client)
                  else
                    client
                  end
@@ -180,27 +180,27 @@ module MailyHerald
     mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
     entity_id = entity_id.id if !entity_id.is_a?(Fixnum)
 
-    Async.perform_async :mailing => mailing_name, :entity => entity_id, :logger => MailyHerald::Logging.safe_options
+    Async.perform_async mailing: mailing_name, entity: entity_id, logger: MailyHerald::Logging.safe_options
   end
 
   def self.run_sequence seq_name
     seq_name = seq_name.name if seq_name.is_a?(Sequence)
 
-    Async.perform_async :sequence => seq_name, :logger => MailyHerald::Logging.safe_options
+    Async.perform_async sequence: seq_name, logger: MailyHerald::Logging.safe_options
   end
 
   def self.run_mailing mailing_name
     mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
 
-    Async.perform_async :mailing => mailing_name, :logger => MailyHerald::Logging.safe_options
+    Async.perform_async mailing: mailing_name, logger: MailyHerald::Logging.safe_options
   end
 
   def self.run_all
-    Async.perform_async(:logger => MailyHerald::Logging.safe_options)
+    Async.perform_async(logger: MailyHerald::Logging.safe_options)
   end
 
   def self.simulate period = 1.year
-    Async.perform_async :simulate => period, :logger => MailyHerald::Logging.safe_options
+    Async.perform_async simulate: period, logger: MailyHerald::Logging.safe_options
   end
 
   def self.simulation_ongoing?
@@ -208,7 +208,7 @@ module MailyHerald
   end
 
   def self.find_subscription_for mailer_name, mailing_name, entity
-    mailing = MailyHerald::Mailing.where(:mailer_name => mailer_name, :name => mailing_name).first
+    mailing = MailyHerald::Mailing.where(mailer_name: mailer_name, name: mailing_name).first
     mailing.subscription_for entity
   end
 end

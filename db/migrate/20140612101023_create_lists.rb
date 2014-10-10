@@ -1,7 +1,7 @@
 class CreateLists < ActiveRecord::Migration
   def up
     create_table :maily_herald_lists do |t|
-      t.string            :name,                                        :null => false
+      t.string            :name,                                        null: false
       t.string            :title
       t.string            :context_name
       #t.text              :autosubscribe_condition
@@ -17,7 +17,7 @@ class CreateLists < ActiveRecord::Migration
     remove_column :maily_herald_dispatches, :enabled
     add_column :maily_herald_dispatches, :start_at, :text
     add_column :maily_herald_dispatches, :list_id, :integer
-    add_column :maily_herald_dispatches, :state, :string, :default => :disabled
+    add_column :maily_herald_dispatches, :state, :string, default: :disabled
 
     remove_column :maily_herald_subscriptions, :dispatch_id
     remove_column :maily_herald_subscriptions, :type
@@ -28,6 +28,6 @@ class CreateLists < ActiveRecord::Migration
     drop_table :maily_herald_aggregated_subscriptions
 
     rename_column :maily_herald_logs, :processed_at, :processing_at
-    change_column :maily_herald_logs, :status, :string, :default => nil
+    change_column :maily_herald_logs, :status, :string, default: nil
   end
 end

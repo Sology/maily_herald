@@ -40,8 +40,8 @@ module MailyHerald
       end
 
       @_message.maily_herald_data = {
-        :mailing => args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0]),
-        :entity => args[1]
+        mailing: args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0]),
+        entity: args[1]
       }
 
       lookup_context.skip_default_locale!

@@ -5,15 +5,15 @@ module MailyHerald
     attr_accessible :title, :override_subscription,
                     :conditions, :start_at, :period
 
-    has_many    :subscriptions,       :class_name => "MailyHerald::SequenceSubscription", :foreign_key => "dispatch_id", :dependent => :destroy
-    has_many    :mailings,            :class_name => "MailyHerald::SequenceMailing", :order => "absolute_delay ASC", :dependent => :destroy
-    has_many    :logs,                :class_name => "MailyHerald::Log", :through => :mailings
+    has_many    :subscriptions,       class_name: "MailyHerald::SequenceSubscription", foreign_key: "dispatch_id", dependent: :destroy
+    has_many    :mailings,            class_name: "MailyHerald::SequenceMailing", order: "absolute_delay ASC", dependent: :destroy
+    has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
 
-    belongs_to  :subscription_group,  :class_name => "MailyHerald::SubscriptionGroup"
+    belongs_to  :subscription_group,  class_name: "MailyHerald::SubscriptionGroup"
 
-    validates   :list,                :presence => true
-    validates   :name,                :presence => true, :format => {:with => /^\w+$/}, :uniqueness => true
-    validates   :title,               :presence => true
+    validates   :list,                presence: true
+    validates   :name,                presence: true, format: {with: /^\w+$/}, uniqueness: true
+    validates   :title,               presence: true
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
@@ -24,7 +24,7 @@ module MailyHerald
         self.override_subscription = false
       end
     end
-    after_update :update_schedules, :if => Proc.new{|m| m.start_at_changed?}
+    after_update :update_schedules, if: Proc.new{|m| m.start_at_changed?}
 
     def mailing name
       if SequenceMailing.table_exists?
@@ -64,7 +64,7 @@ module MailyHerald
 
     def processed_mailings entity
       ls = processed_logs(entity)
-      ls.empty? ? self.mailings.where(:id => nil) : self.mailings.where("id in (?)", ls.map(&:mailing_id))
+      ls.empty? ? self.mailings.where(id: nil) : self.mailings.where("id in (?)", ls.map(&:mailing_id))
     end
 
     def last_processed_mailing entity

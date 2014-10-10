@@ -5,11 +5,11 @@ module MailyHerald
     attr_accessible :title, :subject, :context_name, :override_subscription,
                     :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
 
-    has_many    :logs,          :class_name => "MailyHerald::Log", :dependent => :destroy
+    has_many    :logs,          class_name: "MailyHerald::Log", dependent: :destroy
     
-    validates   :title,         :presence => true
-    validates   :subject,       :presence => true, :if => :generic_mailer?
-    validates   :template,      :presence => true, :if => :generic_mailer?
+    validates   :title,         presence: true
+    validates   :subject,       presence: true, if: :generic_mailer?
+    validates   :template,      presence: true, if: :generic_mailer?
     validate    :template_syntax
     validate    :validate_conditions
 
@@ -94,9 +94,9 @@ module MailyHerald
 
       mail = yield # Let mailer do his job
 
-      return {status: :delivered, data: {:content => mail.to_s}}
+      return {status: :delivered, data: {content: mail.to_s}}
     rescue StandardError => e
-      return {status: :error, data: {:msg => e.to_s}}
+      return {status: :error, data: {msg: e.to_s}}
     end
 
     private

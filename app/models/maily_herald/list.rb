@@ -4,11 +4,11 @@ module MailyHerald
 
     attr_accessible :name, :title, :token_action, :context_name
 
-    has_many :dispatches, :class_name => "MailyHerald::Dispatch"
-    has_many :subscriptions, :class_name => "MailyHerald::Subscription"
+    has_many :dispatches, class_name: "MailyHerald::Dispatch"
+    has_many :subscriptions, class_name: "MailyHerald::Subscription"
 
-    validates :title, :presence => true
-    validates :name, :presence => true, :format => {:with => /^[A-Za-z0-9_]+$/}
+    validates :title, presence: true
+    validates :name, presence: true, format: {with: /^[A-Za-z0-9_]+$/}
 
     after_initialize do
       if self.new_record?
@@ -73,7 +73,7 @@ module MailyHerald
     end
 
     def logs
-      Log.for_mailings(Mailing.where(:id => self.dispatches))
+      Log.for_mailings(Mailing.where(id: self.dispatches))
     end
 
     private

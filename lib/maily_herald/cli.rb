@@ -92,7 +92,7 @@ module MailyHerald
     end
 
     def initialize_logger
-      MailyHerald::Logging.initialize(:target => options[:logfile], :level => options[:verbose] ? Logger::DEBUG : Logger::INFO) if options[:daemon] && options[:logfile]
+      MailyHerald::Logging.initialize(target: options[:logfile], level: options[:verbose] ? Logger::DEBUG : Logger::INFO) if options[:daemon] && options[:logfile]
 
       MailyHerald.logger.level = Logger::DEBUG if options[:verbose]
     end
@@ -271,7 +271,7 @@ module MailyHerald
       when 'USR2'
         if MailyHerald.options[:logfile]
           MailyHerald.logger.info "Received USR2, reopening log file"
-          MailyHerald::Logging.initialize_logger(:target => MailyHerald.options[:logfile])
+          MailyHerald::Logging.initialize_logger(target: MailyHerald.options[:logfile])
         end
       end
     end

@@ -34,8 +34,8 @@ keep_tables = %w[maily_herald_dispatches maily_herald_lists]
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
   config.before(:suite) do
-    DatabaseCleaner.strategy = :truncation, {:except => keep_tables}
-    DatabaseCleaner.clean_with(:truncation, {:except => keep_tables})
+    DatabaseCleaner.strategy = :truncation, {except: keep_tables}
+    DatabaseCleaner.clean_with(:truncation, {except: keep_tables})
   end
   config.before(:each) do
     DatabaseCleaner.start

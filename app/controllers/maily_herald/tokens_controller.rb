@@ -7,9 +7,9 @@ module MailyHerald
         @subscription.target.token_custom_action.call(self, @subscription)
       elsif @subscription
         @subscription.deactivate!
-        redirect_to MailyHerald.token_redirect.call(@subscription), :notice => t('maily_herald.subscription.deactivated')
+        redirect_to MailyHerald.token_redirect.call(@subscription), notice: t('maily_herald.subscription.deactivated')
       else
-        redirect_to "/", :notice => t('maily_herald.subscription.undefined_token')
+        redirect_to "/", notice: t('maily_herald.subscription.undefined_token')
       end
     end
   end
