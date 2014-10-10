@@ -1,6 +1,6 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
-    attr_accessible :start_at, :period, :period_in_days
+    attr_accessible :period, :period_in_days
 
     validates   :list,          :presence => true
     validates   :period,        :presence => true, :numericality => {:greater_than => 0}

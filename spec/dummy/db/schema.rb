@@ -14,24 +14,24 @@
 ActiveRecord::Schema.define(:version => 20140612101023) do
 
   create_table "maily_herald_dispatches", :force => true do |t|
-    t.string   "type",                                     :null => false
+    t.string   "type",                                          :null => false
     t.integer  "sequence_id"
     t.string   "context_name"
     t.text     "conditions"
     t.string   "mailer_name"
-    t.string   "name",                                     :null => false
+    t.string   "name",                                          :null => false
     t.string   "title"
     t.string   "subject"
     t.string   "from"
     t.text     "template"
     t.integer  "absolute_delay"
     t.integer  "period"
-    t.boolean  "enabled",               :default => false
     t.boolean  "override_subscription"
-    t.datetime "created_at",                               :null => false
-    t.datetime "updated_at",                               :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
     t.text     "start_at"
     t.integer  "list_id"
+    t.string   "state",                 :default => "disabled"
   end
 
   add_index "maily_herald_dispatches", ["context_name"], :name => "index_maily_herald_dispatches_on_context_name"
@@ -51,7 +51,6 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.string   "status",        :null => false
     t.text     "data"
     t.datetime "processing_at"
-    t.integer  "sequence_id"
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|

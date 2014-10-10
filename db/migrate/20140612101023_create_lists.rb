@@ -14,8 +14,10 @@ class CreateLists < ActiveRecord::Migration
     remove_column :maily_herald_dispatches, :start
     remove_column :maily_herald_dispatches, :start_var
     remove_column :maily_herald_dispatches, :trigger
+    remove_column :maily_herald_dispatches, :enabled
     add_column :maily_herald_dispatches, :start_at, :text
     add_column :maily_herald_dispatches, :list_id, :integer
+    add_column :maily_herald_dispatches, :state, :string, :default => :disabled
 
     remove_column :maily_herald_subscriptions, :dispatch_id
     remove_column :maily_herald_subscriptions, :type

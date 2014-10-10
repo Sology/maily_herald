@@ -78,7 +78,7 @@ describe MailyHerald::Sequence do
     end
 
     after(:each) do
-      @sequence.mailings[1].update_attribute(:enabled, true)
+      @sequence.mailings[1].enable!
       @sequence.mailings[1].update_attribute(:conditions, nil)
       @sequence.mailings[1].update_attribute(:template, @template_tmp)
     end
@@ -208,7 +208,7 @@ describe MailyHerald::Sequence do
       @sequence.mailings[1].should be_enabled
       @sequence.mailings[2].should be_enabled
 
-      @sequence.mailings[1].update_attribute(:enabled, false)
+      @sequence.mailings[1].disable!
       @sequence.mailings[1].should_not be_enabled
 
       @sequence.pending_mailings(@entity).first.should eq(@sequence.mailings.first)

@@ -31,7 +31,7 @@ MailyHerald.setup do |config|
   end
 
   config.one_time_mailing :test_mailing do |mailing|
-    mailing.enabled = true
+    mailing.enable
     mailing.title = "Test mailing"
     mailing.subject = "Test mailing"
     mailing.list = :generic_list
@@ -39,14 +39,14 @@ MailyHerald.setup do |config|
   end
 
   config.one_time_mailing :sample_mail do |mailing|
-    mailing.enabled = true
+    mailing.enable
     mailing.title = "Sample mailing"
     mailing.list = :generic_list
     mailing.mailer_name = "TestMailer"
   end
 
   config.sequence :newsletters do |seq|
-    seq.enabled = true
+    seq.enable
     seq.title = "Newsletters"
     seq.list = :generic_list
     seq.start_at = "user.created_at"
@@ -55,26 +55,26 @@ MailyHerald.setup do |config|
       mailing.subject = "Test mailing #1"
       mailing.template = "User name: {{user.name}}."
       mailing.absolute_delay = 1.hour
-      mailing.enabled = true
+      mailing.enable
     end
     seq.mailing :second_mail do |mailing|
       mailing.title = "Test mailing #2"
       mailing.subject = "Test mailing #2"
       mailing.template = "User name: {{user.name}}."
       mailing.absolute_delay = 3.hours
-      mailing.enabled = true
+      mailing.enable
     end
     seq.mailing :third_mail do |mailing|
       mailing.title = "Test mailing #3"
       mailing.subject = "Test mailing #3"
       mailing.template = "User name: {{user.name}}."
       mailing.absolute_delay = 6.hours
-      mailing.enabled = true
+      mailing.enable
     end
   end
 
   config.periodical_mailing :weekly_summary do |mailing|
-    mailing.enabled = true
+    mailing.enable
     mailing.title = "Weekly summary"
     mailing.subject = "Weekly summary"
     mailing.start_at = "user.created_at"
@@ -86,7 +86,7 @@ MailyHerald.setup do |config|
   end
 
   config.periodical_mailing :weekly_summary_sg do |mailing|
-    mailing.enabled = true
+    mailing.enable
     mailing.title = "Weekly summary"
     mailing.subject = "Weekly summary"
     mailing.start_at = "user.created_at"

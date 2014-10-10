@@ -13,8 +13,6 @@ module MailyHerald
     validate    :template_syntax
     validate    :validate_conditions
 
-    scope       :enabled,       lambda { where(:enabled => true) }
-
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
     end
@@ -24,10 +22,6 @@ module MailyHerald
         self.override_subscription = false
         self.mailer_name = :generic
       end
-    end
-
-    def enabled?
-      self.enabled
     end
 
     def periodical?
