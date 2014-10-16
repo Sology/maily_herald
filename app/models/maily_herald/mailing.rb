@@ -1,11 +1,14 @@
 module MailyHerald
   class Mailing < Dispatch
     include MailyHerald::TemplateRenderer
+    include MailyHerald::Autonaming
 
-    attr_accessible :title, :subject, :context_name, :override_subscription,
-                    :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
+    if Rails::VERSION::MAJOR == 3
+      attr_accessible :name, :title, :subject, :context_name, :override_subscription,
+                      :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
+    end
 
-    has_many    :logs,          class_name: "MailyHerald::Log", dependent: :destroy
+    has_many    :logs,          class_name: "MailyHerald::Log"
     
     validates   :title,         presence: true
     validates   :subject,       presence: true, if: :generic_mailer?
@@ -54,10 +57,13 @@ module MailyHerald
 
     def conditions_met? entity
       subscription = self.list.subscription_for(entity)
-      return false unless subscription
 
-      evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
-      evaluator.evaluate_conditions(self.conditions)
+      if self.list.context.attributes
+        evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
+        evaluator.evaluate_conditions(self.conditions)
+      else
+        true
+      end
     end
 
     def destination entity
@@ -87,16 +93,25 @@ module MailyHerald
 
     # Called from Mailer, block required
     def deliver_with_mailer_to entity
-      return unless processable?(entity)
+      unless processable?(entity)
+        MailyHerald.logger.debug("Mailing #{self} not processable for entity #{entity}") 
+        return 
+      end
+
       unless conditions_met?(entity)
+        MailyHerald.logger.debug("Conditions not met for #{self} and entity #{entity}")
         return {status: :skipped}
       end
 
+      MailyHerald.logger.debug("Processing #{self} to entity #{entity}")
+
       mail = yield # Let mailer do his job
+
+      MailyHerald.logger.debug("Delivered #{self} to entity #{entity}")
 
       return {status: :delivered, data: {content: mail.to_s}}
     rescue StandardError => e
-      return {status: :error, data: {msg: e.to_s}}
+      return {status: :error, data: {msg: "#{e.to_s}\n#{e.backtrace}"}}
     end
 
     private

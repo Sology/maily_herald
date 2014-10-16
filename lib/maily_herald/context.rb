@@ -36,8 +36,8 @@ module MailyHerald
       end
 
       def setup entity = nil, subscription = nil
-        if entity && subscription
-          @attrs["subscription"] = Proc.new{ subscription }
+        if entity
+          @attrs["subscription"] = Proc.new{ subscription } if subscription
           instance_exec entity, &@block
         else
           instance_eval &@block

@@ -1,5 +1,3 @@
-require "maily_herald/logging"
-
 require 'liquid'
 require 'sidekiq'
 require 'redis'
@@ -48,8 +46,7 @@ module MailyHerald
   autoload :Manager,            'maily_herald/manager'
 	autoload :Config,							'maily_herald/config'
 	autoload :Autonaming,					'maily_herald/autonaming'
-
-  mattr_reader :default_from
+	autoload :Logging,					  'maily_herald/logging'
 
   def self.options
     @options ||= DEFAULTS.dup
@@ -87,15 +84,6 @@ module MailyHerald
 
     yield self
 
-    Rails.application.config.to_prepare do
-      @@contexts.each do|n, c|
-        if c.model
-          unless c.model.included_modules.include?(MailyHerald::ModelExtensions::AssociationsPatch)
-            c.model.send(:include, MailyHerald::ModelExtensions::AssociationsPatch)
-          end
-        end
-      end
-    end
   end
 
   def self.context name, &block
@@ -115,8 +103,9 @@ module MailyHerald
   end
 
   def self.one_time_mailing name
-    mailing = OneTimeMailing.find_or_initialize_by_name(name)
+    mailing = OneTimeMailing.where(name: name).first 
     if block_given? 
+      mailing ||= OneTimeMailing.new(name: name)
       yield(mailing)
       mailing.save! if mailing.new_record?
     end
@@ -124,8 +113,9 @@ module MailyHerald
   end
 
   def self.periodical_mailing name
-    mailing = PeriodicalMailing.find_or_initialize_by_name(name)
+    mailing = PeriodicalMailing.where(name: name).first 
     if block_given? 
+      mailing ||= PeriodicalMailing.new(name: name)
       yield(mailing)
       mailing.save! if mailing.new_record?
     end
@@ -133,8 +123,9 @@ module MailyHerald
   end
 
   def self.sequence name
-    sequence = Sequence.find_or_initialize_by_name(name)
+    sequence = Sequence.where(name: name).first 
     if block_given? 
+      sequence ||= Sequence.new(name: name)
       yield(sequence)
       sequence.save! if sequence.new_record?
     end
@@ -142,18 +133,40 @@ module MailyHerald
   end
 
   def self.list name
-    list = List.find_or_initialize_by_name(name)
+    list = List.where(name: name).first 
     if block_given? 
+      list ||= List.new(name: name)
       yield(list)
       list.save! if list.new_record?
     end
     list
   end
 
+  def self.subscribe entity, *list_names
+    list_names.each do |ln| 
+      list = MailyHerald.list(ln)
+      next unless list
+
+      list.subscribe! entity
+    end
+  end
+
+  def self.unsubscribe entity, *list_names
+    list_names.each do |ln| 
+      list = MailyHerald.list(ln)
+      next unless list
+
+      list.unsubscribe! entity
+    end
+  end
+
   def self.contexts
     @@contexts
   end
 
+  def self.default_from
+    @@default_from
+  end
   def self.default_from= from
     @@default_from = from
   end

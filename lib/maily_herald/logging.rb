@@ -6,7 +6,7 @@ module MailyHerald
     OPTIONS = {
       target: STDOUT,
       level: Logger::INFO,
-      progname: "cli"
+      progname: "app"
     }
 
     class Formatter < Logger::Formatter

@@ -2,17 +2,22 @@ module MailyHerald
   MailyHerald::Subscription #TODO fix this autoload for dev
 
   class Sequence < Dispatch
-    attr_accessible :title, :override_subscription,
-                    :conditions, :start_at, :period
+    if Rails::VERSION::MAJOR == 3
+      attr_accessible :name, :title, :override_subscription,
+                      :conditions, :start_at, :period
+    end
 
-    has_many    :subscriptions,       class_name: "MailyHerald::SequenceSubscription", foreign_key: "dispatch_id", dependent: :destroy
-    has_many    :mailings,            class_name: "MailyHerald::SequenceMailing", order: "absolute_delay ASC", dependent: :destroy
+    include MailyHerald::Autonaming
+
     has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
-
-    belongs_to  :subscription_group,  class_name: "MailyHerald::SubscriptionGroup"
+    if Rails::VERSION::MAJOR == 3
+      has_many    :mailings,          class_name: "MailyHerald::SequenceMailing", order: "absolute_delay ASC", dependent: :destroy
+    else
+      has_many    :mailings,          -> { order("absolute_delay ASC") }, class_name: "MailyHerald::SequenceMailing", dependent: :destroy
+    end
 
     validates   :list,                presence: true
-    validates   :name,                presence: true, format: {with: /^\w+$/}, uniqueness: true
+    validates   :name,                presence: true, format: {with: /\A\w+\z/}, uniqueness: true
     validates   :title,               presence: true
 
     before_validation do
@@ -24,7 +29,7 @@ module MailyHerald
         self.override_subscription = false
       end
     end
-    after_update :update_schedules, if: Proc.new{|m| m.start_at_changed?}
+    after_save :update_schedules, if: Proc.new{|s| s.state_changed? || s.start_at_changed?}
 
     def mailing name
       if SequenceMailing.table_exists?
@@ -45,7 +50,7 @@ module MailyHerald
     end
 
     def processed_logs entity
-      Log.processed.for_entity(entity).for_mailings(self.mailings)
+      Log.processed.for_entity(entity).for_mailings(self.mailings.select(:id))
     end
 
     def processed_logs_for entity, mailing
@@ -80,21 +85,27 @@ module MailyHerald
     end
 
     def set_schedule_for entity
+      log = schedule_for(entity)
       mailing = next_mailing(entity)
-      return unless mailing
 
-      log = schedule_for(entity) || Log.new
-      log.mailing = mailing
-      log.entity = entity
-      log.status = :scheduled
-      log.processing_at = calculate_processing_time_for(entity, mailing)
+      if !mailing || !self.start_at
+        log.try(:destroy)
+        return
+      end
+
+      log ||= Log.new
+      log.set_attributes_for(mailing, entity, {
+        status: :scheduled,
+        processing_at: calculate_processing_time_for(entity, mailing)
+      })
       log.save!
       log
     end
 
     def update_schedules
-      schedules.each do |log|
-        log.update_attribute :processing_at, calculate_processing_time_for(log.entity)
+      self.list.context.scope.each do |entity|
+        MailyHerald.logger.debug "Updating schedule of #{self} sequence for entity #{entity}"
+        set_schedule_for entity
       end
     end
 
@@ -103,7 +114,7 @@ module MailyHerald
     end
 
     def schedules
-      Log.scheduled.for_mailings(self.mailings)
+      Log.scheduled.for_mailings(self.mailings.select(:id))
     end
 
     def calculate_processing_time_for entity, mailing = nil
@@ -127,6 +138,10 @@ module MailyHerald
 
     def next_processing_time entity
       schedule_for(entity).try(:processing_at)
+    end
+
+    def to_s
+      "<Sequence: #{self.title || self.name}>"
     end
   end
 end

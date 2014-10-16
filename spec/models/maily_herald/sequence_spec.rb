@@ -40,6 +40,35 @@ describe MailyHerald::Sequence do
     end
   end
 
+  describe "Updating schedules" do
+    before(:each) do
+      @entity = FactoryGirl.create :user
+      @list.subscribe! @entity
+      @subscription = @list.subscription_for(@entity)
+      @mailing = @sequence.next_mailing(@entity)
+    end
+
+    after(:each) do
+      @mailing.enable!
+    end
+
+    it "should be triggered by disabling mailing" do
+      schedule = @sequence.schedule_for(@entity)
+
+      expect(schedule.processing_at.to_i).to eq((@entity.created_at + @mailing.absolute_delay).to_i)
+
+      @mailing.update_attribute :absolute_delay, 2.hours
+
+      schedule = @sequence.schedule_for(@entity)
+      expect(schedule.processing_at.to_i).to eq((@entity.created_at + 2.hours).to_i)
+
+      @mailing.disable!
+      schedule.reload
+      expect(schedule.mailing.id).not_to eq(@mailing.id)
+      expect(schedule.mailing.id).to eq(@sequence.next_mailing(@entity).id)
+    end
+  end
+
   describe "Markup evaluation" do
     before(:each) do
       @entity = FactoryGirl.create :user
@@ -139,6 +168,7 @@ describe MailyHerald::Sequence do
       log = @sequence.mailing_processing_log_for(@entity, @sequence.mailings[1])
       log.should be_a(MailyHerald::Log)
       log.entity.should eq(@entity)
+      log.entity_email.should eq(@entity.email)
     end
 
     it "should handle processing with start date evaluated to the past date" do
@@ -361,7 +391,6 @@ describe MailyHerald::Sequence do
   pending "Subscription override" do
     before(:each) do
       @entity = FactoryGirl.create :user
-      @list.subscribe! @entity
     end
 
     after(:each) do

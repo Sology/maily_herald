@@ -31,7 +31,8 @@ describe MailyHerald::Mailer do
     end
   end
 
-  it "should handle missing mailer" do
-    expect { TestMailer.sample_mail_error(@entity).deliver }.to raise_error
-  end
+  # missing mailers are how handled silently (bypassing Maily)
+  #it "should handle missing mailer" do
+    #expect { TestMailer.sample_mail_error(@entity).deliver }.to raise_error
+  #end
 end

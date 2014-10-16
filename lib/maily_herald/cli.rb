@@ -92,9 +92,13 @@ module MailyHerald
     end
 
     def initialize_logger
-      MailyHerald::Logging.initialize(target: options[:logfile], level: options[:verbose] ? Logger::DEBUG : Logger::INFO) if options[:daemon] && options[:logfile]
+      opts = {
+        level: options[:verbose] ? Logger::DEBUG : Logger::INFO,
+        progname: "cli",
+      }
+      opts[:target] = options[:logfile] if options[:logfile]
 
-      MailyHerald.logger.level = Logger::DEBUG if options[:verbose]
+      MailyHerald::Logging.initialize(opts)
     end
 
     def parse_options(argv)

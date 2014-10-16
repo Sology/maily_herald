@@ -35,5 +35,14 @@ describe MailyHerald::Utils do
       @mailing.conditions = "foo bar"
       @mailing.should_not be_valid
     end
+
+    it "should evaluate attributes" do
+      expect(@evaluator.evaluate_variable("user.created_at")).to eq(@user.created_at)
+    end
+
+    it "should evaluate attributes without subscription" do
+      @evaluator = MailyHerald::Utils::MarkupEvaluator.new(@list.context.drop_for(@user, nil))
+      expect(@evaluator.evaluate_variable("user.created_at")).to eq(@user.created_at)
+    end
   end
 end

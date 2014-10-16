@@ -2,7 +2,7 @@ module MailyHerald
   class Dispatch < ActiveRecord::Base
     belongs_to  :list,          class_name: "MailyHerald::List"
 
-    validates   :name,          presence: true, format: {with: /^\w+$/}, uniqueness: true
+    validates   :name,          presence: true, format: {with: /\A\w+\z/}, uniqueness: true
     validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
 
@@ -52,7 +52,7 @@ module MailyHerald
     end
 
     def processable? entity
-      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity))
+      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.include?(entity)
     end
 
   end

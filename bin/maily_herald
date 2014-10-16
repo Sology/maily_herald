@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'maily_herald'
+require 'maily_herald/cli'
 
 begin
   cli = MailyHerald::CLI.instance

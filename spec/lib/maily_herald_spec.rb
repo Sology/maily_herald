@@ -8,7 +8,7 @@ describe MailyHerald do
 
     it "should extend context entity models" do
       MailyHerald.context(:all_users).model.name.should eq(User.name)
-      User.included_modules.should include(MailyHerald::ModelExtensions::AssociationsPatch)
+      User.included_modules.should include(MailyHerald::ModelExtensions)
 
       @user.should respond_to(:maily_herald_subscriptions)
 

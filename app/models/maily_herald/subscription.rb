@@ -23,7 +23,7 @@ module MailyHerald
       end
     end
 
-    after_create :create_schedules
+    after_save :update_schedules, if: Proc.new{|s| s.active_changed?}
 
     def active?
       !new_record? && read_attribute(:active)
@@ -48,7 +48,7 @@ module MailyHerald
       }
     end
 
-    def create_schedules
+    def update_schedules
       PeriodicalMailing.where(list_id: self.list).each do |m|
         m.set_schedule_for self.entity
       end

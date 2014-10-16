@@ -1,6 +1,8 @@
 module MailyHerald
   class SequenceMailing < Mailing
-    attr_accessible :absolute_delay_in_days
+    if Rails::VERSION::MAJOR == 3
+      attr_accessible :absolute_delay_in_days
+    end
 
     belongs_to  :sequence,      class_name: "MailyHerald::Sequence"
 
@@ -9,7 +11,7 @@ module MailyHerald
     delegate    :subscription,  to: :sequence
     delegate    :list,          to: :sequence
 
-    after_update if: Proc.new{|m| m.absolute_delay_changed?} do
+    after_save if: Proc.new{|m| m.state_changed? || m.absolute_delay_changed?} do
       self.sequence.update_schedules
     end
 
@@ -30,12 +32,10 @@ module MailyHerald
 
     def deliver_with_mailer_to entity
       current_time = Time.now
-      subscription = subscription_for entity
-      return unless subscription && processable?(entity)
 
       schedule = self.sequence.schedule_for(entity)
 
-      subscription.with_lock do
+      schedule.with_lock do
         if schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time
           attrs = super entity
           if attrs
@@ -45,7 +45,7 @@ module MailyHerald
             self.sequence.set_schedule_for(entity)
           end
         end
-      end
+      end if schedule
     end
 
     def override_subscription?

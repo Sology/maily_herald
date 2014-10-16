@@ -25,7 +25,7 @@ describe MailyHerald::PeriodicalMailing do
     end
   end
 
-  describe "Changing period or start_at attributes" do
+  describe "Updating schedules" do
     before(:each) do
       @entity = FactoryGirl.create :user
       @list.subscribe! @entity
@@ -36,7 +36,7 @@ describe MailyHerald::PeriodicalMailing do
       @mailing.update_attribute(:start_at, @start_at)
     end
 
-    it "should update schedules" do
+    it "should be triggered by start_at change" do
       MailyHerald::Log.scheduled.for_mailing(@mailing).count.should eq(1)
       schedule = MailyHerald::Log.scheduled.for_mailing(@mailing).first
       schedule.processing_at.to_i.should eq(@entity.created_at.to_i)
@@ -46,6 +46,16 @@ describe MailyHerald::PeriodicalMailing do
 
       schedule.reload
       schedule.processing_at.to_i.should eq(time.to_i)
+    end
+
+    it "should be triggered by unsubscribe" do
+      MailyHerald::Log.scheduled.for_mailing(@mailing).count.should eq(1)
+      schedule = MailyHerald::Log.scheduled.for_mailing(@mailing).first
+      schedule.processing_at.to_i.should eq(@entity.created_at.to_i)
+
+      @list.unsubscribe! @entity
+
+      expect(MailyHerald::Log.scheduled.for_mailing(@mailing).first).to be_nil
     end
   end
 
@@ -120,6 +130,7 @@ describe MailyHerald::PeriodicalMailing do
 
       log = MailyHerald::Log.processed.first
       log.entity.should eq(@entity)
+      log.entity_email.should eq(@entity.email)
       log.mailing.should eq(@mailing)
 
       @mailing.logs(@entity).processed.last.should eq(log)
@@ -224,7 +235,11 @@ describe MailyHerald::PeriodicalMailing do
       @entity = FactoryGirl.create :user
     end
 
-    it "should not be active without autosubscribe" do
+    after(:each) do
+      @mailing.update_attribute(:override_subscription, false)
+    end
+
+    it "should not deliver" do
       MailyHerald::Subscription.count.should eq(0)
       MailyHerald::Log.count.should eq(0)
 
@@ -234,6 +249,33 @@ describe MailyHerald::PeriodicalMailing do
 
       MailyHerald::Subscription.count.should eq(0)
       MailyHerald::Log.count.should eq(0)
+    end
+
+    it "should not deliver individual mailing" do
+      MailyHerald::Subscription.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
+
+      Timecop.freeze @entity.created_at
+
+      @mailing.deliver_to @entity
+
+      MailyHerald::Subscription.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
+    end
+
+    it "should deliver with subscription override" do
+      MailyHerald::Subscription.count.should eq(0)
+      MailyHerald::Log.count.should eq(0)
+
+      @mailing.update_attribute(:override_subscription, true)
+      MailyHerald::Log.scheduled.count.should eq(1)
+
+      Timecop.freeze @entity.created_at
+
+      @mailing.run
+
+      MailyHerald::Subscription.count.should eq(0)
+      MailyHerald::Log.delivered.count.should eq(1)
     end
   end
 

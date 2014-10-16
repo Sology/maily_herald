@@ -15,20 +15,12 @@ module MailyHerald
 
     # Returns single Mail::Message
     def deliver_with_mailer_to entity
-      subscription = self.list.subscription_for entity
-      return unless subscription
+      attrs = super entity
+      Log.create_for(self, entity, attrs) if attrs
+    end
 
-      subscription.with_lock do
-        attrs = super entity
-        if attrs
-          log = Log.new
-          log.mailing = self
-          log.entity = entity
-          log.processing_at = Time.now
-          log.attributes = attrs
-          log.save!
-        end
-      end
+    def to_s
+      "<OneTimeMailing: #{self.title || self.name}>"
     end
   end
 end

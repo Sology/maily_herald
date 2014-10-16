@@ -4,6 +4,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string      :name
       t.string      :email
       t.boolean     :weekly_notifications, default: true
+      t.boolean     :active, default: true
 
       t.timestamps
     end

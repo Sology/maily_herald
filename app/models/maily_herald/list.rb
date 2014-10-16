@@ -2,13 +2,15 @@ module MailyHerald
   class List < ActiveRecord::Base
     include MailyHerald::Autonaming
 
-    attr_accessible :name, :title, :token_action, :context_name
+    if Rails::VERSION::MAJOR == 3
+      attr_accessible :name, :title, :token_action, :context_name
+    end
 
     has_many :dispatches, class_name: "MailyHerald::Dispatch"
     has_many :subscriptions, class_name: "MailyHerald::Subscription"
 
     validates :title, presence: true
-    validates :name, presence: true, format: {with: /^[A-Za-z0-9_]+$/}
+    validates :name, presence: true, format: {with: /\A[A-Za-z0-9_]+\z/}
 
     after_initialize do
       if self.new_record?

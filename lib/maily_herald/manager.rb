@@ -36,7 +36,7 @@ module MailyHerald
 
         redis.del("maily_herald_running")
       else
-        if Time.parse(redis.setnx("maily_herald_running")) > Time.now
+        if Time.parse(redis.get("maily_herald_running")) > Time.now
           redis.del("maily_herald_running")
         end
       end

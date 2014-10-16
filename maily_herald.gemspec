@@ -16,9 +16,9 @@ Gem::Specification.new do |s|
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files   = `git ls-files -- {spec,features}/**/`.split("\n")
 
-  s.add_dependency "rails", "~> 3.2"
+  s.add_dependency "rails", "> 3.2"
   s.add_dependency "liquid", "~> 2.6.1"
-  s.add_dependency "sidekiq", "~> 2.13.0"
+  s.add_dependency "sidekiq", "~> 2.17.8"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"

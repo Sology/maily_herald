@@ -16,7 +16,6 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
   create_table "maily_herald_dispatches", :force => true do |t|
     t.string   "type",                                          :null => false
     t.integer  "sequence_id"
-    t.string   "context_name"
     t.text     "conditions"
     t.string   "mailer_name"
     t.string   "name",                                          :null => false
@@ -34,7 +33,6 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.string   "state",                 :default => "disabled"
   end
 
-  add_index "maily_herald_dispatches", ["context_name"], :name => "index_maily_herald_dispatches_on_context_name"
   add_index "maily_herald_dispatches", ["name"], :name => "index_maily_herald_dispatches_on_name", :unique => true
 
   create_table "maily_herald_lists", :force => true do |t|
@@ -51,20 +49,20 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.string   "status",        :null => false
     t.text     "data"
     t.datetime "processing_at"
+    t.string   "entity_email"
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|
-    t.integer  "entity_id",                           :null => false
-    t.string   "entity_type",                         :null => false
-    t.string   "token",                               :null => false
+    t.integer  "entity_id",                       :null => false
+    t.string   "entity_type",                     :null => false
+    t.string   "token",                           :null => false
     t.text     "settings"
     t.text     "data"
-    t.boolean  "active",           :default => false, :null => false
+    t.boolean  "active",       :default => false, :null => false
     t.datetime "delivered_at"
-    t.datetime "created_at",                          :null => false
-    t.datetime "updated_at",                          :null => false
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
     t.integer  "list_id"
-    t.datetime "next_delivery_at"
   end
 
   create_table "products", :force => true do |t|
@@ -77,6 +75,7 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.string   "name"
     t.string   "email"
     t.boolean  "weekly_notifications", :default => true
+    t.boolean  "active",               :default => true
     t.datetime "created_at",                             :null => false
     t.datetime "updated_at",                             :null => false
   end
