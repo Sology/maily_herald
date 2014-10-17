@@ -41,21 +41,27 @@ namespace :maily_herald do
   desc 'Stop maily_herald'
   task :stop do
     on roles fetch(:maily_herald_role) do
-      stop_maily_herald
+      within release_path do
+        stop_maily_herald
+      end
     end
   end
 
   desc 'Start maily_herald'
   task :start do
     on roles fetch(:maily_herald_role) do
-      start_maily_herald
+      within release_path do
+        start_maily_herald
+      end
     end
   end
 
   desc 'Restart maily_herald'
   task :restart do
     on roles fetch(:maily_herald_role) do
-      restart_maily_herald
+      within release_path do
+        restart_maily_herald
+      end
     end
   end
 end
