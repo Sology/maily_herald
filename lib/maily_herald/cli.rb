@@ -18,7 +18,7 @@ module MailyHerald
 
     def paperboy
       if options[:action] == :stop
-        kill_daemon || exit(1)
+        kill_daemon || exit(0)
       elsif options[:action] == :ping
         if daemon_running?
           puts "PONG"
