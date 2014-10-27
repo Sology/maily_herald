@@ -12,8 +12,8 @@ module MailyHerald
     include Singleton
 
     def parse(args=ARGV)
-      initialize_logger
       setup_options(args)
+      initialize_logger
     end
 
     def paperboy
@@ -90,11 +90,7 @@ module MailyHerald
 
       set_environment cli[:environment]
 
-      cfile = cli[:config_file] || "config/maily_herald.yml"
-      config = (cfile ? parse_config(cfile) : {})
-      options.merge!(config.merge(cli))
-
-      MailyHerald.logger.info "Starting with following options: #{options}"
+      MailyHerald.options = MailyHerald.read_options(cli[:config_file] || "config/maily_herald.yml").merge(cli)
     end
 
     def initialize_logger
@@ -105,6 +101,7 @@ module MailyHerald
       opts[:target] = options[:logfile] if options[:logfile]
 
       MailyHerald::Logging.initialize(opts)
+      MailyHerald.logger.info "Started with options: #{options}"
     end
 
     def parse_options(argv)

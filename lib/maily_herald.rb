@@ -9,10 +9,6 @@ end
 module MailyHerald
   TIME_FORMAT = "%Y-%m-%d %H:%M"
 
-  DEFAULTS = {
-    environment: nil,
-  }
-
   class Async
     include Sidekiq::Worker
 
@@ -49,11 +45,20 @@ module MailyHerald
 	autoload :Logging,					  'maily_herald/logging'
 
   def self.options
-    @options ||= DEFAULTS.dup
+    @options ||= read_options
   end
 
   def self.options=(opts)
     @options = opts
+  end
+
+  def self.read_options cfile = "config/maily_herald.yml"
+    opts = {}
+    if File.exist?(cfile)
+      opts = YAML.load(ERB.new(IO.read(cfile)).result)
+      #opts = opts.merge(opts.delete(@environment) || {})
+    end
+    opts
   end
 
   def self.redis
