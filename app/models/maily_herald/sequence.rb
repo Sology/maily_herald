@@ -88,7 +88,7 @@ module MailyHerald
       log = schedule_for(entity)
       mailing = next_mailing(entity)
 
-      if !mailing || !self.start_at
+      if !mailing || !self.start_at || !enabled?
         log.try(:destroy)
         return
       end

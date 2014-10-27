@@ -12,8 +12,8 @@ module MailyHerald
     include Singleton
 
     def parse(args=ARGV)
-      setup_options(args)
       initialize_logger
+      setup_options(args)
     end
 
     def paperboy
@@ -53,6 +53,10 @@ module MailyHerald
           end
         end
 
+        # We don't want to load whole app and its initializers just to set up Sidekiq client
+        # so let's just do that instead:
+        Sidekiq.redis = {url: options[:redis_url], namespace: options[:redis_namespace]}
+
         MailyHerald.redis
         MailyHerald.logger.info "MailyHerald running in #{RUBY_DESCRIPTION}"
 
@@ -89,6 +93,8 @@ module MailyHerald
       cfile = cli[:config_file] || "config/maily_herald.yml"
       config = (cfile ? parse_config(cfile) : {})
       options.merge!(config.merge(cli))
+
+      MailyHerald.logger.info "Starting with following options: #{options}"
     end
 
     def initialize_logger

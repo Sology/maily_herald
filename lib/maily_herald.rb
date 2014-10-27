@@ -83,7 +83,6 @@ module MailyHerald
     logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([Dispatch, List, Log, Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
 
     yield self
-
   end
 
   def self.context name, &block
