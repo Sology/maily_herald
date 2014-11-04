@@ -75,7 +75,7 @@ module MailyHerald
     end
 
     def logs
-      Log.for_mailings(Mailing.where(id: self.dispatches))
+      Log.for_mailings(Dispatch.where(id: self.dispatches.select("id")).select("id"))
     end
 
     private

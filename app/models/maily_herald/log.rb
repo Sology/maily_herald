@@ -11,7 +11,7 @@ module MailyHerald
 
     validates   :processing_at, presence: true, if: :scheduled?
 
-    default_scope               lambda { order("processing_at asc") }
+    scope       :ordered,       lambda { order("processing_at asc") }
     scope       :for_entity,    lambda {|entity| where(entity_id: entity.id, entity_type: entity.class.base_class) }
     scope       :for_mailing,   lambda {|mailing| where(mailing_id: mailing.id) }
     scope       :for_mailings,  lambda {|mailings| where("mailing_id in (?)", mailings) }

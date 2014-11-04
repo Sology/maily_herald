@@ -111,6 +111,10 @@ module MailyHerald
       end
     end
 
+    def destination_for entity
+      @destination_attribute ? entity.send(@destination_attribute) : @destination.call(entity)
+    end
+
     def attributes &block
       if block_given?
         @attributes = Attributes.new block

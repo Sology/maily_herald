@@ -50,11 +50,11 @@ module MailyHerald
     end
 
     def processed_logs entity
-      Log.processed.for_entity(entity).for_mailings(self.mailings.select(:id))
+      Log.ordered.processed.for_entity(entity).for_mailings(self.mailings.select(:id))
     end
 
     def processed_logs_for entity, mailing
-      Log.processed.for_entity(entity).for_mailing(self.mailings.find(mailing))
+      Log.ordered.processed.for_entity(entity).for_mailing(self.mailings.find(mailing))
     end
 
     def last_processing_time entity
@@ -81,7 +81,7 @@ module MailyHerald
     end
 
     def mailing_processing_log_for entity, mailing
-      Log.processed.for_entity(entity).for_mailing(mailing).last
+      Log.ordered.processed.for_entity(entity).for_mailing(mailing).last
     end
 
     def set_schedule_for entity
@@ -114,7 +114,7 @@ module MailyHerald
     end
 
     def schedules
-      Log.scheduled.for_mailings(self.mailings.select(:id))
+      Log.ordered.scheduled.for_mailings(self.mailings.select(:id))
     end
 
     def calculate_processing_time_for entity, mailing = nil
