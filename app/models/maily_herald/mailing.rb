@@ -94,23 +94,22 @@ module MailyHerald
     # Called from Mailer, block required
     def deliver_with_mailer_to entity
       unless processable?(entity)
-        MailyHerald.logger.debug("Mailing #{self} not processable for entity #{entity}") 
+        MailyHerald.logger.log_processing(self, entity, prefix: "Not processable", level: :debug) 
         return 
       end
 
       unless conditions_met?(entity)
-        MailyHerald.logger.debug("Conditions not met for #{self} and entity #{entity}")
+        MailyHerald.logger.log_processing(self, entity, prefix: "Conditions not met", level: :debug) 
         return {status: :skipped}
       end
 
-      MailyHerald.logger.debug("Processing #{self} to entity #{entity}")
-
       mail = yield # Let mailer do his job
 
-      MailyHerald.logger.debug("Delivered #{self} to entity #{entity}")
+      MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
 
       return {status: :delivered, data: {content: mail.to_s}}
     rescue StandardError => e
+      MailyHerald.logger.log_processing(self, entity, prefix: "Error", level: :error) 
       return {status: :error, data: {msg: "#{e.to_s}\n#{e.backtrace}"}}
     end
 

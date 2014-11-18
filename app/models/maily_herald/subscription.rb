@@ -41,10 +41,13 @@ module MailyHerald
       active? ? deactivate! : activate!
     end
 
+    def token_url
+      MailyHerald::Engine.routes.url_helpers.token_url(token: self.token, host: Rails.application.routes.default_url_options[:host])
+    end
+
     def to_liquid
-      #TODO fix the host
       {
-        "token_url" => MailyHerald::Engine.routes.url_helpers.token_url(token: self.token, host: HOST)
+        "token_url" => token_url
       }
     end
 

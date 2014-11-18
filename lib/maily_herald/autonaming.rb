@@ -22,6 +22,10 @@ module MailyHerald
       def self.included(base)
         base.extend ClassMethods
       end
+
+      def to_s
+        self.title || self.name
+      end
     end
   end
 end

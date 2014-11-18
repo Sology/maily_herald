@@ -12,6 +12,10 @@ module MailyHerald
     scope       :disabled,      lambda { where(state: :disabled) }
     scope       :archived,      lambda { where(state: :archived) }
 
+    scope       :sequence,      lambda { where(type: Sequence) }
+    scope       :one_time_mailing, lambda { where(type: OneTimeMailing) }
+    scope       :periodical_mailing, lambda { where(type: PeriodicalMailing) }
+
     def state
       read_attribute(:state).to_sym
     end
@@ -27,23 +31,23 @@ module MailyHerald
     end
 
     def enable!
-      update_attribute(:state, :enabled)
+      update_attribute(:state, "enabled")
     end
     def disable!
-      update_attribute(:state, :disabled)
+      update_attribute(:state, "disabled")
     end
     def archive!
-      update_attribute(:state, :archived)
+      update_attribute(:state, "archived")
     end
 
     def enable
-      write_attribute(:state, :enabled)
+      write_attribute(:state, "enabled")
     end
     def disable
-      write_attribute(:state, :disabled)
+      write_attribute(:state, "disabled")
     end
     def archive
-      write_attribute(:state, :archived)
+      write_attribute(:state, "archived")
     end
 
     def list= l

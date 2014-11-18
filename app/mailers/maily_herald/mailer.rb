@@ -19,8 +19,8 @@ module MailyHerald
         mailing = mail.maily_herald_data[:mailing]
         entity = mail.maily_herald_data[:entity]
 
+
         if mailing && entity
-          MailyHerald.logger.debug("Requested delivery of mailing #{mailing} to entity #{entity}")
           mailing.deliver_with_mailer_to(entity) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
               self.set_payload_for_mail(payload, mail)
@@ -29,13 +29,24 @@ module MailyHerald
             mail
           end
         else
-          MailyHerald.logger.info("Unable to find mailing and/or entity associated to this mailer action")
+          MailyHerald.logger.log_processing(mailing, entity, mail, prefix: "Delivery outside Maily")
+
           ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
             self.set_payload_for_mail(payload, mail)
             yield # Let Mail do the delivery actions
           end
         end
       end
+    end
+
+    def mail(headers = {}, &block)
+      return @_message if @_mail_was_called && headers.blank? && !block
+
+      @maily_subscription = @_message.maily_herald_data[:subscription]
+      @maily_entity = @_message.maily_herald_data[:entity]
+      @maily_mailing = @_message.maily_herald_data[:mailing]
+
+      super
     end
 
     protected
@@ -45,13 +56,22 @@ module MailyHerald
         attr_accessor :maily_herald_data
       end
 
+      mailing = args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0])
+      entity = args[1]
+
       @_message.maily_herald_data = {
-        mailing: args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0]),
-        entity: args[1]
+        mailing: mailing,
+        entity: entity,
+        subscription: mailing.subscription_for(entity),
       }
 
       lookup_context.skip_default_locale!
       super
+
+      @_message.to = mailing.destination(entity) unless @_message.to
+      @_message.from = mailing.sender unless @_message.from
+
+      @_message
     end
   end
 end

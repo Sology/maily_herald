@@ -4,15 +4,25 @@ module MailyHerald
       attr_accessible :absolute_delay_in_days
     end
 
+    attr_accessor :skip_updating_schedules
+
     belongs_to  :sequence,      class_name: "MailyHerald::Sequence"
 
     validates   :absolute_delay,presence: true, numericality: true
+    validates   :sequence,      presence: true
+    validate do
+      self.errors.add(:list_id, :invalid) if self.list_id != self.sequence.try(:list_id)
+    end
 
     delegate    :subscription,  to: :sequence
     delegate    :list,          to: :sequence
 
-    after_save if: Proc.new{|m| m.state_changed? || m.absolute_delay_changed?} do
-      self.sequence.update_schedules
+    before_validation do
+      self.list_id = self.sequence.list_id
+    end
+
+    after_save if: Proc.new{|m| !m.skip_updating_schedules && (m.state_changed? || m.absolute_delay_changed?)} do
+      self.sequence.update_schedules_callback
     end
 
     def absolute_delay_in_days
@@ -36,7 +46,9 @@ module MailyHerald
       schedule = self.sequence.schedule_for(entity)
 
       schedule.with_lock do
-        if schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time
+        # make sure schedule hasn't been processed in the meantime
+        if schedule && schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time && schedule.scheduled?
+
           attrs = super entity
           if attrs
             schedule.attributes = attrs

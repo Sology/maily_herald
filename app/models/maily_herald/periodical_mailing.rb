@@ -7,7 +7,7 @@ module MailyHerald
     validates   :list,          presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}
 
-    after_save :update_schedules, if: Proc.new{|m| m.state_changed? || m.period_changed? || m.start_at_changed? || m.override_subscription?}
+    after_save :update_schedules_callback, if: Proc.new{|m| m.state_changed? || m.period_changed? || m.start_at_changed? || m.override_subscription?}
 
     def period_in_days
       "%.2f" % (self.period.to_f / 1.day.seconds)
@@ -26,7 +26,8 @@ module MailyHerald
       schedule = schedule_for entity
 
       schedule.with_lock do
-        if schedule.processing_at <= current_time
+        # make sure schedule hasn't been processed in the meantime
+        if schedule && schedule.processing_at <= current_time && schedule.scheduled?
           attrs = super(entity)
           if attrs
             schedule.attributes = attrs
@@ -39,6 +40,7 @@ module MailyHerald
     end
 
     def run
+      # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).each do |schedule|
         deliver_to schedule.entity
       end
@@ -68,28 +70,42 @@ module MailyHerald
     end
 
     def set_schedule_for entity, last_log = nil
-      log = schedule_for(entity)
+      # support entity with joined subscription table for better performance
+      if entity.has_attribute?(:maily_subscription_id)
+        subscribed = !!entity.maily_subscription_active
+      else
+        subscribed = self.list.subscribed?(entity)
+      end
 
-      if !self.period || !self.start_at || !enabled? || !(self.override_subscription? || self.list.subscribed?(entity))
+      if !self.period || !self.start_at || !enabled? || !(self.override_subscription? || subscribed)
+        log = schedule_for(entity)
         log.try(:destroy)
         return
       end
 
+      log = schedule_for(entity)
       last_log ||= processed_logs(entity).last
 
       log ||= Log.new
-      log.set_attributes_for(self, entity, {
-        status: :scheduled,
-        processing_at: calculate_processing_time(entity, last_log)
-      })
-      log.save!
+      log.with_lock do
+        log.set_attributes_for(self, entity, {
+          status: :scheduled,
+          processing_at: calculate_processing_time(entity, last_log)
+        })
+        log.save!
+      end
       log
     end
 
     def update_schedules
-      self.list.context.scope.each do |entity|
+      self.list.context.scope_with_subscription(self.list, :outer).each do |entity|
+        MailyHerald.logger.debug "Updating schedule of #{self} periodical for entity ##{entity.id} #{entity}"
         set_schedule_for entity
       end
+    end
+
+    def update_schedules_callback
+      Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_async(self.id)
     end
 
     def schedule_for entity

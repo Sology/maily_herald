@@ -27,19 +27,8 @@ module MailyHerald
     end
 
     def self.run_all
-      redis = MailyHerald.redis
-      lock = redis.setnx("maily_herald_running", Time.now + 10.minutes)
-
-      if lock
-        PeriodicalMailing.all.each {|m| m.run}
-        Sequence.all.each {|m| m.run}
-
-        redis.del("maily_herald_running")
-      else
-        if redis.get("maily_herald_running") && Time.parse(redis.get("maily_herald_running")) > Time.now
-          redis.del("maily_herald_running")
-        end
-      end
+      PeriodicalMailing.all.each {|m| m.run}
+      Sequence.all.each {|m| m.run}
     end
 
     def self.simulate period
@@ -53,6 +42,10 @@ module MailyHerald
       end
       Timecop.return
       File.delete("/tmp/maily_herlald_timetravel.lock")
+    end
+
+    def self.job_enqueued?
+      Sidekiq::Queue.new.detect{|j| j.klass == "MailyHerald::Async" } || Sidekiq::Workers.new.detect{|w, msg| msg["payload"]["class"] == "MailyHerald::Async" }
     end
   end
 end

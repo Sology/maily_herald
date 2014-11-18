@@ -90,7 +90,18 @@ module MailyHerald
       end
     end
 
-    def scope_with_subscription mode = :inner
+    def scope_with_subscription list, mode = :inner
+      list_id = case list
+                when List
+                  list.id
+                when Fixnum
+                  list
+                when String
+                  list.to_i
+                else
+                  raise ArgumentError
+                end
+
       join_mode = case mode
                   when :outer
                     "LEFT OUTER JOIN"
@@ -98,8 +109,10 @@ module MailyHerald
                     "INNER JOIN"
                   end
 
-      scope.joins(
-        "#{join_mode} #{Subscription.table_name} ON #{Subscription.table_name}.entity_id = #{model.table_name}.id AND #{Subscription.table_name}.entity_type = '#{model.base_class.to_s}'"
+      subscription_fields_select = Subscription.columns.collect{|c| "#{Subscription.table_name}.#{c.name} AS maily_subscription_#{c.name}"}.join(", ")
+
+      scope.select("#{model.table_name}.*, #{subscription_fields_select}").joins(
+        "#{join_mode} #{Subscription.table_name} ON #{Subscription.table_name}.entity_id = #{model.table_name}.id AND #{Subscription.table_name}.entity_type = '#{model.base_class.to_s}' AND #{Subscription.table_name}.list_id = '#{list_id}'"
       )
     end
 

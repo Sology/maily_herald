@@ -35,7 +35,19 @@ module MailyHerald
     end
 
     def subscribed? entity
-      !!subscription_for(entity).try(:active?)
+      subscription_for(entity).try(:active?)
+    end
+
+    # true if user has inactive subscription or never been subscribed
+    def unsubscribed? entity
+      s = subscription_for(entity)
+      s ? !s.active? : true
+    end
+
+    # true only if user was intentionally unsubscribed
+    def opted_out? entity
+      s = subscription_for(entity)
+      s ? !s.active? : false
     end
 
     def subscription_for entity
@@ -55,27 +67,28 @@ module MailyHerald
     end
 
     def active_subscription_count
-      self.subscriptions.active.count
+      subscribers.count
     end
 
     # Returns entities within the context's scope with active subscription
     def subscribers
-      context.scope_with_subscription.where("#{Subscription.table_name}.active = (?)", true).where("#{Subscription.table_name}.list_id = (?)", self.id)
+      context.scope_with_subscription(self).where("#{Subscription.table_name}.active = (?)", true).where("#{Subscription.table_name}.list_id = (?)", self.id)
     end
 
     # Returns entities within the context's scope with inactive subscription
     def opt_outs
-      context.scope_with_subscription.where("#{Subscription.table_name}.active = (?)", false).where("#{Subscription.table_name}.list_id = (?)", self.id)
+      context.scope_with_subscription(self).where("#{Subscription.table_name}.active = (?)", false).where("#{Subscription.table_name}.list_id = (?)", self.id)
     end
 
     # Returns entities within the context's scope without subscription
     def potential_subscribers
-      sq = context.scope_with_subscription(:outer).where("#{Subscription.table_name}.list_id = (?)", self.id).pluck("#{context.model.table_name}.id")
+      sq = context.scope_with_subscription(self, :outer).where("#{Subscription.table_name}.list_id = (?)", self.id).pluck("#{context.model.table_name}.id")
       context.scope.where(context.model.arel_table[:id].not_in(sq))
     end
 
     def logs
-      Log.for_mailings(Dispatch.where(id: self.dispatches.select("id")).select("id"))
+      #Log.for_mailings(self.dispatches.select("id"))
+      Log.for_mailings(Dispatch.where("sequence_id IN (?) OR list_id = (?)", Sequence.where(list_id: self.id).select("id"), self.id).select("id"))
     end
 
     private

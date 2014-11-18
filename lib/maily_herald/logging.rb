@@ -9,6 +9,31 @@ module MailyHerald
       progname: "app"
     }
 
+    module LoggerExtensions
+      def log_processing *args
+        options = args.extract_options!
+        mailing, entity, mail = nil
+        args.each do |arg|
+          case arg
+          when Mailing
+            mailing = arg
+          when ::Mail::Message
+            mail = arg
+          else
+            entity = arg
+          end
+        end
+        prefix = options.delete(:prefix)
+        level = options.delete(:level) || :info
+
+        log_msg = []
+        log_msg << "<#{entity.try(:class).try(:name)}##{entity.try(:id)}> #{entity} #{mail.try(:to)}" if entity
+        log_msg << "<#{mailing.try(:class).try(:name)}##{mailing.try(:id)}> #{mailing}" if mailing
+
+        send(level, [options.delete(:prefix), log_msg.join(", ")].compact.join(": "))
+      end
+    end
+
     class Formatter < Logger::Formatter
       def call(severity, time, program_name, message)
         "#{time.utc.iso8601} #{Process.pid} [Maily##{"%3s" % program_name}] #{severity}: #{message}\n"
@@ -25,13 +50,18 @@ module MailyHerald
       @logger.level = @options[:level]
       @logger.formatter = Formatter.new
       @logger.progname = @options[:progname]
+      @logger.extend(LoggerExtensions)
 
       oldlogger.close if oldlogger
       @logger
     end
 
-    def self.logger
-      @logger || initialize
+    def self.initialized?
+      !!@logger
+    end
+
+    def self.logger opts = {}
+      @logger || initialize(opts)
     end
 
     def self.logger=(log)
@@ -51,5 +81,6 @@ module MailyHerald
     def logger
       MailyHerald::Logging.logger
     end
+
   end
 end

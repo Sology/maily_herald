@@ -31,7 +31,15 @@ module MailyHerald
         MailyHerald::Manager.run_all
       end
     end
+  end
 
+  class ScheduleUpdater
+    include Sidekiq::Worker
+
+    def perform id
+      dispatch = MailyHerald::Dispatch.find(id)
+      dispatch.update_schedules if dispatch.respond_to?(:update_schedules)
+    end
   end
 
   autoload :Utils,              'maily_herald/utils'
@@ -78,6 +86,14 @@ module MailyHerald
   end
 
   def self.logger
+    unless MailyHerald::Logging.initialized?
+      opts = {
+        level: options[:verbose] ? Logger::DEBUG : Logger::INFO,
+      }
+      opts[:target] = options[:logfile] if options[:logfile]
+
+      MailyHerald::Logging.initialize(opts)
+    end
     MailyHerald::Logging.logger
   end
 
@@ -106,42 +122,42 @@ module MailyHerald
     Dispatch.find_by_name(name)
   end
 
-  def self.one_time_mailing name
+  def self.one_time_mailing name, options = {}
     mailing = OneTimeMailing.where(name: name).first 
     if block_given? 
       mailing ||= OneTimeMailing.new(name: name)
       yield(mailing)
-      mailing.save! if mailing.new_record?
+      mailing.save! if mailing.new_record? || options.delete(:overwrite)
     end
     mailing
   end
 
-  def self.periodical_mailing name
+  def self.periodical_mailing name, options = {}
     mailing = PeriodicalMailing.where(name: name).first 
     if block_given? 
       mailing ||= PeriodicalMailing.new(name: name)
       yield(mailing)
-      mailing.save! if mailing.new_record?
+      mailing.save! if mailing.new_record? || options.delete(:overwrite)
     end
     mailing
   end
 
-  def self.sequence name
+  def self.sequence name, options = {}
     sequence = Sequence.where(name: name).first 
     if block_given? 
       sequence ||= Sequence.new(name: name)
       yield(sequence)
-      sequence.save! if sequence.new_record?
+      sequence.save! if sequence.new_record? || options.delete(:overwrite)
     end
     sequence
   end
 
-  def self.list name
+  def self.list name, options = {}
     list = List.where(name: name).first 
     if block_given? 
       list ||= List.new(name: name)
       yield(list)
-      list.save! if list.new_record?
+      list.save! if list.new_record? || options.delete(:overwrite)
     end
     list
   end

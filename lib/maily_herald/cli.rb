@@ -57,7 +57,7 @@ module MailyHerald
         # so let's just do that instead:
         Sidekiq.redis = {url: options[:redis_url], namespace: options[:redis_namespace]}
 
-        MailyHerald.redis
+        redis = MailyHerald.redis
         MailyHerald.logger.info "MailyHerald running in #{RUBY_DESCRIPTION}"
 
         if !options[:daemon]
@@ -67,7 +67,8 @@ module MailyHerald
         begin
           worker = Thread.new do
             while true
-              MailyHerald.run_all
+              MailyHerald.run_all unless MailyHerald::Manager.job_enqueued?
+
               sleep 20
             end
           end
