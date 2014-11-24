@@ -48,7 +48,12 @@ module MailyHerald
     def run
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).each do |schedule|
-        schedule.mailing.deliver_to schedule.entity
+        if schedule.entity
+          schedule.mailing.deliver_to schedule.entity
+        else
+          MailyHerald.logger.log_processing(schedule.mailing, {:class => schedule.entity_type, :id => schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+          schedule.destroy
+        end
       end
     end
 

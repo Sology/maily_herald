@@ -67,7 +67,12 @@ module MailyHerald
         begin
           worker = Thread.new do
             while true
-              MailyHerald.run_all unless MailyHerald::Manager.job_enqueued?
+              unless MailyHerald::Manager.job_enqueued?
+                MailyHerald.run_all 
+              else
+                # TODO: this is not logged
+                #MailyHerald.logger.error 'Unable to queue job'
+              end
 
               sleep 20
             end

@@ -27,10 +27,14 @@ module MailyHerald
         level = options.delete(:level) || :info
 
         log_msg = []
-        log_msg << "<#{entity.try(:class).try(:name)}##{entity.try(:id)}> #{entity} #{mail.try(:to)}" if entity
+        if entity.is_a?(Hash)
+          log_msg << "<#{entity[:class]}##{entity[:id]}> #{mail.try(:to)}" if entity
+        else
+          log_msg << "<#{entity.try(:class).try(:name)}##{entity.try(:id)}> #{entity} #{mail.try(:to)}" if entity
+        end
         log_msg << "<#{mailing.try(:class).try(:name)}##{mailing.try(:id)}> #{mailing}" if mailing
 
-        send(level, [options.delete(:prefix), log_msg.join(", ")].compact.join(": "))
+        send(level, [prefix, log_msg.join(", ")].compact.join(": "))
       end
     end
 

@@ -45,7 +45,9 @@ module MailyHerald
     end
 
     def self.job_enqueued?
-      Sidekiq::Queue.new.detect{|j| j.klass == "MailyHerald::Async" } || Sidekiq::Workers.new.detect{|w, msg| msg["payload"]["class"] == "MailyHerald::Async" }
+      Sidekiq::Queue.new.detect{|j| j.klass == "MailyHerald::Async" } || 
+        Sidekiq::Workers.new.detect{|w, msg| msg["payload"]["class"] == "MailyHerald::Async" } ||
+        Sidekiq::RetrySet.new.detect{|j| j.klass = "MailyHerald::Async" }
     end
   end
 end
