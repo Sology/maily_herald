@@ -1,5 +1,4 @@
 MailyHerald.setup do |config|
-  config.default_from = "no-reply@maily_herald.com"
   config.token_redirect {|subscription| "/" }
 
   config.context :all_users do |context|

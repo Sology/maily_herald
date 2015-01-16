@@ -5,10 +5,15 @@ module MailyHerald
     def generic entity, mailing
       destination = mailing.destination(entity)
       subject = mailing.subject
-      from = mailing.sender
       content = mailing.render_template(entity)
 
-      mail(to: destination, from: from, subject: subject) do |format|
+      opts = {
+        to: destination, 
+        subject: subject
+      }
+      opts[:from] = mailing.from if mailing.from.present?
+
+      mail(opts) do |format|
         format.text { render text: content }
       end
     end
@@ -42,6 +47,7 @@ module MailyHerald
     def mail(headers = {}, &block)
       return @_message if @_mail_was_called && headers.blank? && !block
 
+      # Assign instance variables availabe for template
       @maily_subscription = @_message.maily_herald_data[:subscription]
       @maily_entity = @_message.maily_herald_data[:entity]
       @maily_mailing = @_message.maily_herald_data[:mailing]
@@ -54,6 +60,14 @@ module MailyHerald
     def process(*args) #:nodoc:
       class << @_message
         attr_accessor :maily_herald_data
+
+        def maily_herald_processable?
+          @maily_herald_processable ||= maily_herald_data[:mailing].processable?(maily_herald_data[:entity])
+        end
+
+        def maily_herald_conditions_met?
+          @maily_herald_conditions_met ||= maily_herald_data[:mailing].conditions_met?(maily_herald_data[:entity])
+        end
       end
 
       mailing = args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0])
@@ -69,7 +83,7 @@ module MailyHerald
       super
 
       @_message.to = mailing.destination(entity) unless @_message.to
-      @_message.from = mailing.sender unless @_message.from
+      @_message.from = mailing.from unless @_message.from
 
       @_message
     end

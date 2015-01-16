@@ -11,6 +11,7 @@ module MailyHerald
     scope       :enabled,       lambda { where(state: :enabled) }
     scope       :disabled,      lambda { where(state: :disabled) }
     scope       :archived,      lambda { where(state: :archived) }
+    scope       :not_archived,  lambda { where("state != (?)", :archived) }
 
     scope       :sequence,      lambda { where(type: Sequence) }
     scope       :one_time_mailing, lambda { where(type: OneTimeMailing) }
@@ -56,7 +57,7 @@ module MailyHerald
     end
 
     def processable? entity
-      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.include?(entity)
+      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.exists?(entity)
     end
 
   end

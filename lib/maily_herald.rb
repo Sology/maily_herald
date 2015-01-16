@@ -184,13 +184,6 @@ module MailyHerald
     @@contexts
   end
 
-  def self.default_from
-    @@default_from
-  end
-  def self.default_from= from
-    @@default_from = from
-  end
-
   def self.token_redirect &block
     if block_given?
       @@token_redirect = block

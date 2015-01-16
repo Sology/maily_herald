@@ -39,12 +39,8 @@ module MailyHerald
       self.class == SequenceMailing
     end
 
-    def sender
-      if self.from && !self.from.empty?
-        self.from
-      else
-        MailyHerald.default_from
-      end
+    def mailer_name
+      read_attribute(:mailer_name).to_sym
     end
 
     def has_conditions?
@@ -52,7 +48,7 @@ module MailyHerald
     end
 
     def generic_mailer?
-      self.mailer_name == "generic"
+      self.mailer_name == :generic
     end
 
     def conditions_met? entity
@@ -78,18 +74,20 @@ module MailyHerald
       perform_template_rendering drop, self.template
     end
 
-    protected
+    def build_mail entity
+      if generic_mailer?
+        subscription = self.list.subscription_for entity
+        Mailer.generic(entity, self)
+      else
+        self.mailer_name.to_s.constantize.send(self.name, entity)
+      end
+    end
 
     def deliver_to entity
-      if self.mailer_name == 'generic'
-        subscription = self.list.subscription_for entity
-        mail = Mailer.generic(entity, self)
-      else
-        mail = self.mailer_name.constantize.send(self.name, entity)
-      end
-
-      mail.deliver
+      build_mail(entity).deliver
     end
+
+    protected
 
     # Called from Mailer, block required
     def deliver_with_mailer_to entity
@@ -110,7 +108,7 @@ module MailyHerald
       return {status: :delivered, data: {content: mail.to_s}}
     rescue StandardError => e
       MailyHerald.logger.log_processing(self, entity, prefix: "Error", level: :error) 
-      return {status: :error, data: {msg: "#{e.to_s}\n#{e.backtrace}"}}
+      return {status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"}}
     end
 
     private

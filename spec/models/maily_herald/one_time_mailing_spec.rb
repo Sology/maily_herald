@@ -30,7 +30,7 @@ describe MailyHerald::OneTimeMailing do
 
         @mailing.conditions_met?(@entity).should be_truthy
         @mailing.processable?(@entity).should be_truthy
-        @mailing.mailer_name.should eq("generic")
+        @mailing.mailer_name.should eq(:generic)
 
         ret = @mailing.run
         ret.should be_a(Array)
