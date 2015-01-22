@@ -5,6 +5,7 @@ module MailyHerald
     end
 
     validates   :list,          presence: true
+    validates   :start_at,      presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}
 
     after_save :update_schedules_callback, if: Proc.new{|m| m.state_changed? || m.period_changed? || m.start_at_changed? || m.override_subscription?}
@@ -110,7 +111,7 @@ module MailyHerald
     end
 
     def update_schedules_callback
-      Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_async(self.id)
+      Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_in(10.seconds, self.id)
     end
 
     def schedule_for entity

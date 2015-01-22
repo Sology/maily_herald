@@ -34,6 +34,7 @@ describe MailyHerald::PeriodicalMailing do
 
     after(:each) do
       @mailing.update_attribute(:start_at, @start_at)
+      @mailing.update_attribute(:state, "enabled")
     end
 
     it "should be triggered by start_at change" do
@@ -54,6 +55,24 @@ describe MailyHerald::PeriodicalMailing do
       schedule.processing_at.to_i.should eq(@entity.created_at.to_i)
 
       @list.unsubscribe! @entity
+
+      expect(MailyHerald::Log.scheduled.for_mailing(@mailing).first).to be_nil
+    end
+
+    it "should be triggered by disabling mailing" do
+      MailyHerald::Log.scheduled.for_mailing(@mailing).count.should eq(1)
+      schedule = MailyHerald::Log.scheduled.for_mailing(@mailing).first
+      schedule.processing_at.to_i.should eq(@entity.created_at.to_i)
+
+      @mailing.disable!
+
+      expect(MailyHerald::Log.scheduled.for_mailing(@mailing).first).to be_nil
+
+      @mailing.enable!
+
+      expect(MailyHerald::Log.scheduled.for_mailing(@mailing).first).not_to be_nil
+
+      @mailing.disable!
 
       expect(MailyHerald::Log.scheduled.for_mailing(@mailing).first).to be_nil
     end

@@ -128,7 +128,7 @@ module MailyHerald
     end
 
     def update_schedules_callback
-      Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_async(self.id)
+      Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_in(10.seconds, self.id)
     end
 
     def schedule_for entity

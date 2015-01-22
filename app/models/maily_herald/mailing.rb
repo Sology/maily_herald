@@ -43,6 +43,14 @@ module MailyHerald
       read_attribute(:mailer_name).to_sym
     end
 
+    def mailer
+      if generic_mailer?
+        MailyHerald::Mailer
+      else
+        self.mailer_name.to_s.constantize
+      end
+    end
+
     def has_conditions?
       self.conditions && !self.conditions.empty?
     end
@@ -76,10 +84,9 @@ module MailyHerald
 
     def build_mail entity
       if generic_mailer?
-        subscription = self.list.subscription_for entity
         Mailer.generic(entity, self)
       else
-        self.mailer_name.to_s.constantize.send(self.name, entity)
+        self.mailer.send(self.name, entity)
       end
     end
 
