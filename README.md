@@ -1,17 +1,17 @@
 # MailyHerald
 
-MailyHerald is a Ruby on Rails engine that helps you sending and managing your mailings. Think of Maily as a self-hosted Mailchimp you can easily integrate with your site. MailyHerald is great both for e-mail marketing and conducting daily stream of notifications you send to your users.
+MailyHerald is a Ruby on Rails engine that helps you sending and managing your mailings. Think of Maily as a self-hosted Mailchimp you can easily integrate with your site. MailyHerald is great both for email marketing and conducting daily stream of notifications you send to your users.
 
 With MailyHerald you can send:
-* one-time e-mails (ie. welcome message),
-* periodicals (ie. weekly notifications)
-* ailing sequences (ie. multiple ordered e-mails delivered with certain delays since the time when user registered on site)
+* one-time emails (ie. welcome emails, special offers),
+* periodicals (ie. weekly notifications, reminders)
+* mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (ie. onboarding emails, site feature overview)
 
-Maily will keep track of users' subscriptions and allow them to easily opt out. You can define who will receive which e-mails and specify conditions that control delivery. All deliveries are tracked and logged.
+Maily keeps track of users' subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All deliveries are tracked and logged.
 
 ## Requirements
 
-Only Ruby on Rails 3.2 is supported. We are working on Rails 4 support.
+Both Ruby on Rails 3.2 and 4 are supported. 
 
 ## Installation
 
@@ -27,13 +27,13 @@ or put in your Gemfile
 
 In order to run successful mailings you need following:
 
-* *Entity* - you probably have this already; enity is a recipient, basically a model you will deliver mail to (like ie. User),
+* *Entity* - you probably have this already; enity is a recipient, basically a model you send emails to (like ie. User),
 * *Context* - your subscribers - simply a collection of entities,
 * *Dispatch* - one-time, periodical or sequence mailing - Maily provides you with that!
 
 ## Usage
 
-Maily is fully compatible with standard Rails Action Mailer. There's very little you need to do in order to run your deliveries with Maily.
+Maily is fully compatible with standard Rails ActionMailer. There's very little you need to do in order to run your deliveries with Maily.
 
 1. Install Maily engine migrations and run them:
 
@@ -46,8 +46,6 @@ Maily is fully compatible with standard Rails Action Mailer. There's very little
 
   ```ruby
   MailyHerald.setup do |config|
-    config.default_from = "no-reply@mailyherald.com"
-
     config.context :active_users do |context|
       context.scope {User.active}
       context.destination {|user| user.email}
@@ -98,6 +96,6 @@ For bug reports or feature requests see the [issues on Github](https://github.co
 
 ## License
 
-MIT License. Copyright 2013-2014 Sology. http://www.sology.eu
+LGPLv3 License. Copyright 2013-2014 Sology. http://www.sology.eu
 
 Initial development sponsored by Smart Language Apps Limited http://smartlanguageapps.com/

@@ -12,11 +12,12 @@ Gem::Specification.new do |s|
   s.authors     = ["Łukasz Jachymczyk"]
   s.email       = ["lukasz@sology.eu"]
   s.homepage    = "https://github.com/Sology/maily_herald"
-  s.description = s.summary = "Mailing framework for Ruby on Rails applications"
+  s.license     = "LGPL-3.0"
+  s.description = s.summary = "Email marketing solution for Ruby on Rails applications"
 
-  s.files        = `git ls-files`.split("\n")
-  s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  s.test_files   = `git ls-files -- {spec,features}/**/`.split("\n")
+  s.files       = `git ls-files`.split("\n")
+  s.executables = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  s.test_files  = `git ls-files -- {spec,features}/**/`.split("\n")
 
   s.add_dependency "rails", "> 3.2"
   s.add_dependency "liquid", "~> 2.6.1"
