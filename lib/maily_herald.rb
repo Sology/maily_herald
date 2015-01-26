@@ -1,3 +1,5 @@
+require 'maily_herald/version'
+
 require 'liquid'
 require 'sidekiq'
 require 'redis'
