@@ -11,6 +11,15 @@ module MailyHerald
 
     validates :title, presence: true
     validates :name, presence: true, format: {with: /\A[A-Za-z0-9_]+\z/}
+    validate do |list|
+      list.errors.add(:base, "Can't change this list because it is locked.") if list.locked?
+    end
+    before_destroy do |list|
+      if list.locked?
+        list.errors.add(:base, "Can't destroy this list because it is locked.") 
+        false
+      end
+    end
 
     after_initialize do
       if self.new_record?
@@ -89,6 +98,10 @@ module MailyHerald
     def logs
       #Log.for_mailings(self.dispatches.select("id"))
       Log.for_mailings(Dispatch.where("sequence_id IN (?) OR list_id = (?)", Sequence.where(list_id: self.id).select("id"), self.id).select("id"))
+    end
+
+    def locked?
+      MailyHerald.list_locked?(self.name)
     end
 
     private

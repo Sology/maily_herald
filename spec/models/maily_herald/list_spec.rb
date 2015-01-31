@@ -48,4 +48,13 @@ describe MailyHerald::List do
 
     expect(@list.logs).to include(@mailing.logs.first)
   end
+
+  it "should be lockable" do
+    @list = MailyHerald.list :locked_list
+    expect(@list).to be_locked
+    expect(@list.save).to be_falsy
+    expect(@list.errors.messages).to include(:base)
+    @list.destroy
+    expect(@list).not_to be_destroyed
+  end
 end

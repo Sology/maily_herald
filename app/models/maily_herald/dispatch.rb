@@ -5,6 +5,15 @@ module MailyHerald
     validates   :name,          presence: true, format: {with: /\A\w+\z/}, uniqueness: true
     validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
+    validate do |dispatch|
+      dispatch.errors.add(:base, "Can't change this dispatch because it is locked.") if dispatch.locked?
+    end
+    before_destroy do |dispatch|
+      if dispatch.locked?
+        dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.") 
+        false
+      end
+    end
 
     delegate :subscription_for, to: :list
 
@@ -58,6 +67,10 @@ module MailyHerald
 
     def processable? entity
       self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.exists?(entity)
+    end
+
+    def locked?
+      MailyHerald.dispatch_locked?(self.name)
     end
 
   end

@@ -29,6 +29,18 @@ MailyHerald.setup do |config|
     end
   end
 
+  config.list :locked_list, locked: true do |list|
+    list.context_name = :all_users
+  end
+
+  config.one_time_mailing :locked_mailing, locked: true do |mailing|
+    mailing.enable
+    mailing.title = "Test mailing"
+    mailing.subject = "Test mailing"
+    mailing.list = :generic_list
+    mailing.template = "User name: {{user.name}}."
+  end
+
   config.one_time_mailing :test_mailing do |mailing|
     mailing.enable
     mailing.title = "Test mailing"

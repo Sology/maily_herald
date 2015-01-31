@@ -31,16 +31,21 @@ module MailyHerald
     end
     after_save :update_schedules_callback, if: Proc.new{|s| s.state_changed? || s.start_at_changed?}
 
-    def mailing name
+    def mailing name, options = {}
       if SequenceMailing.table_exists?
         mailing = SequenceMailing.find_by_name(name)
-        mailing ||= self.mailings.build(name: name)
-        mailing.sequence = self
-        if block_given?
+        lock = options.delete(:locked)
+
+        if block_given? && !MailyHerald.dispatch_locked?(name) && (!mailing || lock)
+          mailing ||= self.mailings.build(name: name)
+          mailing.sequence = self
           yield(mailing)
           mailing.skip_updating_schedules = true if self.new_record?
-          mailing.save! if mailing.new_record? && !self.new_record?
+          mailing.save!
+
+          MailyHerald.lock_dispatch(name) if lock
         end
+
         mailing
       end
     end

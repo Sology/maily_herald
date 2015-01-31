@@ -62,6 +62,28 @@ module MailyHerald
     @options = opts
   end
 
+  def self.locked_dispatches
+    @@locked_dispatches ||= []
+  end
+  def self.lock_dispatch name
+    name = name.to_s
+    self.locked_dispatches << name unless @@locked_dispatches.include?(name)
+  end
+  def self.dispatch_locked? name
+    self.locked_dispatches.include?(name.to_s)
+  end
+
+  def self.locked_lists
+    @@locked_lists ||= []
+  end
+  def self.lock_list name
+    name = name.to_s
+    self.locked_lists << name unless @@locked_lists.include?(name)
+  end
+  def self.list_locked? name
+    self.locked_lists.include?(name.to_s)
+  end
+
   def self.read_options cfile = "config/maily_herald.yml"
     opts = {}
     if File.exist?(cfile)
@@ -126,41 +148,61 @@ module MailyHerald
 
   def self.one_time_mailing name, options = {}
     mailing = OneTimeMailing.where(name: name).first 
-    if block_given? 
+    lock = options.delete(:locked)
+
+    if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
       mailing ||= OneTimeMailing.new(name: name)
       yield(mailing)
-      mailing.save! if mailing.new_record? || options.delete(:overwrite)
+      mailing.save! 
+
+      MailyHerald.lock_dispatch(name) if lock
     end
+
     mailing
   end
 
   def self.periodical_mailing name, options = {}
     mailing = PeriodicalMailing.where(name: name).first 
-    if block_given? 
+    lock = options.delete(:locked)
+
+    if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
       mailing ||= PeriodicalMailing.new(name: name)
       yield(mailing)
-      mailing.save! if mailing.new_record? || options.delete(:overwrite)
+      mailing.save!
+
+      self.lock_dispatch(name) if lock
     end
+
     mailing
   end
 
   def self.sequence name, options = {}
     sequence = Sequence.where(name: name).first 
-    if block_given? 
+    lock = options.delete(:locked)
+
+    if block_given? && !self.dispatch_locked?(name) && (!sequence || lock)
       sequence ||= Sequence.new(name: name)
       yield(sequence)
-      sequence.save! if sequence.new_record? || options.delete(:overwrite)
+      sequence.save!
+
+      self.lock_dispatch(name) if lock
     end
+
     sequence
   end
 
   def self.list name, options = {}
     list = List.where(name: name).first 
-    if block_given? 
+    lock = options.delete(:locked)
+
+    if block_given? && !self.list_locked?(name) && (!list || lock)
       list ||= List.new(name: name)
       yield(list)
-      list.save! if list.new_record? || options.delete(:overwrite)
+      list.save!
+
+      self.lock_list(name) if lock
     end
+
     list
   end
 
@@ -183,7 +225,7 @@ module MailyHerald
   end
 
   def self.contexts
-    @@contexts
+    @@contexts ||= {}
   end
 
   def self.token_redirect &block
