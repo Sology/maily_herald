@@ -2,7 +2,6 @@ module MailyHerald
   class Dispatch < ActiveRecord::Base
     belongs_to  :list,          class_name: "MailyHerald::List"
 
-    validates   :name,          presence: true, format: {with: /\A\w+\z/}, uniqueness: true
     validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
     validate do |dispatch|

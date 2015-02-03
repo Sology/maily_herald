@@ -9,8 +9,6 @@ if defined?(::Rails::Engine)
 end
 
 module MailyHerald
-  TIME_FORMAT = "%Y-%m-%d %H:%M"
-
   class Async
     include Sidekiq::Worker
 
@@ -54,231 +52,301 @@ module MailyHerald
 	autoload :Autonaming,					'maily_herald/autonaming'
 	autoload :Logging,					  'maily_herald/logging'
 
-  def self.options
-    @options ||= read_options
-  end
-
-  def self.options=(opts)
-    @options = opts
-  end
-
-  def self.locked_dispatches
-    @@locked_dispatches ||= []
-  end
-  def self.lock_dispatch name
-    name = name.to_s
-    self.locked_dispatches << name unless @@locked_dispatches.include?(name)
-  end
-  def self.dispatch_locked? name
-    self.locked_dispatches.include?(name.to_s)
-  end
-
-  def self.locked_lists
-    @@locked_lists ||= []
-  end
-  def self.lock_list name
-    name = name.to_s
-    self.locked_lists << name unless @@locked_lists.include?(name)
-  end
-  def self.list_locked? name
-    self.locked_lists.include?(name.to_s)
-  end
-
-  def self.read_options cfile = "config/maily_herald.yml"
-    opts = {}
-    if File.exist?(cfile)
-      opts = YAML.load(ERB.new(IO.read(cfile)).result)
-      #opts = opts.merge(opts.delete(@environment) || {})
+  class << self
+    # Returns config options read from config file.
+    def options
+      @options ||= read_options
     end
-    opts
-  end
 
-  def self.redis
-    @redis ||= begin
-                 client = Redis.new(
-                   url: options[:redis_url] || 'redis://localhost:6379/0',
-                   driver: options[:redis_driver] || "ruby"
-                 )
+    # Assign config options.
+    def options=(opts)
+      @options = opts
+    end
 
-                 if options[:redis_namespace]
-                   require 'redis/namespace'
-                   Redis::Namespace.new(options[:redis_namespace], redis: client)
-                 else
-                   client
+    # Get list of locked dispatches.
+    def locked_dispatches
+      @@locked_dispatches ||= []
+    end
+
+    # Lock a dispatch.
+    #
+    # @param name [Symbol] Dispatch identifier name.
+    def lock_dispatch name
+      name = name.to_s
+      self.locked_dispatches << name unless @@locked_dispatches.include?(name)
+    end
+
+    # Check if dispatch is locked.
+    #
+    # @param name [Symbol] Dispatch identifier name.
+    def dispatch_locked? name
+      self.locked_dispatches.include?(name.to_s)
+    end
+
+    # Get list of locked lists.
+    def locked_lists
+      @@locked_lists ||= []
+    end
+
+    # Lock a list.
+    #
+    # @param name [Symbol] List identifier name.
+    def lock_list name
+      name = name.to_s
+      self.locked_lists << name unless @@locked_lists.include?(name)
+    end
+
+    # Check if List is locked.
+    #
+    # @param name [Symbol] List identifier name.
+    def list_locked? name
+      self.locked_lists.include?(name.to_s)
+    end
+
+    # Obtains Redis connection.
+    def redis
+      @redis ||= begin
+                   client = Redis.new(
+                     url: options[:redis_url] || 'redis://localhost:6379/0',
+                     driver: options[:redis_driver] || "ruby"
+                   )
+
+                   if options[:redis_namespace]
+                     require 'redis/namespace'
+                     Redis::Namespace.new(options[:redis_namespace], redis: client)
+                   else
+                     client
+                   end
                  end
-               end
-  end
-
-  def self.logger
-    unless MailyHerald::Logging.initialized?
-      opts = {
-        level: options[:verbose] ? Logger::DEBUG : Logger::INFO,
-      }
-      opts[:target] = options[:logfile] if options[:logfile]
-
-      MailyHerald::Logging.initialize(opts)
     end
-    MailyHerald::Logging.logger
-  end
 
-  def self.setup
-    @@contexts ||= {}
-    @@token_custom_actions ||= {}
+    # Gets the Maily logger.
+    def logger
+      unless MailyHerald::Logging.initialized?
+        opts = {
+          level: options[:verbose] ? Logger::DEBUG : Logger::INFO,
+        }
+        opts[:target] = options[:logfile] if options[:logfile]
 
-    logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([Dispatch, List, Log, Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
+        MailyHerald::Logging.initialize(opts)
+      end
+      MailyHerald::Logging.logger
+    end
 
-    yield self
-  end
-
-  def self.context name, &block
-    name = name.to_s
-
-    if block_given?
+    # Performs Maily setup.
+    #
+    # To be used in initializer file.
+    def setup
       @@contexts ||= {}
-      @@contexts[name] ||= MailyHerald::Context.new(name)
-      yield @@contexts[name]
-    else
-      @@contexts[name]
+
+      logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
+
+      yield self
+    end
+
+    # Fetches or defines a {Context}.
+    #
+    # If no block provided, Context with given +name+ is returned.
+    #
+    # If block provided, Context with given +name+ is created and then block
+    # is evaluated within that Context.
+    #
+    # @param name [Symbol] Identifier name of the Context.
+    def context name, &block
+      name = name.to_s
+
+      if block_given?
+        @@contexts ||= {}
+        @@contexts[name] ||= MailyHerald::Context.new(name)
+        yield @@contexts[name]
+      else
+        @@contexts[name]
+      end
+    end
+
+    # Returns a dispatch with given identifier name.
+    #
+    # Dispatch is basically any object extending {MailyHerald::Dispatch}.
+    #
+    # @param name [Symbol] Dispatch identifier name.
+    def dispatch name
+      Dispatch.find_by_name(name)
+    end
+
+    # Fetches or defines an {OneTimeMailing}.
+    #
+    # If no block provided, {OneTimeMailing} with given +name+ is returned.
+    #
+    # If block provided, {OneTimeMailing} with given +name+ is created or edited 
+    # and block is evaluated within that mailing.
+    #
+    # @option options [true, false] :locked (false) Determines whether Mailing is locked.
+    # @see Dispatch#locked?
+    def one_time_mailing name, options = {}
+      mailing = MailyHerald::OneTimeMailing.where(name: name).first 
+      lock = options.delete(:locked)
+
+      if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
+        mailing ||= MailyHerald::OneTimeMailing.new(name: name)
+        yield(mailing)
+        mailing.save! 
+
+        MailyHerald.lock_dispatch(name) if lock
+      end
+
+      mailing
+    end
+
+    # Fetches or defines an {PeriodicalMailing}.
+    #
+    # If no block provided, {PeriodicalMailing} with given +name+ is returned.
+    #
+    # If block provided, {PeriodicalMailing} with given +name+ is created or edited 
+    # and block is evaluated within that mailing.
+    #
+    # @option options [true, false] :locked (false) Determines whether Mailing is locked.
+    # @see Dispatch#locked?
+    def periodical_mailing name, options = {}
+      mailing = MailyHerald::PeriodicalMailing.where(name: name).first 
+      lock = options.delete(:locked)
+
+      if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
+        mailing ||= MailyHerald::PeriodicalMailing.new(name: name)
+        yield(mailing)
+        mailing.save!
+
+        self.lock_dispatch(name) if lock
+      end
+
+      mailing
+    end
+
+    # Fetches or defines an {Sequence}.
+    #
+    # If no block provided, {Sequence} with given +name+ is returned.
+    #
+    # If block provided, {Sequence} with given +name+ is created or edited 
+    # and block is evaluated within that mailing.
+    # Additionally, within provided block, using {Sequence#mailing} method, 
+    # {SequenceMailing sequence mailings} can be defined.
+    #
+    # @option options [true, false] :locked (false) Determines whether Mailing is locked.
+    # @see Dispatch#locked?
+    # @see Sequence#mailing
+    def sequence name, options = {}
+      sequence = MailyHerald::Sequence.where(name: name).first 
+      lock = options.delete(:locked)
+
+      if block_given? && !self.dispatch_locked?(name) && (!sequence || lock)
+        sequence ||= MailyHerald::Sequence.new(name: name)
+        yield(sequence)
+        sequence.save!
+
+        self.lock_dispatch(name) if lock
+      end
+
+      sequence
+    end
+
+    # Fetches or defines a {List}.
+    #
+    # If no block provided, {List} with given +name+ is returned.
+    #
+    # If block provided, {List} with given +name+ is created or edited 
+    # and block is evaluated within that list.
+    #
+    # @option options [true, false] :locked (false) Determines whether {List} is locked.
+    # @see List#locked?
+    def list name, options = {}
+      list = MailyHerald::List.where(name: name).first 
+      lock = options.delete(:locked)
+
+      if block_given? && !self.list_locked?(name) && (!list || lock)
+        list ||= MailyHerald::List.new(name: name)
+        yield(list)
+        list.save!
+
+        self.lock_list(name) if lock
+      end
+
+      list
+    end
+
+    # Subscribe +entity+ to {List lists} identified by +list_names+.
+    #
+    # @see List#subscribe!
+    def subscribe entity, *list_names
+      list_names.each do |ln| 
+        list = MailyHerald.list(ln)
+        next unless list
+
+        list.subscribe! entity
+      end
+    end
+
+    # Unsubscribe +entity+ from {List lists} identified by +list_names+.
+    #
+    # @see List#unsubscribe!
+    def unsubscribe entity, *list_names
+      list_names.each do |ln| 
+        list = MailyHerald.list(ln)
+        next unless list
+
+        list.unsubscribe! entity
+      end
+    end
+
+    # Return all defined {Context Contexts}.
+    def contexts
+      @@contexts ||= {}
+    end
+
+    def token_redirect &block
+      if block_given?
+        @@token_redirect = block
+      else
+        @@token_redirect
+      end
+    end
+
+    def deliver mailing_name, entity_id
+      mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
+      entity_id = entity_id.id if !entity_id.is_a?(Fixnum)
+
+      Async.perform_async mailing: mailing_name, entity: entity_id, logger: MailyHerald::Logging.safe_options
+    end
+
+    def run_sequence seq_name
+      seq_name = seq_name.name if seq_name.is_a?(Sequence)
+
+      Async.perform_async sequence: seq_name, logger: MailyHerald::Logging.safe_options
+    end
+
+    def run_mailing mailing_name
+      mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
+
+      Async.perform_async mailing: mailing_name, logger: MailyHerald::Logging.safe_options
+    end
+
+    def run_all
+      Async.perform_async(logger: MailyHerald::Logging.safe_options)
+    end
+
+    def find_subscription_for mailer_name, mailing_name, entity
+      mailing = MailyHerald::Mailing.where(mailer_name: mailer_name, name: mailing_name).first
+      mailing.subscription_for entity
+    end
+
+    # Private class methods go here...
+
+    def read_options cfile = "config/maily_herald.yml"
+      opts = {}
+      if File.exist?(cfile)
+        opts = YAML.load(ERB.new(IO.read(cfile)).result)
+      end
+      opts
     end
   end
 
-  def self.dispatch name
-    Dispatch.find_by_name(name)
-  end
-
-  def self.one_time_mailing name, options = {}
-    mailing = OneTimeMailing.where(name: name).first 
-    lock = options.delete(:locked)
-
-    if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
-      mailing ||= OneTimeMailing.new(name: name)
-      yield(mailing)
-      mailing.save! 
-
-      MailyHerald.lock_dispatch(name) if lock
-    end
-
-    mailing
-  end
-
-  def self.periodical_mailing name, options = {}
-    mailing = PeriodicalMailing.where(name: name).first 
-    lock = options.delete(:locked)
-
-    if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
-      mailing ||= PeriodicalMailing.new(name: name)
-      yield(mailing)
-      mailing.save!
-
-      self.lock_dispatch(name) if lock
-    end
-
-    mailing
-  end
-
-  def self.sequence name, options = {}
-    sequence = Sequence.where(name: name).first 
-    lock = options.delete(:locked)
-
-    if block_given? && !self.dispatch_locked?(name) && (!sequence || lock)
-      sequence ||= Sequence.new(name: name)
-      yield(sequence)
-      sequence.save!
-
-      self.lock_dispatch(name) if lock
-    end
-
-    sequence
-  end
-
-  def self.list name, options = {}
-    list = List.where(name: name).first 
-    lock = options.delete(:locked)
-
-    if block_given? && !self.list_locked?(name) && (!list || lock)
-      list ||= List.new(name: name)
-      yield(list)
-      list.save!
-
-      self.lock_list(name) if lock
-    end
-
-    list
-  end
-
-  def self.subscribe entity, *list_names
-    list_names.each do |ln| 
-      list = MailyHerald.list(ln)
-      next unless list
-
-      list.subscribe! entity
-    end
-  end
-
-  def self.unsubscribe entity, *list_names
-    list_names.each do |ln| 
-      list = MailyHerald.list(ln)
-      next unless list
-
-      list.unsubscribe! entity
-    end
-  end
-
-  def self.contexts
-    @@contexts ||= {}
-  end
-
-  def self.token_redirect &block
-    if block_given?
-      @@token_redirect = block
-    else
-      @@token_redirect
-    end
-  end
-
-  def self.token_custom_action type, id, &block
-    if block_given?
-      @@token_custom_actions[type] ||= {}
-      @@token_custom_actions[type][id] = block
-    else
-      @@token_custom_actions[type] ||= {}
-      @@token_custom_actions[type][id]
-    end
-  end
-
-  def self.deliver mailing_name, entity_id
-    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
-    entity_id = entity_id.id if !entity_id.is_a?(Fixnum)
-
-    Async.perform_async mailing: mailing_name, entity: entity_id, logger: MailyHerald::Logging.safe_options
-  end
-
-  def self.run_sequence seq_name
-    seq_name = seq_name.name if seq_name.is_a?(Sequence)
-
-    Async.perform_async sequence: seq_name, logger: MailyHerald::Logging.safe_options
-  end
-
-  def self.run_mailing mailing_name
-    mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
-
-    Async.perform_async mailing: mailing_name, logger: MailyHerald::Logging.safe_options
-  end
-
-  def self.run_all
-    Async.perform_async(logger: MailyHerald::Logging.safe_options)
-  end
-
-  def self.simulate period = 1.year
-    Async.perform_async simulate: period, logger: MailyHerald::Logging.safe_options
-  end
-
-  def self.simulation_ongoing?
-    File.exist?("/tmp/maily_herlald_timetravel.lock")
-  end
-
-  def self.find_subscription_for mailer_name, mailing_name, entity
-    mailing = MailyHerald::Mailing.where(mailer_name: mailer_name, name: mailing_name).first
-    mailing.subscription_for entity
-  end
+  private_class_method :read_options
 end

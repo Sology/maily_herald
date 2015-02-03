@@ -17,8 +17,6 @@ module MailyHerald
     end
 
     validates   :list,                presence: true
-    validates   :name,                presence: true, format: {with: /\A\w+\z/}, uniqueness: true
-    validates   :title,               presence: true
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)

@@ -10,7 +10,6 @@ module MailyHerald
 
     has_many    :logs,          class_name: "MailyHerald::Log"
     
-    validates   :title,         presence: true
     validates   :subject,       presence: true, if: :generic_mailer?
     validates   :template,      presence: true, if: :generic_mailer?
     validate    :template_syntax

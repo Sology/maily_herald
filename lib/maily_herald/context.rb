@@ -1,5 +1,21 @@
 module MailyHerald
+
+  # Abstraction layer for accessing collections of Entities and their attributes.
+  # Information provided by scope is used while sending {MailyHerald::Mailing mailings}.
+  #
+  # {Context} defines following:
+  #
+  # * Entity scope - +ActiveRecord::Relation+, list of Entities that will be returned 
+  #   by {Context}.
+  # * Entity model name - deducted automatically from scope.
+  # * Entity attributes - Defined as procs that can be evaluated for every item of 
+  #   the scope (single Entity).
+  #
+  # * Entity email - defined as proc or string/symbol (email method name).
+  #
   class Context
+
+    # Context Attributes drop definition for Liquid
     class Drop < Liquid::Drop
       def initialize attrs
         @attrs = attrs
@@ -65,17 +81,31 @@ module MailyHerald
       end
     end
 
-    attr_accessor :destination_attribute, :title
+    # Friendly name of the {Context}.
+    #
+    # Displayed ie. in the Web UI.
+    attr_accessor :title
+
+    # Identification name of the {Context}. 
+    #
+    # This can be then used in {MailyHerald.context} method to fetch the {Context}.
+    #
+    # @see MailyHerald.context
     attr_reader :name
 
+    attr_writer :destination
+
+    # Creates {Context} and sets its name.
     def initialize name
       @name = name
     end
 
-    def model
-      @model ||= @scope.call.klass
-    end
-
+    # Defines or returns Entity scope - collection of Entities.
+    #
+    # If block passed, it is saved as scope proc. Block has to return 
+    # +ActiveRecord::Relation+ containing Entity objects that will belong to scope.
+    #
+    # If no block given, scope proc is called and Entity collection returned.
     def scope &block
       if block_given?
         @scope = block
@@ -84,12 +114,56 @@ module MailyHerald
       end
     end
 
-    def scope_like q
-      if destination_attribute
-        scope.where("#{model.table_name}.#{destination_attribute} LIKE (?)", "%#{q}%")
+    # Fetches the Entity model class based on scope.
+    def model
+      @model ||= @scope.call.klass
+    end
+
+    # Entity email address.
+    #
+    # Can be eitner +Proc+ or attribute name (string, symbol).
+    #
+    # If block passed, it is saved as destination proc. Block has to:  
+    #
+    # * accept single Entity object, 
+    # * return Entity email. 
+    #
+    # If no block given, +destination+ attribute is returned (a string, symbol or proc).
+    def destination &block
+      if block_given?
+        @destination = block
+      else
+        @destination
       end
     end
 
+    # Returns Entity email attribute name only if it is not defined as a proc.
+    def destination_attribute
+      @destination unless @destination.respond_to?(:call)
+    end
+
+    # Fetches Entity's email address based on {Context} destination definition.
+    def destination_for entity
+      destination_attribute ? entity.send(@destination) : @destination.call(entity)
+    end
+
+    # Simply filter Entity scope by email.
+    #
+    # If destination is provided in form of Entity attribute name (not the proc), 
+    # this method creates the scope filtered by `query` email using SQL LIKE.
+    #
+    # @param query [String] email address which is being searched.
+    # @return [ActiveRecord::Relation] collection filtered by email address
+    def scope_like query
+      if destination_attribute
+        scope.where("#{model.table_name}.#{destination_attribute} LIKE (?)", "%#{query}%")
+      end
+    end
+
+    # Returns Entity collection scope with joined {MailyHerald::Subscription}.
+    #
+    # @param list [List, Fixnum, String] {MailyHerald::List} reference
+    # @param mode [:inner, :outer] SQL JOIN mode
     def scope_with_subscription list, mode = :inner
       list_id = case list
                 when List
@@ -116,18 +190,15 @@ module MailyHerald
       )
     end
 
-    def destination &block
-      if block_given?
-        @destination = block
-      else
-        @destination
-      end
-    end
-
-    def destination_for entity
-      @destination_attribute ? entity.send(@destination_attribute) : @destination.call(entity)
-    end
-
+    # Sepcify or return {Context} attributes.
+    #
+    # Defines Entity attributes that can be accessed using this Context.
+    # Attributes defined this way are then accesible in Liquid templates 
+    # in Generic Mailer ({MailyHerald::Mailer#generic}).
+    #
+    # If block passed, it is used to create Context Attributes.  
+    #
+    # If no block given, current attributes are returned.
     def attributes &block
       if block_given?
         @attributes = Attributes.new block
@@ -136,17 +207,19 @@ module MailyHerald
       end
     end
 
+    # Obtains {Context} attributes in a form of (nested) +Hash+ which 
+    # values are procs each returning single Entity attribute value.
     def attributes_list
       attributes = @attributes.dup
       attributes.setup 
       attributes.for_drop
     end
 
+    # Returns Liquid drop created from Context attributes.
     def drop_for entity, subscription
       attributes = @attributes.dup
       attributes.setup entity, subscription
       Drop.new(attributes.for_drop)
     end
-
   end
 end

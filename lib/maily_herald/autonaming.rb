@@ -5,6 +5,9 @@ module MailyHerald
       base.send :include, MailyHerald::Autonaming::InstanceMethods
 
       base.class_eval do
+        validates   :name,                presence: true, format: {with: /\A\w+\z/}, uniqueness: true
+        validates   :title,               presence: true
+
         before_validation do
           if self.title && !self.name
             self.name = self.title.parameterize.underscore

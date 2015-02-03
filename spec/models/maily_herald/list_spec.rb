@@ -14,6 +14,10 @@ describe MailyHerald::List do
     expect(@list2.save).to be_truthy
   end
 
+  after(:each) do
+    @list2.destroy
+  end
+
   it "should handle subscripions" do
     expect(@list.subscribed?(@entity)).to be_falsy
     expect(@list.subscribe!(@entity)).to be_kind_of(MailyHerald::Subscription)

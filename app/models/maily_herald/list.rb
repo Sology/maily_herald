@@ -3,14 +3,12 @@ module MailyHerald
     include MailyHerald::Autonaming
 
     if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :token_action, :context_name
+      attr_accessible :name, :title, :context_name
     end
 
     has_many :dispatches, class_name: "MailyHerald::Dispatch"
     has_many :subscriptions, class_name: "MailyHerald::Subscription"
 
-    validates :title, presence: true
-    validates :name, presence: true, format: {with: /\A[A-Za-z0-9_]+\z/}
     validate do |list|
       list.errors.add(:base, "Can't change this list because it is locked.") if list.locked?
     end
@@ -18,12 +16,6 @@ module MailyHerald
       if list.locked?
         list.errors.add(:base, "Can't destroy this list because it is locked.") 
         false
-      end
-    end
-
-    after_initialize do
-      if self.new_record?
-        self.token_action = :unsubscribe
       end
     end
 
@@ -61,18 +53,6 @@ module MailyHerald
 
     def subscription_for entity
       self.subscriptions.for_entity(entity).first
-    end
-
-    def token_action
-      read_attribute(:token_action).to_sym
-    end
-
-    def token_custom_action &block
-      if block_given?
-        MailyHerald.token_custom_action :mailing, self.id, &block
-      else
-        MailyHerald.token_custom_action :mailing, self.id
-      end
     end
 
     def active_subscription_count

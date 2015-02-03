@@ -31,4 +31,11 @@ describe MailyHerald::Context do
       end
     end
   end
+
+  it "should handle both destination procs and strings" do
+    @user = FactoryGirl.create :user
+    context = MailyHerald.context :all_users
+    context.destination_for(@user).should eq(@user.email)
+    context.destination_attribute.should be_nil
+  end
 end

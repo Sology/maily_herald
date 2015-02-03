@@ -32,4 +32,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "timecop"
   s.add_development_dependency "spring-commands-rspec"
+  s.add_development_dependency "yard"
+  s.add_development_dependency "redcarpet" # for yard markdown formatting
 end

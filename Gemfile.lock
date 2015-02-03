@@ -121,6 +121,7 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
+    redcarpet (3.2.2)
     redis (3.1.0)
     redis-namespace (1.5.1)
       redis (~> 3.0, >= 3.0.4)
@@ -173,6 +174,7 @@ GEM
       polyglot
       polyglot (>= 0.3.1)
     tzinfo (0.3.41)
+    yard (0.8.7.6)
 
 PLATFORMS
   ruby
@@ -185,8 +187,10 @@ DEPENDENCIES
   guard-rspec
   jquery-rails
   maily_herald!
+  redcarpet
   rspec-rails
   simplecov
   spring-commands-rspec
   sqlite3
   timecop
+  yard

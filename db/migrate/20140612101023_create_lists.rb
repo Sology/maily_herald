@@ -4,7 +4,6 @@ class CreateLists < ActiveRecord::Migration
       t.string            :name,                                        null: false
       t.string            :title
       t.string            :context_name
-      t.string            :token_action
     end
 
     remove_column :maily_herald_dispatches, :token_action

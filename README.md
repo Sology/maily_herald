@@ -7,7 +7,7 @@ With MailyHerald you can send:
 * periodical mailings (ie. weekly notifications, reminders),
 * mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (ie. onboarding emails, site feature overview).
 
-Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All deliveries are tracked and logged.
+Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All deliveries are tracked and logged. Periodical and Sequence mailing deliveries are scheduled individually for each recipient.
 
 Maily seamlessly integrates with your app. It can use your regular Mailers or you can build ad-hoc mailings with [Liquid](http://liquidmarkup.org/) markup templates. 
 
@@ -31,10 +31,15 @@ or put in your Gemfile
 
 * Designed for Ruby on Rails
 * Self-hosted
-* Seamless integration
-* Great both for developers (API) and users (Web UI) 
+* Seamless and flexible integration
+* Great both for developers (API) and end-users (Web UI) 
 * Three different mailing types
 * Correspondence logging
+* User-friendly subscription management ie. via automatic & personal opt-out links
+* Individual delivery scheduling 
+* Asynchronous processing
+* Mailing conditions
+* Ad-hoc email templating using Liquid syntax
 
 ## How it works
 
@@ -46,106 +51,183 @@ Entities are basically your mailing recipients. They will be probably represente
 
 **Mailings**
 
-You usually send single emails to your users - one at a time. Mailing is bunch of emails sent out to many users. MailyHerald handles three types of Mailings: one-time, periodical and sequence.
+You usually send single emails to your users - one at a time. Mailing is a bunch of emails sent out to many users. MailyHerald allows you to send three types of Mailings: one-times, periodicals and sequences.
 
 **Contexts**
 
-Maily Contexts are abstraction layer for accessing groups of Entities and their attributes. 
+Maily Contexts are abstraction layer for accessing collections of Entities and their attributes. 
 
 There are three main things that Contexts do:
 
 * They define sets of Entities via Rails scopes (ie. `User.activated` meaning all application users that activated their accounts). 
-* They specify destination email addresses for Entities (ie. defines that `User#email` attribute contains email address).
+* They specify destination email addresses for Entities (ie. you define that `User#email` method returns email address or specify a custom proc that does that).
 * They specify additional Entity attributes that can be used inside Mailing templates, conditions etc (basically - attributes accessible via Liquid).
 
 **Lists and Subscriptions**
 
 Lists are sets of Entities that receive certain mailings. Entities are added to Lists by creating Subscriptions. It is entirely up to you how you manage Subscriptions in application. Typically, you put some checkbox in user's profile page that subscribes and unsubscribes them from mailing lists.
 
+Each Subscription has it's unique token allowing users to be provided with one click opt-out link.
+
 **Mailers**
 
-Mailers are standard way of sending emails in Rails applications. MailyHerald hooks into ActionMailer internals and allows you to send Mailings just like you send your regular emails.
+Mailers are standard way of sending emails in Rails applications. MailyHerald hooks into ActionMailer internals and allows you to send Mailings just like you send your regular emails. All you need to do is inherit `MailyHerald::Mailer` in your Mailer. 
 
-Maily can use your Rails Mailers you use on daily basis. In this case, nothing really changes in terms of composing and sending emails. 
+There's also a possibility to send Mailings without using any of your custom Mailers. `MailyHerald::Mailer` is in this case used implicitely; email body and subject is stored directly in your Mailing definition as a Liquid template. Liquid gives you acces to Entity attributes defined in the Context. This way of creating Mailings is especially usefull within Web UI where you can build new Mailing by just typing its template.
 
-There's also one special mailer that MailyHerald provides: `GenericMailer`. It is used by Mailings which don't have their own Mailer in the app. Those Mailings store their subject and body as Liquid templates and `GenericMailer` takes care of rendering them. Liquid gives you acces to Entity attributes defined in the Context. It is especially usefull within Web UI where you can create new Mailing by just typing its template.
+**Delivery**
+
+MailyHerald uses great gem [Sidekiq](http://sidekiq.org/) to process deliveries in the background. This applies to Periodical and Sequence Mailings - their delivieries are scheduled individually for each Entity on the subscription list. 
+
+Paperboy...
 
 ## Usage
 
-Maily is fully compatible with standard Rails ActionMailer. There's very little you need to do in order to run your deliveries with Maily.
+Let's assume your entities are your `User` model objects. Read on in order to find out how to start with Maily.
 
-1. Install Maily engine migrations and run them:
+### Migrations
 
-  ```ruby
-  rake maily_herald:install:migrations
-  rake db:migrate
-  ```
+Install engine migrations and run them.
 
-1. Generate an initializer:
+```ruby
+rake maily_herald:install:migrations
+rake db:migrate
+```
 
-  ```ruby
-  rails g maily_herald:install
-  ```
+### Initializer
 
-1. Assuming you have your `User` model, add definitions of contexts and dispatches to your initializer:
+Generate and setup an initializer.
 
-  ```ruby
-  # config/initializers/maily_herald.rb
-  MailyHerald.setup do |config|
-    config.context :active_users do |context|
-      context.scope = {User.active}
-      context.destination = {|user| user.email}
-    end
+```ruby
+rails g maily_herald:install
+```
 
-    config.list :
+This will generate file with following content:
 
-    config.one_time_mailing :hello do |mailing|
-      mailing.title = "Hello mailing"
-      mailing.context_name = :active_users
-      mailing.mailer_name = "UserMailer"
-      mailing.enable # mailings are disabled by default
-    end
+```ruby
+MailyHerald.setup do |config|
+  # Put your contexts, mailing definitions etc here.
+end
+```
 
-    config.periodical_mailing :weekly_newsletter do |mailing|
-      mailing.title = "Weekly newsletter"
-      mailing.context_name = :active_users
-      mailing.mailer_name = "UserMailer"
-      mailing.enable # mailings are disabled by default
-    end
+There are few things you need to put there. 
+
+**Set up your context**
+
+You want to deliver your mailings to all your active users.
+
+```ruby
+config.context :active_users do |context|
+  context.scope = {User.active}
+  context.destination = {|user| user.email}
+  
+  # Alternatively, you can specify destination as attribute name:
+  # context.destination = :email
+end
+```
+
+**Set up your lists**
+
+This means that all users in `:active_users` context scope can be subscribed to `:newsletters` list.
+
+```ruby
+config.list :newsletters do |list|
+  list.context_name = :active_users
+end
+```
+
+**Set up your mailings**
+
+```ruby
+config.one_time_mailing :hello do |mailing|
+  mailing.title = "Hello mailing"
+  mailing.context_name = :active_users
+  mailing.mailer_name = "UserMailer"
+  mailing.enable # mailings are disabled by default
+end
+
+config.periodical_mailing :weekly_newsletter do |mailing|
+  mailing.title = "Weekly newsletter"
+  mailing.context_name = :active_users
+  mailing.mailer_name = "UserMailer"
+  mailing.enable
+end
+```
+
+**Set up your unsubscribe toke actions**
+  
+```ruby
+foo
+```
+
+### Mailers
+
+You don't need to have any Mailer to use MailyHerald. It works perfectly fine with its generic `MailyHerald::Mailer` and mailing templates written in Luquid. 
+
+But if you still want your fancy Mailer views and features, you need to modify it a bit.
+
+First, each Mailer you want to use with MailyHerald needs to extend `MailyHerald::Mailer` class. 
+Then each Mailer method must accept one and only one parameter which is your Entity (ie. `User` class object).
+
+This setup gives you some extra instance varialbles available in your views:
+
+* `@maily_entity` - Entity you are sending this email to,
+* `@maily_mailing` - Mailing you are sending,
+* `@maily_subscription` - `MailyHerald::Subscription` object related to this Entity and Mailing,
+
+Here's the complete example:
+
+```ruby
+class UserMailer < MailyHerald::Mailer
+  def hello user
+    mail :subject => "Hi there #{user.name}!"
   end
-  ```
+end
+```
 
-1. Adjust your current Mailer a bit:
+### Mounting
 
-  ```ruby
-  class UserMailer < MailyHerald::Mailer
-    def hello user
-      mail :subject => "Test"
-    end
-  end
-  ```
+To process user unsubscribe requests.
 
-1. Thats it! From now on, Maily will handle and track your regular mail deliveries:
+```ruby
+foo
+```
 
-  ```ruby
-  UserMailer.hello(User.first).deliver
-  ```
+### Delivery
 
-  Of course, you can also run the mailing for all users in scope at once:
+That's it! From now on, Maily will handle and track your regular mail deliveries:
 
-  ```ruby
-  MailyHerald.dispatch(:hello).run
-  ```
+```ruby
+UserMailer.hello(User.first).deliver
+```
 
-1. Start MailyHerald Paperboy which will take care of your other periodical and sequence deliveries:
+Of course, you can also run the mailing for all users in scope at once:
 
-  ```
-  $ maily_herald paperboy --start
-  ```
+```ruby
+MailyHerald.dispatch(:hello).run
+```
+
+Start MailyHerald Paperboy which will take care of your other periodical and sequence deliveries:
+
+```
+$ maily_herald paperboy --start
+```
+
+## Configuring
+
+List of config file options...
+
+## Customizing
+
+### Opt-out urls
+
+TODO
 
 ## More Information
 
-Please see the [MailyHerald wiki](https://github.com/Sology/maily_herald/wiki) for the official documentation. You'll find there some information about other dispatches that Maily supports: Periodicals and Sequences.
+* api docs
+* showcase
+* sample app
 
 For bug reports or feature requests see the [issues on Github](https://github.com/Sology/maily_herald/issues).  
 
