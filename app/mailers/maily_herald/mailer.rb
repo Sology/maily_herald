@@ -4,7 +4,7 @@ module MailyHerald
 
     def generic entity, mailing
       destination = mailing.destination(entity)
-      subject = mailing.subject
+      subject = mailing.render_subject(entity)
       content = mailing.render_template(entity)
 
       opts = {

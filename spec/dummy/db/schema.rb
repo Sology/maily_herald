@@ -11,26 +11,26 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140612101023) do
+ActiveRecord::Schema.define(:version => 20150205120443) do
 
   create_table "maily_herald_dispatches", :force => true do |t|
     t.string   "type",                                          :null => false
     t.integer  "sequence_id"
+    t.integer  "list_id",                                       :null => false
     t.text     "conditions"
+    t.text     "start_at"
     t.string   "mailer_name"
     t.string   "name",                                          :null => false
     t.string   "title"
     t.string   "subject"
     t.string   "from"
+    t.string   "state",                 :default => "disabled"
     t.text     "template"
     t.integer  "absolute_delay"
     t.integer  "period"
     t.boolean  "override_subscription"
     t.datetime "created_at",                                    :null => false
     t.datetime "updated_at",                                    :null => false
-    t.text     "start_at"
-    t.integer  "list_id"
-    t.string   "state",                 :default => "disabled"
   end
 
   add_index "maily_herald_dispatches", ["name"], :name => "index_maily_herald_dispatches_on_name", :unique => true
@@ -39,21 +39,21 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.string "name",         :null => false
     t.string "title"
     t.string "context_name"
-    t.string "token_action"
   end
 
   create_table "maily_herald_logs", :force => true do |t|
     t.integer  "entity_id",     :null => false
     t.string   "entity_type",   :null => false
+    t.string   "entity_email"
     t.integer  "mailing_id"
     t.string   "status",        :null => false
     t.text     "data"
     t.datetime "processing_at"
-    t.string   "entity_email"
   end
 
   create_table "maily_herald_subscriptions", :force => true do |t|
     t.integer  "entity_id",                       :null => false
+    t.integer  "list_id",                         :null => false
     t.string   "entity_type",                     :null => false
     t.string   "token",                           :null => false
     t.text     "settings"
@@ -62,7 +62,6 @@ ActiveRecord::Schema.define(:version => 20140612101023) do
     t.datetime "delivered_at"
     t.datetime "created_at",                      :null => false
     t.datetime "updated_at",                      :null => false
-    t.integer  "list_id"
   end
 
   create_table "products", :force => true do |t|

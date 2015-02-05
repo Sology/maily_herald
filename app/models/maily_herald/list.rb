@@ -56,7 +56,7 @@ module MailyHerald
     end
 
     def active_subscription_count
-      subscribers.count
+      subscribers.count(:id)
     end
 
     # Returns entities within the context's scope with active subscription

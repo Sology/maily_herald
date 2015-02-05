@@ -52,6 +52,8 @@ module MailyHerald
 	autoload :Autonaming,					'maily_herald/autonaming'
 	autoload :Logging,					  'maily_herald/logging'
 
+  @@token_redirect = nil
+
   class << self
     # Returns config options read from config file.
     def options
@@ -170,7 +172,7 @@ module MailyHerald
     #
     # @param name [Symbol] Dispatch identifier name.
     def dispatch name
-      Dispatch.find_by_name(name)
+      MailyHerald::Dispatch.find_by_name(name)
     end
 
     # Fetches or defines an {OneTimeMailing}.
@@ -337,8 +339,7 @@ module MailyHerald
       mailing.subscription_for entity
     end
 
-    # Private class methods go here...
-
+    # Read options from config file
     def read_options cfile = "config/maily_herald.yml"
       opts = {}
       if File.exist?(cfile)
@@ -347,6 +348,4 @@ module MailyHerald
       opts
     end
   end
-
-  private_class_method :read_options
 end

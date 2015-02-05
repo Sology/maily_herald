@@ -81,6 +81,14 @@ module MailyHerald
       perform_template_rendering drop, self.template
     end
 
+    def render_subject entity
+      subscription = self.list.subscription_for(entity)
+      return unless subscription
+
+      drop = self.list.context.drop_for entity, subscription
+      perform_template_rendering drop, self.subject
+    end
+
     def build_mail entity
       if generic_mailer?
         Mailer.generic(entity, self)

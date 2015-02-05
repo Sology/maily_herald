@@ -20,12 +20,6 @@ MailyHerald.setup do |config|
 
   config.list :generic_list do |list|
     list.context_name = :all_users
-    list.token_custom_action do |controller, subscription|
-      user = subscription.entity
-      user.name = "changed"
-      user.save!
-      controller.redirect_to "/custom"
-    end
   end
 
   config.list :locked_list, locked: true do |list|

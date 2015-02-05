@@ -42,7 +42,7 @@ module MailyHerald
     end
 
     def token_url
-      MailyHerald::Engine.routes.url_helpers.token_url(token: self.token, host: Rails.application.routes.default_url_options[:host])
+      MailyHerald::Engine.routes.url_helpers.ubsubscribe_url(self)
     end
 
     def to_liquid
