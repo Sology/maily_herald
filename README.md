@@ -268,7 +268,7 @@ You can configure your Maily using config file `config/maily_herald.yml`. Suppor
 * `redis_namespace`: string
 * `redis_driver`: string
 
-## Customizing
+## Other stuff
 
 ### Opt-out URLs
 
@@ -332,9 +332,9 @@ Then of course you need to tell Maily about that too:
 
 ## More Information
 
-* [Home Page](http://www.mailyherald.org)
+* [Home Page](http://mailyherald.org)
 * [API Docs](http://www.rubydoc.info/gems/maily_herald)
-* Showcase (_coming soon_)
+* [Showcase](http://showcase.sology.eu/maily_herald)
 * [Sample application](https://github.com/Sology/maily_testapp)
 
 For bug reports or feature requests see the [issues on Github](https://github.com/Sology/maily_herald/issues).  
