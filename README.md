@@ -53,6 +53,7 @@ Here are some things we would like to implement in the future:
 * message analytics,
 * link tracking,
 * better Web UI,
+* Opens and clicks tracking
 * _put your beloved feature here_.
 
 ## How it works
