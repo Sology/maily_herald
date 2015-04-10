@@ -46,7 +46,7 @@ module MailyHerald
         if schedule.entity
           deliver_to schedule.entity
         else
-          MailyHerald.logger.log_processing(schedule.mailing, {:class => schedule.entity_type, :id => schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+          MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
           schedule.destroy
         end
       end
