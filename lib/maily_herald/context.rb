@@ -103,9 +103,9 @@ module MailyHerald
     # Defines or returns Entity scope - collection of Entities.
     #
     # If block passed, it is saved as scope proc. Block has to return 
-    # +ActiveRecord::Relation+ containing Entity objects that will belong to scope.
+    # +ActiveRecord::Relation+ containing entity objects that will belong to scope.
     #
-    # If no block given, scope proc is called and Entity collection returned.
+    # If no block given, scope proc is called and entity collection returned.
     def scope &block
       if block_given?
         @scope = block

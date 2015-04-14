@@ -17,6 +17,7 @@ module MailyHerald
       self.period = d.to_f.days
     end
 
+    # Delivers mailing to given entity.
     def deliver_to entity
       super(entity)
     end
@@ -40,6 +41,9 @@ module MailyHerald
       end if schedule
     end
 
+    # Sends mailing to all subscribed entities.
+    #
+    # Returns array of `Mail::Message`.
     def run
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).each do |schedule|
@@ -52,10 +56,16 @@ module MailyHerald
       end
     end
 
+    # Returns collection of processed {Log}s for given entity.
     def processed_logs entity
       Log.ordered.for_entity(entity).for_mailing(self).processed
     end
 
+    # Returns processing time for given entity.
+    #
+    # This is the time when next mailing should be sent.
+    # Calculation is done mased on last processed mailing for this entity or
+    # {#start_at} mailing attribute.
     def start_processing_time entity
       if processed_logs(entity).first
         processed_logs(entity).first.processed_at
@@ -71,10 +81,14 @@ module MailyHerald
       end
     end
 
+    # Gets the timestamp of last processed email for given entity.
     def last_processing_time entity
       processed_logs(entity).last.try(:processing_at)
     end
 
+    # Sets the delivery schedule for given entity
+    #
+    # Schedule is {Log} object of type "schedule".
     def set_schedule_for entity, last_log = nil
       # support entity with joined subscription table for better performance
       if entity.has_attribute?(:maily_subscription_id)
@@ -103,6 +117,7 @@ module MailyHerald
       log
     end
 
+    # Sets delivery schedules of all entities in mailing scope.
     def update_schedules
       self.list.context.scope_with_subscription(self.list, :outer).each do |entity|
         MailyHerald.logger.debug "Updating schedule of #{self} periodical for entity ##{entity.id} #{entity}"
@@ -114,14 +129,17 @@ module MailyHerald
       Rails.env.test? ? update_schedules : MailyHerald::ScheduleUpdater.perform_in(10.seconds, self.id)
     end
 
+    # Returns {Log} object which is the delivery schedule for given entity.
     def schedule_for entity
       schedules.for_entity(entity).first
     end
 
+    # Returns collection of all delivery schedules ({Log} collection).
     def schedules
       Log.ordered.scheduled.for_mailing(self)
     end
 
+    # Calculates processing time for given entity.
     def calculate_processing_time entity, last_log = nil
       last_log ||= processed_logs(entity).last
 
@@ -134,6 +152,7 @@ module MailyHerald
       end
     end
 
+    # Get next email processing time for given entity.
     def next_processing_time entity
       schedule_for(entity).processing_at
     end

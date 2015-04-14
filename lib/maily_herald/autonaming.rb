@@ -1,4 +1,12 @@
 module MailyHerald
+
+  # Provides some common patters for models that have both :name and :title attributes.
+  # It adds some format constraints to :name and title attributes and makes sure
+  # that they are always both set properly.
+  #
+  # If only :name is provided, it will be used also as a:title.
+  # If only :title is provided, :name will be automatically generated out of it.
+  #
   module Autonaming
     def self.included(base)
       base.extend ClassMethods

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    maily_herald (0.0.1)
+    maily_herald (0.8.0)
       liquid (~> 2.6.1)
       rails (> 3.2)
       sidekiq (~> 2.17.8)

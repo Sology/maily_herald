@@ -25,8 +25,6 @@ module MailyHerald
         MailyHerald::Manager.run_mailing args["mailing"]
       elsif args["sequence"]
         MailyHerald::Manager.run_sequence args["sequence"]
-      elsif args["simulate"]
-        MailyHerald::Manager.simulate args["simulate"]
       else
         MailyHerald::Manager.run_all
       end
@@ -43,12 +41,10 @@ module MailyHerald
   end
 
   autoload :Utils,              'maily_herald/utils'
-  autoload :ConditionEvaluator, 'maily_herald/condition_evaluator'
   autoload :TemplateRenderer,   'maily_herald/template_renderer'
   autoload :ModelExtensions,    'maily_herald/model_extensions'
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
-	autoload :Config,							'maily_herald/config'
 	autoload :Autonaming,					'maily_herald/autonaming'
 	autoload :Logging,					  'maily_herald/logging'
 

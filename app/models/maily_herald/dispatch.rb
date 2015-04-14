@@ -1,4 +1,36 @@
 module MailyHerald
+  # Main dispatch class.
+  #
+  # Inherited by all {Mailing} classes.
+  # Each Dispatch instance need to have associated {List}.
+  # Dispatch can be in one of three states:
+  # - +enabled+
+  # - +disabled+
+  # - +archived+
+  #
+  # @attr [String]    type            Polymorphic type.
+  # @attr [Fixnum]    sequence_id     {Sequence} association id.
+  # @attr [Fixnum]    list_id         {List} association id.
+  # @attr [String]    conditions      Delivery conditions as Liquid expression.
+  # @attr [String]    start_at        Time as string or Liquid expression.
+  # @attr [String]    mailer_name     {Mailer} class name. 
+  #                                   This refers to {Mailer} used by Dispatch while sending emails.
+  # @attr [String]    name            Dispatch name.
+  # @attr [String]    title           Dispatch title.
+  # @attr [String]    from            Sender email address. 
+  #                                   If not provided, action_mailer.default_options[:from} is used.
+  #                                   Valid only for {Mailing}.
+  # @attr [String]    state
+  # @attr [String]    subject         Email subject as Liquid template.
+  #                                   Valid only for {Mailing}.
+  # @attr [String]    template        Email body template as Liquid template.
+  #                                   Valid only for {Mailing}.
+  # @attr [String]    absolute_delay  Email delivery delay from beginning of sequence.
+  #                                   Valid only for {SequenceMailing}.
+  # @attr [String]    period          Email delivery period.
+  #                                   Valid only for {PeriodicalMailing}.
+  # @attr [String]    override_subscription Defines whether email should be sent regardless of 
+  #                                   entity subscription state.
   class Dispatch < ActiveRecord::Base
     belongs_to  :list,          class_name: "MailyHerald::List"
 
@@ -25,6 +57,7 @@ module MailyHerald
     scope       :one_time_mailing, lambda { where(type: OneTimeMailing) }
     scope       :periodical_mailing, lambda { where(type: PeriodicalMailing) }
 
+    # Returns dispatch state as symbol
     def state
       read_attribute(:state).to_sym
     end
@@ -59,18 +92,28 @@ module MailyHerald
       write_attribute(:state, "archived")
     end
 
+    # Returns {List} associated with this dispatch
     def list= l
       l = MailyHerald::List.find_by_name(l.to_s) if l.is_a?(String) || l.is_a?(Symbol)
       super(l)
     end
 
+    # Checks if dispatch can be sent to given entity.
+    #
+    # Following checks are performed:
+    # - dispatch is enabled,
+    # - subscription is overriden or user is subscribed to dispatch list,
+    # - entity belongs to list {Context} scope.
+    #
+    # @param entity [ActiveRecord::Base] Recipient
     def processable? entity
       self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.exists?(entity)
     end
 
+    # Check if dispatch is locked.
+    # @see MailyHerald.dispatch_locked?
     def locked?
       MailyHerald.dispatch_locked?(self.name)
     end
-
   end
 end

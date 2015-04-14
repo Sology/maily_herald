@@ -270,6 +270,16 @@ You can configure your Maily using config file `config/maily_herald.yml`. Suppor
 
 ## Other stuff
 
+### Deployments
+
+Maily has some simple support for Capistrano built-in. It supports both v2 and v3 and automates the task of starting, stopping and restarting Paperboy daemon during deployments.
+
+To enable, just put following line into your `Capfile`:
+
+```ruby
+require 'maily_herald/capistrano'
+```
+
 ### Opt-out URLs
 
 By default, visiting opt-out URL disables subscription and redirects to "/". You can easily customize the redirect path by specifying `token_redirect` proc:

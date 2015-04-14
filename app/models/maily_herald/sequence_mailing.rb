@@ -32,10 +32,12 @@ module MailyHerald
       self.absolute_delay = d.to_f.days
     end
 
+    # Checks if mailing has been sent to given entity.
     def processed_to? entity
       self.sequence.processed_mailings_for(entity).include?(self)
     end
 
+    # Delivers mailing to given entity.
     def deliver_to entity
       super(entity)
     end

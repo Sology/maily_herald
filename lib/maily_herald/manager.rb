@@ -1,49 +1,41 @@
 module MailyHerald
   class Manager
-    def self.handle_trigger type, entity
-      mailings = Mailing.where(trigger: type)
-      mailings.each do |mailing|
-        mailing.deliver_to entity
-      end
-    end
-
+    # Delivers single {OneTimeMailing} to entity.
+    #
+    # @param mailing [OneTimeMailing, String, Symbol] {Mailing} object or name
+    # @param entity [ActiveRecord::Base] Entity object that belongs to +mailing+ {Context} scope
     def self.deliver mailing, entity
-      mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
+      mailing = Mailing.find_by_name(mailing) unless mailing.is_a?(Mailing)
       entity = mailing.context.scope.find(entity) if entity.is_a?(Fixnum)
 
       mailing.deliver_to entity if mailing
     end
 
-    def self.run_sequence seq
-      seq = Sequence.find_by_name(seq) if !seq.is_a?(Sequence)
+    # Run scheduled sequence mailing deliveries.
+    #
+    # @param sequence [Sequence, String, Symbol] {Sequence} object or name
+    def self.run_sequence sequence
+      seqence = Sequence.find_by_name(seqence) unless seqence.is_a?(Sequence)
 
-      seq.run if seq
+      sequence.run if sequence
     end
 
+    # Run scheduled periodical mailing deliveres.
+    #
+    # @param mailing [PeriodicalMailing, String, Symbol] {PeriodicalMailing} object or name
     def self.run_mailing mailing
-      mailing = Mailing.find_by_name(mailing) if !mailing.is_a?(Mailing)
+      mailing = Mailing.find_by_name(mailing) unless mailing.is_a?(Mailing)
 
       mailing.run if mailing
     end
 
+    # Run all scheduled mailing deliveres.
     def self.run_all
       PeriodicalMailing.all.each {|m| m.run}
       Sequence.all.each {|m| m.run}
     end
 
-    def self.simulate period
-      File.open("/tmp/maily_herlald_timetravel.lock", "w") {}
-      time = Time.now
-      end_time = time + period
-      while time < end_time 
-        Timecop.freeze(time)
-        run_all
-        time = time + 1.day
-      end
-      Timecop.return
-      File.delete("/tmp/maily_herlald_timetravel.lock")
-    end
-
+    # Check if Maily sidekiq job is running.
     def self.job_enqueued?
       Sidekiq::Queue.new.detect{|j| j.klass == "MailyHerald::Async" } || 
         Sidekiq::Workers.new.detect{|w, msg| msg["payload"]["class"] == "MailyHerald::Async" } ||

@@ -42,6 +42,7 @@ module MailyHerald
       read_attribute(:mailer_name).to_sym
     end
 
+    # Returns {Mailer} class used by this Mailing.
     def mailer
       if generic_mailer?
         MailyHerald::Mailer
@@ -50,14 +51,17 @@ module MailyHerald
       end
     end
 
+    # Checks whether Mailig has conditions defined.
     def has_conditions?
       self.conditions && !self.conditions.empty?
     end
 
+    # Checks whether Mailing uses generic mailer.
     def generic_mailer?
       self.mailer_name == :generic
     end
 
+    # Checks whether entity meets conditions of this Mailing.
     def conditions_met? entity
       subscription = self.list.subscription_for(entity)
 
@@ -69,10 +73,15 @@ module MailyHerald
       end
     end
 
+    # Returns destination email address for given entity.
     def destination entity
       self.list.context.destination_for(entity)
     end
 
+    # Renders email body for given entity.
+    #
+    # Reads {#template} attribute and renders it using Liquid within the context
+    # for provided entity.
     def render_template entity
       subscription = self.list.subscription_for(entity)
       return unless subscription
@@ -81,6 +90,10 @@ module MailyHerald
       perform_template_rendering drop, self.template
     end
 
+    # Renders email subject line for given entity.
+    #
+    # Reads {#subject} attribute and renders it using Liquid within the context
+    # for provided entity.
     def render_subject entity
       subscription = self.list.subscription_for(entity)
       return unless subscription
@@ -89,6 +102,10 @@ module MailyHerald
       perform_template_rendering drop, self.subject
     end
 
+    # Builds `Mail::Message` object for given entity.
+    #
+    # Depending on {#mailer_name} value it uses either generic mailer (from {Mailer} class)
+    # or custom mailer.
     def build_mail entity
       if generic_mailer?
         Mailer.generic(entity, self)
@@ -97,6 +114,9 @@ module MailyHerald
       end
     end
 
+    # Sends mailing to given entity.
+    #
+    # Returns `Mail::Message`.
     def deliver_to entity
       build_mail(entity).deliver
     end
