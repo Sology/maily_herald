@@ -156,6 +156,10 @@ end
 Following means that all users in `:active_users` context scope can be subscribed to `:newsletters` list.
 
 ```ruby
+config.list :notifications do |list|
+  list.context_name = :active_users
+end
+
 config.list :newsletters do |list|
   list.context_name = :active_users
 end
@@ -166,14 +170,14 @@ end
 ```ruby
 config.one_time_mailing :hello do |mailing|
   mailing.title = "Hello mailing"
-  mailing.context_name = :active_users
+  mailing.list = :notifications
   mailing.mailer_name = "UserMailer"
   mailing.enable # mailings are disabled by default
 end
 
 config.periodical_mailing :weekly_newsletter do |mailing|
   mailing.title = "Weekly newsletter"
-  mailing.context_name = :active_users
+  mailing.list = :newsletters
   mailing.mailer_name = "UserMailer"
   mailing.enable
 end
