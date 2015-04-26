@@ -3,13 +3,14 @@
 MailyHerald is a Ruby on Rails gem that helps you sending and managing your mailings. Think of Maily as a self-hosted Mailchimp alternative you can easily integrate with your site. MailyHerald is great both for email marketing and conducting daily stream of notifications you send to your users.
 
 With MailyHerald you can send:
-* one-time mailings (i.e. welcome emails, special offers),
+* ad-hoc mailings - arbitrary emails sent to one or more users at given point in time (i.e. special offers, announcements),
+* one-time mailings (i.e. account activation or welcome emails),
 * periodical mailings (i.e. weekly notifications, reminders),
 * mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (i.e. onboarding emails, site feature overview).
 
-Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All deliveries are tracked and logged. Periodical and Sequence mailing deliveries are scheduled individually for each recipient.
+Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All mailing deliveries are scheduled individually for each recipient, tracked and logged.
 
-Maily seamlessly integrates with your app. It can use your regular Mailers or you can build ad-hoc mailings with [Liquid](http://liquidmarkup.org/) markup templates. 
+Maily seamlessly integrates with your app. It can use your regular Mailers or you can build email contents with [Liquid](http://liquidmarkup.org/) markup templates.
 
 Core Maily features are accessible for Rails programmers via API. Apart from that, Maily has a nice web UI provided by separate [maily_herald-webui](https://github.com/Sology/maily_herald-webui) gem.
 
@@ -65,7 +66,7 @@ Entities are basically your mailing recipients. They will be probably represente
 
 **Mailings**
 
-You usually send single emails to your users - one at a time. Mailing is a bunch of emails sent out to many users. MailyHerald allows you to send three types of Mailings: one-times, periodicals and sequences.
+You usually send single emails to your users - one at a time. Mailing is a bunch of emails sent out to many users. MailyHerald allows you to send four types of Mailings: ad-hoc, one-times, periodicals and sequences.
 
 **Contexts**
 

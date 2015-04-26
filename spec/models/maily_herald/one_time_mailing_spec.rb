@@ -21,6 +21,27 @@ describe MailyHerald::OneTimeMailing do
         @mailing.should be_valid
       end
 
+      it "should be delivered only once per user" do
+        subscription = @mailing.subscription_for(@entity)
+
+        expect(@mailing.logs.scheduled.count).to eq(1)
+        expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
+
+        ret = @mailing.run
+
+        expect(@mailing.logs.processed.for_entity(@entity).count).to eq(1)
+        expect(@mailing.schedules.for_entity(@entity).count).to eq(0)
+
+        @mailing.set_schedules
+
+        expect(@mailing.schedules.for_entity(@entity).count).to eq(0)
+
+        ret = @mailing.run
+
+        expect(@mailing.logs.processed.for_entity(@entity).count).to eq(1)
+        expect(@mailing.schedules.for_entity(@entity).count).to eq(0)
+      end
+
       it "should be delivered" do
         subscription = @mailing.subscription_for(@entity)
 

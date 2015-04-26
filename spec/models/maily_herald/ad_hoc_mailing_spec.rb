@@ -20,6 +20,20 @@ describe MailyHerald::AdHocMailing do
         @mailing.should_not be_a_new_record
       end
 
+      it "should not be delivered without explicit scheduling" do
+        expect(MailyHerald::Subscription.count).to eq(1)
+        @mailing.conditions_met?(@entity).should be_truthy
+        @mailing.processable?(@entity).should be_truthy
+
+        expect(@mailing.logs.scheduled.count).to eq(0)
+        expect(@mailing.logs.processed.count).to eq(0)
+
+        @mailing.run
+
+        expect(@mailing.logs.scheduled.count).to eq(0)
+        expect(@mailing.logs.processed.count).to eq(0)
+      end
+
       it "should be delivered" do
         subscription = @mailing.subscription_for(@entity)
 
@@ -31,9 +45,13 @@ describe MailyHerald::AdHocMailing do
         @mailing.conditions_met?(@entity).should be_truthy
         @mailing.processable?(@entity).should be_truthy
 
+        @mailing.schedule_delivery_to_all Time.now - 5
+
         ret = @mailing.run
         ret.should be_a(Array)
-        ret.first.should be_a(Mail::Message)
+        ret.first.should be_a(MailyHerald::Log)
+        ret.first.should be_delivered
+        ret.first.mail.should be_a(Mail::Message)
 
         MailyHerald::Subscription.count.should eq(1)
         MailyHerald::Log.delivered.count.should eq(1)
@@ -52,17 +70,33 @@ describe MailyHerald::AdHocMailing do
         @mailing.should_not be_a_new_record
       end
 
-      it "should be delivered" do
+      it "should not be delivered without explicit scheduling" do
         MailyHerald::Log.delivered.count.should eq(0)
         msg = AdHocMailer.ad_hoc_mail(@entity).deliver
+        msg.should be_a(Mail::Message)
+        MailyHerald::Log.delivered.count.should eq(0)
+      end
+
+      it "should be delivered" do
+        MailyHerald::Log.delivered.count.should eq(0)
+
+        @mailing.schedule_delivery_to @entity, Time.now - 5
+
+        msg = AdHocMailer.ad_hoc_mail(@entity).deliver
+
         msg.should be_a(Mail::Message)
         MailyHerald::Log.delivered.count.should eq(1)
       end
 
       it "should not be delivered if subscription inactive" do
+        @mailing.schedule_delivery_to @entity, Time.now - 5
+
         @list.unsubscribe!(@entity)
+
         MailyHerald::Log.delivered.count.should eq(0)
+
         AdHocMailer.ad_hoc_mail(@entity).deliver
+
         MailyHerald::Log.delivered.count.should eq(0)
       end
     end
@@ -102,8 +136,12 @@ describe MailyHerald::AdHocMailing do
       @mailing.processable?(@entity).should be_truthy
       @mailing.override_subscription?.should be_truthy
       @mailing.enabled?.should be_truthy
+
+      @mailing.schedule_delivery_to @entity, Time.now - 5
+
       msg = AdHocMailer.ad_hoc_mail(@entity).deliver
       msg.should be_a(Mail::Message)
+
       MailyHerald::Log.delivered.count.should eq(1)
     end
   end

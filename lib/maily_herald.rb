@@ -19,9 +19,7 @@ module MailyHerald
         MailyHerald::Logging.initialize(logger_opts)
       end
 
-      if args["mailing"] && args["entity"]
-        MailyHerald::Manager.deliver args["mailing"], args["entity"]
-      elsif args["mailing"]
+      if args["mailing"]
         MailyHerald::Manager.run_mailing args["mailing"]
       elsif args["sequence"]
         MailyHerald::Manager.run_sequence args["sequence"]
@@ -329,13 +327,6 @@ module MailyHerald
       else
         @@token_redirect
       end
-    end
-
-    def deliver mailing_name, entity_id
-      mailing_name = mailing_name.name if mailing_name.is_a?(Mailing)
-      entity_id = entity_id.id if !entity_id.is_a?(Fixnum)
-
-      Async.perform_async mailing: mailing_name, entity: entity_id, logger: MailyHerald::Logging.safe_options
     end
 
     def run_sequence seq_name
