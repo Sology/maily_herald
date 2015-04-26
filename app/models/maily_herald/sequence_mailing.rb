@@ -21,9 +21,7 @@ module MailyHerald
       self.list_id = self.sequence.list_id
     end
 
-    after_save if: Proc.new{|m| !m.skip_updating_schedules && (m.state_changed? || m.absolute_delay_changed?)} do
-      self.sequence.update_schedules_callback
-    end
+    after_save :update_schedules_callback, if: Proc.new{|m| !m.skip_updating_schedules && (m.state_changed? || m.absolute_delay_changed?)} 
 
     def absolute_delay_in_days
       "%.2f" % (self.absolute_delay.to_f / 1.day.seconds)
@@ -40,6 +38,15 @@ module MailyHerald
     # Delivers mailing to given entity.
     def deliver_to entity
       super(entity)
+    end
+
+    def update_schedules_callback
+      self.sequence.update_schedules_callback
+    end
+
+    # Returns collection of all delivery schedules ({Log} collection).
+    def schedules
+      self.sequence.schedules
     end
 
     def deliver_with_mailer_to entity

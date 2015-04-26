@@ -114,14 +114,16 @@ module MailyHerald
       end
     end
 
+    protected
+
     # Sends mailing to given entity.
+    #
+    # Performs actual sending of emails; should be called in background.
     #
     # Returns `Mail::Message`.
     def deliver_to entity
       build_mail(entity).deliver
     end
-
-    protected
 
     # Called from Mailer, block required
     def deliver_with_mailer_to entity

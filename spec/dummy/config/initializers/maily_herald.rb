@@ -31,6 +31,7 @@ MailyHerald.setup do |config|
     mailing.title = "Test mailing"
     mailing.subject = "Test mailing"
     mailing.list = :generic_list
+    mailing.start_at = "user.created_at"
     mailing.template = "User name: {{user.name}}."
   end
 
@@ -39,14 +40,23 @@ MailyHerald.setup do |config|
     mailing.title = "Test mailing"
     mailing.subject = "Test mailing"
     mailing.list = :generic_list
+    mailing.start_at = "user.created_at"
     mailing.template = "User name: {{user.name}}."
   end
 
-  config.one_time_mailing :sample_mail do |mailing|
+  config.one_time_mailing :one_time_mail do |mailing|
     mailing.enable
-    mailing.title = "Sample mailing"
+    mailing.title = "One time mailing"
     mailing.list = :generic_list
-    mailing.mailer_name = "TestMailer"
+    mailing.mailer_name = "CustomOneTimeMailer"
+    mailing.start_at = "user.created_at"
+  end
+
+  config.ad_hoc_mailing :ad_hoc_mail do |mailing|
+    mailing.enable
+    mailing.title = "Ad hoc mailing"
+    mailing.list = :generic_list
+    mailing.mailer_name = "AdHocMailer"
   end
 
   config.sequence :newsletters do |seq|

@@ -52,6 +52,9 @@ module MailyHerald
     end
 
     def update_schedules
+      OneTimeMailing.where(list_id: self.list).each do |m|
+        m.set_schedule_for self.entity
+      end
       PeriodicalMailing.where(list_id: self.list).each do |m|
         m.set_schedule_for self.entity
       end

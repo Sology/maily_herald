@@ -120,7 +120,11 @@ describe MailyHerald::PeriodicalMailing do
       @mailing.next_processing_time(@entity).to_i.should eq((@entity.created_at).to_i)
 
       Timecop.freeze @entity.created_at
-      @mailing.run
+      ret = @mailing.run
+      ret.should be_a(Array)
+      ret.first.should be_a(MailyHerald::Log)
+      ret.first.mail.should be_a(Mail::Message)
+      ret.first.should be_delivered
 
       @mailing.last_processing_time(@entity).to_i.should eq @entity.created_at.to_i
       @mailing.next_processing_time(@entity).to_i.should eq((@entity.created_at + 7.days).to_i)
@@ -276,7 +280,7 @@ describe MailyHerald::PeriodicalMailing do
 
       Timecop.freeze @entity.created_at
 
-      @mailing.deliver_to @entity
+      expect{ @mailing.deliver_to @entity }.to raise_error(NoMethodError)
 
       MailyHerald::Subscription.count.should eq(0)
       MailyHerald::Log.count.should eq(0)

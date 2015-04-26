@@ -171,6 +171,30 @@ module MailyHerald
       MailyHerald::Dispatch.find_by_name(name)
     end
 
+    # Fetches or defines an {AdHocMailing}.
+    #
+    # If no block provided, {AdHocMailing} with given +name+ is returned.
+    #
+    # If block provided, {AdHocMailing} with given +name+ is created or edited 
+    # and block is evaluated within that mailing.
+    #
+    # @option options [true, false] :locked (false) Determines whether Mailing is locked.
+    # @see Dispatch#locked?
+    def ad_hoc_mailing name, options = {}
+      mailing = MailyHerald::AdHocMailing.where(name: name).first 
+      lock = options.delete(:locked)
+
+      if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
+        mailing ||= MailyHerald::AdHocMailing.new(name: name)
+        yield(mailing)
+        mailing.save! 
+
+        MailyHerald.lock_dispatch(name) if lock
+      end
+
+      mailing
+    end
+
     # Fetches or defines an {OneTimeMailing}.
     #
     # If no block provided, {OneTimeMailing} with given +name+ is returned.

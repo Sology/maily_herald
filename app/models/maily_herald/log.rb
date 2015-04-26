@@ -40,6 +40,12 @@ module MailyHerald
 
     serialize   :data,          Hash
 
+    # Contains `Mail::Message` object that was delivered.
+    #
+    # Present only in logs of state `delivered` and obtained via
+    # `Mailing.run` method.
+    attr_accessor :mail
+
     if Rails::VERSION::MAJOR == 3
       attr_accessible :status, :data
     end

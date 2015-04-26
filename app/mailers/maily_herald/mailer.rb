@@ -24,7 +24,6 @@ module MailyHerald
         mailing = mail.maily_herald_data[:mailing]
         entity = mail.maily_herald_data[:entity]
 
-
         if mailing && entity
           mailing.deliver_with_mailer_to(entity) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|

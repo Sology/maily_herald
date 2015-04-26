@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MailyHerald::OneTimeMailing do
+describe MailyHerald::AdHocMailing do
   before(:each) do
     @entity = FactoryGirl.create :user
 
@@ -15,10 +15,9 @@ describe MailyHerald::OneTimeMailing do
 
     describe "run all delivery" do
       before(:each) do
-        @mailing = MailyHerald.one_time_mailing(:test_mailing)
-        @mailing.should be_a MailyHerald::OneTimeMailing
+        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
+        @mailing.should be_a MailyHerald::AdHocMailing
         @mailing.should_not be_a_new_record
-        @mailing.should be_valid
       end
 
       it "should be delivered" do
@@ -26,19 +25,15 @@ describe MailyHerald::OneTimeMailing do
 
         expect(MailyHerald::Subscription.count).to eq(1)
         expect(MailyHerald::Log.delivered.count).to eq(0)
-        expect(@mailing.logs.scheduled.count).to eq(1)
 
         subscription.should be_kind_of(MailyHerald::Subscription)
 
         @mailing.conditions_met?(@entity).should be_truthy
         @mailing.processable?(@entity).should be_truthy
-        @mailing.mailer_name.should eq(:generic)
 
         ret = @mailing.run
         ret.should be_a(Array)
-        ret.first.should be_a(MailyHerald::Log)
-        ret.first.should be_delivered
-        ret.first.mail.should be_a(Mail::Message)
+        ret.first.should be_a(Mail::Message)
 
         MailyHerald::Subscription.count.should eq(1)
         MailyHerald::Log.delivered.count.should eq(1)
@@ -51,21 +46,30 @@ describe MailyHerald::OneTimeMailing do
     end
 
     describe "single entity delivery" do
-      it "should not be possible via Mailer" do
+      before(:each) do
+        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
+        @mailing.should be_a MailyHerald::AdHocMailing
+        @mailing.should_not be_a_new_record
+      end
+
+      it "should be delivered" do
         MailyHerald::Log.delivered.count.should eq(0)
+        msg = AdHocMailer.ad_hoc_mail(@entity).deliver
+        msg.should be_a(Mail::Message)
+        MailyHerald::Log.delivered.count.should eq(1)
+      end
 
-        schedule = MailyHerald.dispatch(:one_time_mail).schedule_for(@entity)
-        schedule.update_attribute(:processing_at, Time.now + 1.day)
-
-        msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
-
+      it "should not be delivered if subscription inactive" do
+        @list.unsubscribe!(@entity)
+        MailyHerald::Log.delivered.count.should eq(0)
+        AdHocMailer.ad_hoc_mail(@entity).deliver
         MailyHerald::Log.delivered.count.should eq(0)
       end
     end
 
     describe "with entity outside the scope" do
       before(:each) do
-        @mailing = MailyHerald.one_time_mailing(:test_mailing)
+        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
       end
 
       it "should not process mailings" do
@@ -85,7 +89,7 @@ describe MailyHerald::OneTimeMailing do
 
   describe "with subscription override" do
     before(:each) do
-      @mailing = MailyHerald.one_time_mailing(:one_time_mail)
+      @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
       @mailing.update_attribute(:override_subscription, true)
     end
 
@@ -93,12 +97,12 @@ describe MailyHerald::OneTimeMailing do
       @mailing.update_attribute(:override_subscription, false)
     end
 
-    it "should deliver single mail" do
+    it "single mail should be delivered" do
       MailyHerald::Log.delivered.count.should eq(0)
       @mailing.processable?(@entity).should be_truthy
       @mailing.override_subscription?.should be_truthy
       @mailing.enabled?.should be_truthy
-      msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
+      msg = AdHocMailer.ad_hoc_mail(@entity).deliver
       msg.should be_a(Mail::Message)
       MailyHerald::Log.delivered.count.should eq(1)
     end
