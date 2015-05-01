@@ -53,6 +53,8 @@ Here are some things we would like to implement in the future:
 * message analytics,
 * link tracking,
 * better Web UI,
+* Opens and clicks tracking
+* Throttle email sending(Send rate per second)
 * _put your beloved feature here_.
 
 ## How it works
