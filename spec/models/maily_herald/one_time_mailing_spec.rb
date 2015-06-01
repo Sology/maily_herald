@@ -125,4 +125,60 @@ describe MailyHerald::OneTimeMailing do
     end
   end
 
+  describe "with block start_at" do
+    before(:each) do
+      @mailing = MailyHerald::OneTimeMailing.new
+      @mailing.title = "Foobar"
+      @mailing.subject = "Foo"
+      @mailing.template = "Sample template"
+      @mailing.list = @list
+      @mailing.start_at = Proc.new{|user| user.created_at + 1.hour}
+      @mailing.enable
+      @mailing.save!
+    end
+
+    after(:each) do
+      @mailing.destroy
+    end
+
+    it "should be delivered" do
+      expect(@mailing.has_start_at_proc?).to be_truthy
+
+      @list.subscribe!(@entity)
+      @mailing.set_schedules
+
+      expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
+      expect(@mailing.schedules.for_entity(@entity).last.processing_at.to_i).to eq((@entity.created_at + 1.hour).to_i)
+    end
+  end
+
+  describe "with block conditions" do
+    before(:each) do
+      @mailing = MailyHerald::OneTimeMailing.new
+      @mailing.title = "Foobar"
+      @mailing.subject = "Foo"
+      @mailing.template = "Sample template"
+      @mailing.list = @list
+      @mailing.start_at = "user.created_at"
+      @mailing.conditions = Proc.new {|user| user.weekly_notifications}
+      @mailing.enable
+      @mailing.save!
+    end
+
+    after(:each) do
+      @mailing.destroy
+    end
+
+    it "should be delivered" do
+      expect(@mailing.has_conditions_proc?).to be_truthy
+
+      @list.subscribe!(@entity)
+      @mailing.set_schedules
+
+      expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
+      expect(@mailing.schedules.for_entity(@entity).last.processing_at.to_i).to eq(@entity.created_at.to_i)
+      expect(@entity.weekly_notifications).to be_truthy
+      expect(@mailing.conditions_met?(@entity)).to be_truthy
+    end
+  end
 end

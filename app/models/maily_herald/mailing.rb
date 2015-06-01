@@ -24,6 +24,42 @@ module MailyHerald
         self.override_subscription = false
         self.mailer_name = :generic
       end
+
+      if @conditions_proc
+        self.conditions = "proc"
+      end
+    end
+
+    after_save do
+      if @conditions_proc
+        @@conditions_procs[self.id] = @conditions_proc
+      end
+    end
+
+    @@conditions_procs = {}
+
+    def conditions= v
+      if v.respond_to? :call
+        @conditions_proc = v
+      else
+        write_attribute(:conditions, v)
+      end
+    end
+
+    def conditions
+      @conditions_proc || @@conditions_procs[self.id] || read_attribute(:conditions)
+    end
+
+    def has_conditions_proc?
+      @conditions_proc || @@conditions_procs[self.id]
+    end
+
+    def conditions_changed?
+      if has_conditions_proc?
+        @conditions_proc != @@conditions_procs[self.id]
+      else
+        super
+      end
     end
 
     def periodical?
@@ -51,26 +87,40 @@ module MailyHerald
       end
     end
 
-    # Checks whether Mailig has conditions defined.
-    def has_conditions?
-      self.conditions && !self.conditions.empty?
-    end
-
     # Checks whether Mailing uses generic mailer.
     def generic_mailer?
       self.mailer_name == :generic
     end
 
+    # Checks whether Mailig has conditions defined.
+    def has_conditions?
+      self.conditions && (has_conditions_proc? || !self.conditions.empty?)
+    end
+
     # Checks whether entity meets conditions of this Mailing.
+    #
+    # @raise [ArgumentError] if the conditions do not evaluate to boolean.
     def conditions_met? entity
       subscription = self.list.subscription_for(entity)
 
-      if self.list.context.attributes
-        evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
-        evaluator.evaluate_conditions(self.conditions)
+      if has_conditions_proc?
+        !!conditions.call(entity, subscription)
       else
-        true
+        if self.list.context.attributes
+          evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
+          evaluator.evaluate_conditions(self.conditions)
+        else
+          true
+        end
       end
+    end
+
+    # Checks whether conditions evaluate properly for given entity.
+    def test_conditions entity
+      conditions_met?(entity)
+      true
+    rescue StandardError => e
+      false
     end
 
     # Returns destination email address for given entity.
@@ -158,9 +208,23 @@ module MailyHerald
     end
 
     def validate_conditions
-      evaluator = Utils::MarkupEvaluator.test_conditions(self.conditions)
+      return true if has_conditions_proc?
+
+      result = Utils::MarkupEvaluator.test_conditions(self.conditions)
+
+      errors.add(:conditions, "is not a boolean value") unless result
     rescue StandardError => e
       errors.add(:conditions, e.to_s) 
+    end
+
+    def validate_start_at
+      return true if has_start_at_proc?
+
+      result = Utils::MarkupEvaluator.test_start_at(self.start_at)
+
+      errors.add(:start_at, "is not a time value") unless result
+    rescue StandardError => e
+      errors.add(:start_at, e.to_s) 
     end
   end
 end

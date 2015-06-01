@@ -71,13 +71,14 @@ module MailyHerald
       if processed_logs(entity).first
         processed_logs(entity).first.processed_at
       else
-        begin
-          Time.parse(self.start_at)
-        rescue
-          subscription = self.list.subscription_for(entity)
+        subscription = self.list.subscription_for(entity)
+
+        if has_start_at_proc?
+          start_at.call(entity, subscription)
+        else
           evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
 
-          evaluator.evaluate_variable(self.start_at)
+          evaluator.evaluate_start_at(self.start_at)
         end
       end
     end

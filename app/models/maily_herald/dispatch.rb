@@ -57,6 +57,44 @@ module MailyHerald
     scope       :one_time_mailing, lambda { where(type: OneTimeMailing) }
     scope       :periodical_mailing, lambda { where(type: PeriodicalMailing) }
 
+    before_validation do
+      if @start_at_proc
+        self.start_at = "proc"
+      end
+    end
+
+    after_save do
+      if @start_at_proc
+        @@start_at_procs[self.id] = @start_at_proc
+      end
+    end
+
+    @@start_at_procs = {}
+
+    def start_at= v
+      if v.respond_to? :call
+        @start_at_proc = v
+      else
+        write_attribute(:start_at, v)
+      end
+    end
+
+    def start_at
+      @start_at_proc || @@start_at_procs[self.id] || read_attribute(:start_at)
+    end
+
+    def has_start_at_proc?
+      @start_at_proc || @@start_at_procs[self.id]
+    end
+
+    def start_at_changed?
+      if has_start_at_proc?
+        @start_at_proc != @@start_at_procs[self.id]
+      else
+        super
+      end
+    end
+
     # Returns dispatch state as symbol
     def state
       read_attribute(:state).to_sym

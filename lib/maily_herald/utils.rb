@@ -5,32 +5,61 @@ module MailyHerald
     end
 
     class MarkupEvaluator
-      class DummyDrop < Liquid::Drop
-        def has_key?(name)
-          true
-        end
+      VariableSignature = /\A[\w\.\[\]]+(\s*|\s*.+)?\Z/
 
-        def invoke_drop name
-          true
-        end
+      module Filters
+        module Date
+          def minus input, no, unit
+            input - no.to_i.send(unit)
+          end
 
-        alias :[] :invoke_drop
+          def plus input, no, unit
+            input + no.to_i.send(unit)
+          end
+        end
       end
 
       def self.test_conditions conditions
         return true if !conditions || conditions.empty?
 
-        condition = self.create_liquid_condition conditions
-        template = Liquid::Template.parse(conditions)
-        raise StandardError unless template.errors.empty?
+        drop = Class.new(Liquid::Drop) do
+          def has_key?(name); true; end
+          def invoke_drop(name); true; end
+          alias :[] :invoke_drop
+        end.new
 
-        drop = DummyDrop.new
-        liquid_context = Liquid::Context.new([drop, template.assigns], template.instance_assigns, template.registers, true, {})
-        drop.context = liquid_context
-
-        condition.evaluate liquid_context
+        evaluator = Utils::MarkupEvaluator.new(drop)
+        evaluator.evaluate_conditions(conditions)
+        true
+      rescue
+        return false
       end
 
+      def self.test_start_at markup
+        return true if !markup || markup.empty?
+
+        drop = Class.new(Liquid::Drop) do
+          def has_key?(name); true; end
+          def invoke_drop(name)
+            t = Time.now
+            t.define_singleton_method(:[]) do |v|
+              Time.now
+            end
+            t.define_singleton_method(:has_key?) do |v|
+              true
+            end
+            t
+          end
+          alias :[] :invoke_drop
+        end.new
+
+        evaluator = Utils::MarkupEvaluator.new(drop)
+        val = evaluator.evaluate_start_at(markup)
+
+        return val.is_a?(Time) || val.is_a?(DateTime)
+      rescue
+        return false
+      end
 
       def initialize drop
         @drop = drop
@@ -41,19 +70,31 @@ module MailyHerald
 
         condition = MarkupEvaluator.create_liquid_condition conditions
         template = Liquid::Template.parse(conditions)
+        raise StandardError unless template.errors.empty?
 
         liquid_context = Liquid::Context.new([@drop, template.assigns], template.instance_assigns, template.registers, true, {})
         @drop.context = liquid_context
 
-        condition.evaluate liquid_context
+        val = condition.evaluate liquid_context
+        raise(ArgumentError, "Conditions do not evaluate to boolean (got `#{val}`)") unless [true, false].include?(val)
+        val
       end
 
-      def evaluate_variable markup
-        template = Liquid::Template.parse(markup)
+      def evaluate_start_at markup
+        begin
+          Time.parse(markup)
+        rescue
+          raise(ArgumentError, "Start at is not a proper variable: `#{markup}`") unless VariableSignature =~ markup
 
-        liquid_context = Liquid::Context.new([@drop, template.assigns], template.instance_assigns, template.registers, true, {})
-        @drop.context = liquid_context
-        liquid_context[markup]
+          liquid_context = Liquid::Context.new([@drop], {}, {}, true, {})
+          liquid_context.add_filters([Filters::Date])
+
+          @drop.context = liquid_context
+          #liquid_context[markup]
+
+          variable = Liquid::Variable.new markup
+          variable.render(liquid_context)
+        end
       end
 
       private

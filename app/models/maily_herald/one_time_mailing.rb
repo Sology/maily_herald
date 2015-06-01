@@ -2,6 +2,7 @@ module MailyHerald
   class OneTimeMailing < Mailing
     validates   :list,          presence: true
     validates   :start_at,      presence: true
+    validate    :validate_start_at
 
     after_save :update_schedules_callback, if: Proc.new{|m| m.state_changed? || m.start_at_changed? || m.override_subscription?}
 
@@ -116,13 +117,14 @@ module MailyHerald
     # This is the time when next mailing should be sent based on
     # {#start_at} mailing attribute.
     def start_processing_time entity
-      begin
-        Time.parse(self.start_at)
-      rescue
-        subscription = self.list.subscription_for(entity)
+      subscription = self.list.subscription_for(entity)
+
+      if has_start_at_proc?
+        start_at.call(entity, subscription)
+      else
         evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
 
-        evaluator.evaluate_variable(self.start_at)
+        evaluator.evaluate_start_at(self.start_at)
       end
     end
 

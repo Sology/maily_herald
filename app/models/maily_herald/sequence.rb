@@ -188,15 +188,17 @@ module MailyHerald
       if ls.first
         ls.last.processing_at + (mailing.absolute_delay - ls.last.mailing.absolute_delay)
       else
-        begin
-          Time.parse(self.start_at) + mailing.absolute_delay
-        rescue
-          subscription = self.list.subscription_for(entity)
-          evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
-          evaluated_start = evaluator.evaluate_variable(self.start_at)
+        subscription = self.list.subscription_for(entity)
 
-          evaluated_start + mailing.absolute_delay
+        if has_start_at_proc?
+          evaluated_start = start_at.call(entity, subscription)
+        else
+          evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
+
+          evaluated_start = evaluator.evaluate_start_at(self.start_at)
         end
+
+        evaluated_start + mailing.absolute_delay
       end
     end
 

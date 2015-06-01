@@ -96,18 +96,6 @@ MailyHerald.setup do |config|
     mailing.title = "Test periodical mailing"
     mailing.template = "User name: {{user.name}}."
     mailing.period = 7.days
-    mailing.conditions = "user.weekly_notifications"
-  end
-
-  config.periodical_mailing :weekly_summary_sg do |mailing|
-    mailing.enable
-    mailing.title = "Weekly summary"
-    mailing.subject = "Weekly summary"
-    mailing.start_at = "user.created_at"
-    mailing.list = :generic_list
-    mailing.title = "Test periodical mailing"
-    mailing.template = "User name: {{user.name}}."
-    mailing.period = 7.days
-    mailing.conditions = "user.weekly_notifications"
+    mailing.conditions = "user.weekly_notifications == true"
   end
 end
