@@ -12,6 +12,7 @@ module MailyHerald
     
     validates   :subject,       presence: true, if: :generic_mailer?
     validates   :template,      presence: true, if: :generic_mailer?
+    validate    :mailer_validity
     validate    :template_syntax
     validate    :validate_conditions
 
@@ -225,6 +226,12 @@ module MailyHerald
       errors.add(:start_at, "is not a time value") unless result
     rescue StandardError => e
       errors.add(:start_at, e.to_s) 
+    end
+
+    def mailer_validity
+      !!mailer unless generic_mailer?
+    rescue
+      errors.add(:mailer_name, :invalid)
     end
   end
 end
