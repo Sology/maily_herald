@@ -16,9 +16,9 @@ describe MailyHerald::OneTimeMailing do
     describe "run all delivery" do
       before(:each) do
         @mailing = MailyHerald.one_time_mailing(:test_mailing)
-        @mailing.should be_a MailyHerald::OneTimeMailing
-        @mailing.should_not be_a_new_record
-        @mailing.should be_valid
+        expect(@mailing).to be_kind_of(MailyHerald::OneTimeMailing)
+        expect(@mailing).not_to be_a_new_record
+        expect(@mailing).to be_valid
       end
 
       it "should be delivered only once per user" do
@@ -49,38 +49,38 @@ describe MailyHerald::OneTimeMailing do
         expect(MailyHerald::Log.delivered.count).to eq(0)
         expect(@mailing.logs.scheduled.count).to eq(1)
 
-        subscription.should be_kind_of(MailyHerald::Subscription)
+        expect(subscription).to be_kind_of(MailyHerald::Subscription)
 
-        @mailing.conditions_met?(@entity).should be_truthy
-        @mailing.processable?(@entity).should be_truthy
-        @mailing.mailer_name.should eq(:generic)
+        expect(@mailing.conditions_met?(@entity)).to be_truthy
+        expect(@mailing.processable?(@entity)).to be_truthy
+        expect(@mailing.mailer_name).to eq(:generic)
 
         ret = @mailing.run
-        ret.should be_a(Array)
-        ret.first.should be_a(MailyHerald::Log)
-        ret.first.should be_delivered
-        ret.first.mail.should be_a(Mail::Message)
+        expect(ret).to be_kind_of(Array)
+        expect(ret.first).to be_kind_of(MailyHerald::Log)
+        expect(ret.first).to be_delivered
+        expect(ret.first.mail).to be_kind_of(Mail::Message)
 
-        MailyHerald::Subscription.count.should eq(1)
-        MailyHerald::Log.delivered.count.should eq(1)
+        expect(MailyHerald::Subscription.count).to eq(1)
+        expect(MailyHerald::Log.delivered.count).to eq(1)
 
         log = MailyHerald::Log.delivered.first
-        log.entity.should eq(@entity)
-        log.mailing.should eq(@mailing)
-        log.entity_email.should eq(@entity.email)
+        expect(log.entity).to eq(@entity)
+        expect(log.mailing).to eq(@mailing)
+        expect(log.entity_email).to eq(@entity.email)
       end
     end
 
     describe "single entity delivery" do
       it "should not be possible via Mailer" do
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
 
         schedule = MailyHerald.dispatch(:one_time_mail).schedule_for(@entity)
         schedule.update_attribute(:processing_at, Time.now + 1.day)
 
         msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
 
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
       end
     end
 
@@ -115,13 +115,13 @@ describe MailyHerald::OneTimeMailing do
     end
 
     it "should deliver single mail" do
-      MailyHerald::Log.delivered.count.should eq(0)
-      @mailing.processable?(@entity).should be_truthy
-      @mailing.override_subscription?.should be_truthy
-      @mailing.enabled?.should be_truthy
+      expect(MailyHerald::Log.delivered.count).to eq(0)
+      expect(@mailing.processable?(@entity)).to be_truthy
+      expect(@mailing.override_subscription?).to be_truthy
+      expect(@mailing.enabled?).to be_truthy
       msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
-      msg.should be_a(Mail::Message)
-      MailyHerald::Log.delivered.count.should eq(1)
+      expect(msg).to be_kind_of(Mail::Message)
+      expect(MailyHerald::Log.delivered.count).to eq(1)
     end
   end
 

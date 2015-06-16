@@ -33,7 +33,7 @@ describe MailyHerald::Utils do
 
     it "should provide model conditions syntax validation" do
       @mailing.conditions = "foo bar"
-      @mailing.should_not be_valid
+      expect(@mailing).not_to be_valid
     end
 
     it "should evaluate attributes" do

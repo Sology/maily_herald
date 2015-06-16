@@ -9,14 +9,14 @@ describe MailyHerald::Log do
   describe "Associations" do
     it "should have proper scopes" do
       log = MailyHerald::Log.create_for @mailing, @entity, {status: :delivered}
-      log.should be_valid
-      log.entity.should eq(@entity)
-      log.mailing.should eq(@mailing)
+      expect(log).to be_valid
+      expect(log.entity).to eq(@entity)
+      expect(log.mailing).to eq(@mailing)
 
-      MailyHerald::Log.for_entity(@entity).should include(log)
-      MailyHerald::Log.for_mailing(@mailing).should include(log)
+      expect(MailyHerald::Log.for_entity(@entity)).to include(log)
+      expect(MailyHerald::Log.for_mailing(@mailing)).to include(log)
 
-      MailyHerald::Log.for_entity(@entity).for_mailing(@mailing).last.should eq(log)
+      expect(MailyHerald::Log.for_entity(@entity).for_mailing(@mailing).last).to eq(log)
     end
   end
 
@@ -26,11 +26,11 @@ describe MailyHerald::Log do
     expect(MailyHerald::Log.count).to eq(2)
 
     log1.update_attribute(:status, :skipped)
-    MailyHerald::Log.count.should eq(2)
-    MailyHerald::Log.skipped.count.should eq(1)
+    expect(MailyHerald::Log.count).to eq(2)
+    expect(MailyHerald::Log.skipped.count).to eq(1)
 
     log1.update_attribute(:status, :error)
-    MailyHerald::Log.count.should eq(2)
-    MailyHerald::Log.error.count.should eq(1)
+    expect(MailyHerald::Log.count).to eq(2)
+    expect(MailyHerald::Log.error.count).to eq(1)
   end
 end

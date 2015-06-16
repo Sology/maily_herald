@@ -16,14 +16,14 @@ describe MailyHerald::AdHocMailing do
     describe "run all delivery" do
       before(:each) do
         @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-        @mailing.should be_a MailyHerald::AdHocMailing
-        @mailing.should_not be_a_new_record
+        expect(@mailing).to be_kind_of(MailyHerald::AdHocMailing)
+        expect(@mailing).not_to be_a_new_record
       end
 
       it "should not be delivered without explicit scheduling" do
         expect(MailyHerald::Subscription.count).to eq(1)
-        @mailing.conditions_met?(@entity).should be_truthy
-        @mailing.processable?(@entity).should be_truthy
+        expect(@mailing.conditions_met?(@entity)).to be_truthy
+        expect(@mailing.processable?(@entity)).to be_truthy
 
         expect(@mailing.logs.scheduled.count).to eq(0)
         expect(@mailing.logs.processed.count).to eq(0)
@@ -40,51 +40,51 @@ describe MailyHerald::AdHocMailing do
         expect(MailyHerald::Subscription.count).to eq(1)
         expect(MailyHerald::Log.delivered.count).to eq(0)
 
-        subscription.should be_kind_of(MailyHerald::Subscription)
+        expect(subscription).to be_kind_of(MailyHerald::Subscription)
 
-        @mailing.conditions_met?(@entity).should be_truthy
-        @mailing.processable?(@entity).should be_truthy
+        expect(@mailing.conditions_met?(@entity)).to be_truthy
+        expect(@mailing.processable?(@entity)).to be_truthy
 
         @mailing.schedule_delivery_to_all Time.now - 5
 
         ret = @mailing.run
-        ret.should be_a(Array)
-        ret.first.should be_a(MailyHerald::Log)
-        ret.first.should be_delivered
-        ret.first.mail.should be_a(Mail::Message)
+        expect(ret).to be_kind_of(Array)
+        expect(ret.first).to be_kind_of(MailyHerald::Log)
+        expect(ret.first).to be_delivered
+        expect(ret.first.mail).to be_kind_of(Mail::Message)
 
-        MailyHerald::Subscription.count.should eq(1)
-        MailyHerald::Log.delivered.count.should eq(1)
+        expect(MailyHerald::Subscription.count).to eq(1)
+        expect(MailyHerald::Log.delivered.count).to eq(1)
 
         log = MailyHerald::Log.delivered.first
-        log.entity.should eq(@entity)
-        log.mailing.should eq(@mailing)
-        log.entity_email.should eq(@entity.email)
+        expect(log.entity).to eq(@entity)
+        expect(log.mailing).to eq(@mailing)
+        expect(log.entity_email).to eq(@entity.email)
       end
     end
 
     describe "single entity delivery" do
       before(:each) do
         @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-        @mailing.should be_a MailyHerald::AdHocMailing
-        @mailing.should_not be_a_new_record
+        expect(@mailing).to be_kind_of(MailyHerald::AdHocMailing)
+        expect(@mailing).not_to be_a_new_record
       end
 
       it "should not be delivered without explicit scheduling" do
         MailyHerald::Log.delivered.count.should eq(0)
         msg = AdHocMailer.ad_hoc_mail(@entity).deliver
-        msg.should be_a(Mail::Message)
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(msg).to be_kind_of(Mail::Message)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
       end
 
       it "should be delivered" do
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
 
         @mailing.schedule_delivery_to @entity, Time.now - 5
 
         msg = AdHocMailer.ad_hoc_mail(@entity).deliver
 
-        msg.should be_a(Mail::Message)
+        expect(msg).to be_kind_of(Mail::Message)
         MailyHerald::Log.delivered.count.should eq(1)
       end
 
@@ -93,11 +93,11 @@ describe MailyHerald::AdHocMailing do
 
         @list.unsubscribe!(@entity)
 
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
 
         AdHocMailer.ad_hoc_mail(@entity).deliver
 
-        MailyHerald::Log.delivered.count.should eq(0)
+        expect(MailyHerald::Log.delivered.count).to eq(0)
       end
     end
 

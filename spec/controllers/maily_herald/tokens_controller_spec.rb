@@ -16,16 +16,16 @@ describe MailyHerald::TokensController do
     describe "when regular subscription" do
       pending "should deactivate only one subscription" do
         get :get, token: @subscription.token, use_route: :maily_herald
-        response.should redirect_to("/")
+        expect(response).to redirect_to("/")
         @subscription.reload
 
-        @subscription.active?.should_not be_true
+        expect(@subscription.active?).not_to be_true
 
         @user.maily_herald_subscriptions.each do |s|
           next unless s.target.subscription_group == @subscription.target.subscription_group
           next if s == @subscription
 
-          s.active?.should be_true
+          expect(s.active?).to be_true
         end
       end
     end
@@ -43,17 +43,17 @@ describe MailyHerald::TokensController do
 
       pending "should deactivate subscription group" do
         get :get, token: @subscription.token, use_route: :maily_herald
-        response.should redirect_to("/")
+        expect(response).to redirect_to("/")
         @subscription.reload
 
-        @subscription.active?.should_not be_true
-        @subscription.aggregate.should_not be_nil
-        @subscription.aggregate.active?.should_not be_true
+        expect(@subscription.active?).not_to be_true
+        expect(@subscription.aggregate).not_to be_nil
+        expect(@subscription.aggregate.active?).not_to be_true
 
         @user.maily_herald_subscriptions.each do |s|
           next unless s.target.subscription_group == @subscription.target.subscription_group
 
-          s.active?.should be_false
+          expect(s.active?).to be_false
         end
       end
     end
@@ -62,20 +62,20 @@ describe MailyHerald::TokensController do
   pending "Custom action" do
     before(:each) do
       @mailing.token_action = :custom
-      @mailing.should be_valid
+      expect(@mailing).to be_valid
       @mailing.save
-      @mailing.token_custom_action.should_not be_nil
+      expect(@mailing.token_custom_action).not_to be_nil
     end
 
     pending "should perform custom action" do
       @subscription.reload
-      @subscription.target.token_action.should eq(:custom)
+      expect(@subscription.target.token_action).to eq(:custom)
       get :get, token: @subscription.token, use_route: :maily_herald
-      response.should redirect_to("/custom")
+      expect(response).to redirect_to("/custom")
       @subscription.reload
       @user.reload
 
-      @user.name.should eq("changed")
+      expect(@user.name).to eq("changed")
     end
   end
 end
