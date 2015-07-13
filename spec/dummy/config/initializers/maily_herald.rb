@@ -52,6 +52,14 @@ MailyHerald.setup do |config|
     mailing.start_at = "user.created_at"
   end
 
+  config.one_time_mailing :mail_with_error do |mailing|
+    mailing.enable
+    mailing.title = "Mail with error"
+    mailing.list = :generic_list
+    mailing.mailer_name = "CustomOneTimeMailer"
+    mailing.start_at = "user.created_at"
+  end
+
   config.ad_hoc_mailing :ad_hoc_mail do |mailing|
     mailing.enable
     mailing.title = "Ad hoc mailing"

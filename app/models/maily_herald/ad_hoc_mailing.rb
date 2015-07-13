@@ -53,7 +53,7 @@ module MailyHerald
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).collect do |schedule|
         if schedule.entity
-          mail = deliver_to schedule.entity
+          mail = deliver schedule
           schedule.reload
           schedule.mail = mail
           schedule
@@ -62,24 +62,6 @@ module MailyHerald
           schedule.destroy
         end
       end
-    end
-
-    def deliver_with_mailer_to entity
-      current_time = Time.now
-
-      schedule = schedule_for entity
-
-      schedule.with_lock do
-        # make sure schedule hasn't been processed in the meantime
-        if schedule && schedule.processing_at <= current_time && schedule.scheduled?
-          attrs = super(entity)
-          if attrs
-            schedule.attributes = attrs
-            schedule.processing_at = current_time
-            schedule.save!
-          end
-        end
-      end if schedule
     end
 
     # Returns {Log} object which is the delivery schedule for given entity.
@@ -95,5 +77,24 @@ module MailyHerald
     def to_s
       "<AdHocMailing: #{self.title || self.name}>"
     end
+
+    private
+
+    def deliver_with_mailer schedule
+      current_time = Time.now
+
+      schedule.with_lock do
+        # make sure schedule hasn't been processed in the meantime
+        if schedule && schedule.processing_at <= current_time && schedule.scheduled?
+          attrs = super(schedule)
+          if attrs
+            schedule.attributes = attrs
+            schedule.processing_at = current_time
+            schedule.save!
+          end
+        end
+      end if schedule
+    end
+
   end
 end

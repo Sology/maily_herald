@@ -67,7 +67,7 @@ module MailyHerald
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).each do |schedule|
         if schedule.entity
-          mail = schedule.mailing.deliver_to schedule.entity
+          mail = schedule.mailing.send(:deliver, schedule)
           schedule.reload
           schedule.mail = mail
           schedule

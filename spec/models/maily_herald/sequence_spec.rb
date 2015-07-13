@@ -125,6 +125,10 @@ describe MailyHerald::Sequence do
       #@subscription.should be_processable
       @subscription.should_not be_a_new_record
 
+      schedule = @sequence.schedule_for(@entity)
+      expect(schedule).to be_a(MailyHerald::Log)
+      expect(schedule.processing_at.round).to eq((@entity.created_at + @sequence.mailings.first.absolute_delay).round)
+
       Timecop.freeze @entity.created_at
 
       @sequence.run
@@ -137,6 +141,8 @@ describe MailyHerald::Sequence do
       @sequence.run
 
       MailyHerald::Subscription.count.should eq(1)
+      schedule.reload
+      expect(schedule.status).to eq(:delivered)
       MailyHerald::Log.delivered.count.should eq(1)
 
       @sequence.processed_mailings(@entity).length.should eq(1)

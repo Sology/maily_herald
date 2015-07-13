@@ -17,25 +17,6 @@ module MailyHerald
       self.period = d.to_f.days
     end
 
-    def deliver_with_mailer_to entity
-      current_time = Time.now
-
-      schedule = schedule_for entity
-
-      schedule.with_lock do
-        # make sure schedule hasn't been processed in the meantime
-        if schedule && schedule.processing_at <= current_time && schedule.scheduled?
-          attrs = super(entity)
-          if attrs
-            schedule.attributes = attrs
-            schedule.processing_at = current_time
-            schedule.save!
-            set_schedule_for entity, schedule
-          end
-        end
-      end if schedule
-    end
-
     # Sends mailing to all subscribed entities.
     #
     # Performs actual sending of emails; should be called in background.
@@ -46,7 +27,7 @@ module MailyHerald
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).collect do |schedule|
         if schedule.entity
-          mail = deliver_to schedule.entity
+          mail = deliver schedule
           schedule.reload
           schedule.mail = mail
           schedule
@@ -165,6 +146,25 @@ module MailyHerald
 
     def to_s
       "<PeriodicalMailing: #{self.title || self.name}>"
+    end
+
+    private
+
+    def deliver_with_mailer schedule
+      current_time = Time.now
+
+      schedule.with_lock do
+        # make sure schedule hasn't been processed in the meantime
+        if schedule && schedule.processing_at <= current_time && schedule.scheduled?
+          attrs = super(schedule)
+          if attrs
+            schedule.attributes = attrs
+            schedule.processing_at = current_time
+            schedule.save!
+            set_schedule_for schedule.entity, schedule
+          end
+        end
+      end if schedule
     end
   end
 end

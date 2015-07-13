@@ -2,16 +2,16 @@ module MailyHerald
   class Mailer < ActionMailer::Base
     attr_reader :entity
 
-    def generic entity, mailing
-      destination = mailing.destination(entity)
-      subject = mailing.render_subject(entity)
-      content = mailing.render_template(entity)
+    def generic entity
+      destination = @maily_herald_mailing.destination(entity)
+      subject = @maily_herald_mailing.render_subject(entity)
+      content = @maily_herald_mailing.render_template(entity)
 
       opts = {
         to: destination, 
         subject: subject
       }
-      opts[:from] = mailing.from if mailing.from.present?
+      opts[:from] = @maily_herald_mailing.from if @maily_herald_mailing.from.present?
 
       mail(opts) do |format|
         format.text { render text: content }
@@ -23,9 +23,10 @@ module MailyHerald
       def deliver_mail(mail) #:nodoc:
         mailing = mail.maily_herald_data[:mailing]
         entity = mail.maily_herald_data[:entity]
+        schedule = mail.maily_herald_data[:schedule]
 
-        if mailing && entity
-          mailing.deliver_with_mailer_to(entity) do
+        if mailing
+          mailing.send(:deliver_with_mailer, schedule) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
               self.set_payload_for_mail(payload, mail)
               yield # Let Mail do the delivery actions
@@ -69,20 +70,32 @@ module MailyHerald
         end
       end
 
-      mailing = args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0])
-      entity = args[1]
+      if args[1].is_a?(MailyHerald::Log)
+        @maily_herald_schedule = args[1]
+        @maily_herald_mailing = @maily_herald_schedule.mailing
+        @maily_herald_entity = @maily_herald_schedule.entity
+      else
+        @maily_herald_mailing = MailyHerald.dispatch(args[0])
+        @maily_herald_entity = args[1]
+
+        if @maily_herald_mailing.respond_to?(:schedule_delivery_to)
+          # Implicitly create schedule for ad hoc delivery when called using Mailer.foo(entity).deliver syntax
+          @maily_herald_schedule = @maily_herald_mailing.schedule_delivery_to(@maily_herald_entity)
+        end
+      end
 
       @_message.maily_herald_data = {
-        mailing: mailing,
-        entity: entity,
-        subscription: mailing.subscription_for(entity),
+        schedule: @maily_herald_schedule,
+        mailing: @maily_herald_mailing,
+        entity: @maily_herald_entity,
+        subscription: @maily_herald_mailing.subscription_for(@maily_herald_entity),
       }
 
       lookup_context.skip_default_locale!
-      super
+      super(args[0], @maily_herald_entity)
 
-      @_message.to = mailing.destination(entity) unless @_message.to
-      @_message.from = mailing.from unless @_message.from
+      @_message.to = @maily_herald_mailing.destination(@maily_herald_entity) unless @_message.to
+      @_message.from = @maily_herald_mailing.from unless @_message.from
 
       @_message
     end

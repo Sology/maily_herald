@@ -70,34 +70,39 @@ describe MailyHerald::AdHocMailing do
         @mailing.should_not be_a_new_record
       end
 
-      it "should not be delivered without explicit scheduling" do
-        MailyHerald::Log.delivered.count.should eq(0)
-        msg = AdHocMailer.ad_hoc_mail(@entity).deliver
-        msg.should be_a(Mail::Message)
-        MailyHerald::Log.delivered.count.should eq(0)
+      context "without explicit scheduling" do
+        it "should be delivered using Mailer deliver method" do
+          MailyHerald::Log.delivered.count.should eq(0)
+          msg = AdHocMailer.ad_hoc_mail(@entity).deliver
+          msg.should be_a(Mail::Message)
+          MailyHerald::Log.delivered.count.should eq(1)
+          expect(MailyHerald::Log.delivered.first.entity).to eq(@entity)
+        end
       end
 
-      it "should be delivered" do
-        MailyHerald::Log.delivered.count.should eq(0)
+      context "with explicit scheduling" do
+        it "should be delivered" do
+          MailyHerald::Log.delivered.count.should eq(0)
 
-        @mailing.schedule_delivery_to @entity, Time.now - 5
+          @mailing.schedule_delivery_to @entity, Time.now - 5
 
-        msg = AdHocMailer.ad_hoc_mail(@entity).deliver
+          msg = AdHocMailer.ad_hoc_mail(@entity).deliver
 
-        msg.should be_a(Mail::Message)
-        MailyHerald::Log.delivered.count.should eq(1)
-      end
+          msg.should be_a(Mail::Message)
+          MailyHerald::Log.delivered.count.should eq(1)
+        end
 
-      it "should not be delivered if subscription inactive" do
-        @mailing.schedule_delivery_to @entity, Time.now - 5
+        it "should not be delivered if subscription inactive" do
+          @mailing.schedule_delivery_to @entity, Time.now - 5
 
-        @list.unsubscribe!(@entity)
+          @list.unsubscribe!(@entity)
 
-        MailyHerald::Log.delivered.count.should eq(0)
+          MailyHerald::Log.delivered.count.should eq(0)
 
-        AdHocMailer.ad_hoc_mail(@entity).deliver
+          AdHocMailer.ad_hoc_mail(@entity).deliver
 
-        MailyHerald::Log.delivered.count.should eq(0)
+          MailyHerald::Log.delivered.count.should eq(0)
+        end
       end
     end
 

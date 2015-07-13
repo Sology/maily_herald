@@ -69,6 +69,20 @@ describe MailyHerald::OneTimeMailing do
         log.mailing.should eq(@mailing)
         log.entity_email.should eq(@entity.email)
       end
+
+      it "should handle template errors" do
+        MailyHerald::Log.delivered.count.should eq(0)
+
+        @mailing = MailyHerald.dispatch(:mail_with_error)
+        schedule = @mailing.schedule_for(@entity)
+        expect(schedule).to be_a(MailyHerald::Log)
+        expect(schedule.processing_at).to be <= Time.now
+
+        @mailing.run
+
+        schedule.reload
+        expect(schedule).to be_error
+      end
     end
 
     describe "single entity delivery" do
@@ -78,7 +92,7 @@ describe MailyHerald::OneTimeMailing do
         schedule = MailyHerald.dispatch(:one_time_mail).schedule_for(@entity)
         schedule.update_attribute(:processing_at, Time.now + 1.day)
 
-        msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
+        expect{ CustomOneTimeMailer.one_time_mail(@entity).deliver }.not_to change{ActionMailer::Base.deliveries.count}
 
         MailyHerald::Log.delivered.count.should eq(0)
       end
@@ -119,8 +133,7 @@ describe MailyHerald::OneTimeMailing do
       @mailing.processable?(@entity).should be_truthy
       @mailing.override_subscription?.should be_truthy
       @mailing.enabled?.should be_truthy
-      msg = CustomOneTimeMailer.one_time_mail(@entity).deliver
-      msg.should be_a(Mail::Message)
+      @mailing.run
       MailyHerald::Log.delivered.count.should eq(1)
     end
   end

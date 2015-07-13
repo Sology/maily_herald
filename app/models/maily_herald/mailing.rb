@@ -157,11 +157,11 @@ module MailyHerald
     #
     # Depending on {#mailer_name} value it uses either generic mailer (from {Mailer} class)
     # or custom mailer.
-    def build_mail entity
+    def build_mail schedule
       if generic_mailer?
-        Mailer.generic(entity, self)
+        Mailer.generic(schedule)
       else
-        self.mailer.send(self.name, entity)
+        self.mailer.send(self.name, schedule)
       end
     end
 
@@ -172,12 +172,18 @@ module MailyHerald
     # Performs actual sending of emails; should be called in background.
     #
     # Returns `Mail::Message`.
-    def deliver_to entity
-      build_mail(entity).deliver
+    def deliver schedule
+      build_mail(schedule).deliver
+    rescue StandardError => e
+      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
+      schedule.update_attributes(status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"})
+      return nil
     end
 
     # Called from Mailer, block required
-    def deliver_with_mailer_to entity
+    def deliver_with_mailer schedule
+      entity = schedule.entity
+
       unless processable?(entity)
         MailyHerald.logger.log_processing(self, entity, prefix: "Not processable", level: :debug) 
         return 
@@ -194,7 +200,7 @@ module MailyHerald
 
       return {status: :delivered, data: {content: mail.to_s}}
     rescue StandardError => e
-      MailyHerald.logger.log_processing(self, entity, prefix: "Error", level: :error) 
+      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
       return {status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"}}
     end
 

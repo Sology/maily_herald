@@ -35,11 +35,6 @@ module MailyHerald
       self.sequence.processed_mailings_for(entity).include?(self)
     end
 
-    # Delivers mailing to given entity.
-    def deliver_to entity
-      super(entity)
-    end
-
     def update_schedules_callback
       self.sequence.update_schedules_callback
     end
@@ -49,26 +44,6 @@ module MailyHerald
       self.sequence.schedules
     end
 
-    def deliver_with_mailer_to entity
-      current_time = Time.now
-
-      schedule = self.sequence.schedule_for(entity)
-
-      schedule.with_lock do
-        # make sure schedule hasn't been processed in the meantime
-        if schedule && schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time && schedule.scheduled?
-
-          attrs = super entity
-          if attrs
-            schedule.attributes = attrs
-            schedule.processing_at = current_time
-            schedule.save!
-            self.sequence.set_schedule_for(entity)
-          end
-        end
-      end if schedule
-    end
-
     def override_subscription?
       self.sequence.override_subscription? || super
     end
@@ -76,5 +51,26 @@ module MailyHerald
     def processable? entity
       self.sequence.enabled? && super
     end
+
+    private
+
+    def deliver_with_mailer schedule
+      current_time = Time.now
+
+      schedule.with_lock do
+        # make sure schedule hasn't been processed in the meantime
+        if schedule && schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time && schedule.scheduled?
+
+          attrs = super schedule
+          if attrs
+            schedule.attributes = attrs
+            schedule.processing_at = current_time
+            schedule.save!
+            self.sequence.set_schedule_for(schedule.entity)
+          end
+        end
+      end if schedule
+    end
+
   end
 end
