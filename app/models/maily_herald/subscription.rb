@@ -25,6 +25,21 @@ module MailyHerald
 
     after_save :update_schedules, if: Proc.new{|s| s.active_changed?}
 
+    def self.get_from(entity)
+      if entity.has_attribute?(:maily_subscription_id) && entity.maily_subscription_id
+        subscription = MailyHerald::Subscription.new
+
+        entity.attributes.each do |k, v|
+          if match = k.match(/^maily_subscription_(\w+)$/)
+            subscription.send("#{match[1]}=", v)
+          end
+        end
+
+        subscription.readonly!
+        subscription
+      end
+    end
+
     def active?
       !new_record? && read_attribute(:active)
     end

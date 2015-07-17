@@ -25,6 +25,7 @@ describe MailyHerald::Mailing do
     it "should produce valiadtion errors" do
       @mailing = MailyHerald.dispatch :locked_mailing
       expect(@mailing).to be_locked
+      @mailing.title = "foo"
       expect(@mailing.save).to be_falsy
       expect(@mailing.errors.messages).to include(:base)
       @mailing.destroy

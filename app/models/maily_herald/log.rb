@@ -37,6 +37,8 @@ module MailyHerald
     scope       :error,         lambda { where(status: :error) }
     scope       :scheduled,     lambda { where(status: :scheduled) }
     scope       :processed,     lambda { where(status: [:delivered, :skipped, :error]) }
+    scope       :not_skipped,   lambda { where("status != 'skipped'") }
+    scope       :like_email,    lambda {|query| where("maily_herald_logs.entity_email LIKE (?)", "%#{query}%") }
 
     serialize   :data,          Hash
 

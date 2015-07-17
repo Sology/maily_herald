@@ -151,4 +151,19 @@ describe MailyHerald::AdHocMailing do
     end
   end
 
+  describe "preview" do
+    before(:each) do
+      @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
+      @list.subscribe!(@entity)
+    end
+
+    it "should not deliver" do
+      expect(@mailing.logs).to be_empty
+
+      mail = @mailing.build_mail @entity
+      @mailing.reload
+
+      expect(@mailing.logs).to be_empty
+    end
+  end
 end

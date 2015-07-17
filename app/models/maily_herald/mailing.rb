@@ -63,6 +63,10 @@ module MailyHerald
       end
     end
 
+    def ad_hoc?
+      self.class == AdHocMailing
+    end
+
     def periodical?
       self.class == PeriodicalMailing
     end
@@ -102,7 +106,7 @@ module MailyHerald
     #
     # @raise [ArgumentError] if the conditions do not evaluate to boolean.
     def conditions_met? entity
-      subscription = self.list.subscription_for(entity)
+      subscription = Subscription.get_from(entity) || self.list.subscription_for(entity)
 
       if has_conditions_proc?
         !!conditions.call(entity, subscription)
@@ -159,7 +163,7 @@ module MailyHerald
     # or custom mailer.
     def build_mail schedule
       if generic_mailer?
-        Mailer.generic(schedule)
+        Mailer.generic(schedule, self)
       else
         self.mailer.send(self.name, schedule)
       end

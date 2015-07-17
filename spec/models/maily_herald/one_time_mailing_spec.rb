@@ -180,18 +180,51 @@ describe MailyHerald::OneTimeMailing do
 
     after(:each) do
       @mailing.destroy
+      @entity.reload
+      @entity.update_attribute(:weekly_notifications, true)
     end
 
-    it "should be delivered" do
+    it "should deliver when positive" do
       expect(@mailing.has_conditions_proc?).to be_truthy
 
       @list.subscribe!(@entity)
       @mailing.set_schedules
 
       expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
-      expect(@mailing.schedules.for_entity(@entity).last.processing_at.to_i).to eq(@entity.created_at.to_i)
+
+      schedule = @mailing.schedules.for_entity(@entity).last
+
+      expect(schedule.processing_at.to_i).to eq(@entity.created_at.to_i)
       expect(@entity.weekly_notifications).to be_truthy
       expect(@mailing.conditions_met?(@entity)).to be_truthy
+
+      @mailing.run
+
+      schedule.reload
+      expect(schedule.status).to eq(:delivered)
+    end
+
+    it "should skip when negative" do
+      expect(@mailing.has_conditions_proc?).to be_truthy
+
+      @list.subscribe!(@entity)
+      @mailing.set_schedules
+
+      expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
+
+      schedule = @mailing.schedules.for_entity(@entity).last
+
+      expect(schedule.processing_at.to_i).to eq(@entity.created_at.to_i)
+
+      @entity.update_attribute(:weekly_notifications, false)
+
+      expect(@entity.weekly_notifications).to be_falsey
+      expect(@mailing.conditions_met?(@entity)).to be_falsey
+
+      @mailing.run
+
+      schedule.reload
+      expect(schedule.status).to eq(:skipped)
     end
   end
 end

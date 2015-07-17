@@ -37,7 +37,7 @@ module MailyHerald
     validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
     validate do |dispatch|
-      dispatch.errors.add(:base, "Can't change this dispatch because it is locked.") if dispatch.locked?
+      dispatch.errors.add(:base, "Can't change this dispatch because it is locked.") if dispatch.changes.present? && dispatch.locked?
     end
     before_destroy do |dispatch|
       if dispatch.locked?

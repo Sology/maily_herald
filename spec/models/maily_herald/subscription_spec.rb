@@ -29,4 +29,19 @@ describe MailyHerald::Subscription do
       expect {@mailing.render_template(@entity)}.to raise_error
     end
   end
+
+  it "should instantiate subscription object from joined attributes" do
+    list = MailyHerald.list(:generic_list)
+    list.subscribe!(@entity)
+
+    entity = list.subscribers.first
+
+    expect(entity).to be_a(User)
+    expect(entity).to have_attribute(:maily_subscription_id)
+
+    subscription = MailyHerald::Subscription.get_from(entity)
+
+    expect(subscription).to be_a(MailyHerald::Subscription)
+    expect(subscription).to be_readonly
+  end
 end

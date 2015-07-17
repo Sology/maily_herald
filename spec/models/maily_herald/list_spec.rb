@@ -56,6 +56,7 @@ describe MailyHerald::List do
   it "should be lockable" do
     @list = MailyHerald.list :locked_list
     expect(@list).to be_locked
+    @list.title = "foo"
     expect(@list.save).to be_falsy
     expect(@list.errors.messages).to include(:base)
     @list.destroy
