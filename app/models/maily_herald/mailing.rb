@@ -189,6 +189,8 @@ module MailyHerald
       entity = schedule.entity
 
       unless processable?(entity)
+        # Most likely the entity went out of the context scope.
+        # Let's leave the log for now just in case it comes back into the scope.
         MailyHerald.logger.log_processing(self, entity, prefix: "Not processable", level: :debug) 
         return 
       end

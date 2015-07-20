@@ -41,7 +41,7 @@ module MailyHerald
     end
 
     def active?
-      !new_record? && read_attribute(:active)
+      read_attribute(:id) && read_attribute(:active)
     end
 
     def deactivate!
@@ -67,6 +67,9 @@ module MailyHerald
     end
 
     def update_schedules
+      AdHocMailing.where(list_id: self.list).each do |m|
+        m.set_schedule_for self.entity
+      end
       OneTimeMailing.where(list_id: self.list).each do |m|
         m.set_schedule_for self.entity
       end

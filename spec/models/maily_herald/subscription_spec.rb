@@ -38,10 +38,12 @@ describe MailyHerald::Subscription do
 
     expect(entity).to be_a(User)
     expect(entity).to have_attribute(:maily_subscription_id)
+    expect(entity.maily_subscription_active).to be_truthy
 
     subscription = MailyHerald::Subscription.get_from(entity)
 
     expect(subscription).to be_a(MailyHerald::Subscription)
     expect(subscription).to be_readonly
+    expect(subscription).to be_active
   end
 end

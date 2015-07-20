@@ -131,12 +131,7 @@ module MailyHerald
     def set_schedule_for entity
       # TODO handle override subscription?
 
-      # support entity with joined subscription table for better performance
-      if entity.has_attribute?(:maily_subscription_id)
-        subscribed = !!entity.maily_subscription_active
-      else
-        subscribed = self.list.subscribed?(entity)
-      end
+      subscribed = self.list.subscribed?(entity)
 
       if !subscribed || !self.start_at || !enabled? || !(mailing = next_mailing(entity))
         log = schedule_for(entity)

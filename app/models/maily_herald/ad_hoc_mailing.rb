@@ -21,12 +21,7 @@ module MailyHerald
     # @param entity [ActiveRecord::Base]
     # @param time [Time] time of delivery
     def schedule_delivery_to entity, time = Time.now
-      # support entity with joined subscription table for better performance
-      if entity.has_attribute?(:maily_subscription_id)
-        subscribed = !!entity.maily_subscription_active
-      else
-        subscribed = self.list.subscribed?(entity)
-      end
+      subscribed = self.list.subscribed?(entity)
 
       if !enabled? || !(self.override_subscription? || subscribed)
         return
@@ -61,6 +56,21 @@ module MailyHerald
           MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
           schedule.destroy
         end
+      end
+    end
+
+    # Sets the delivery schedule for given entity
+    #
+    # New schedule will be created or existing one updated.
+    #
+    # Schedule is {Log} object of type "schedule".
+    def set_schedule_for entity
+      subscribed = self.list.subscribed?(entity)
+
+      if !enabled? || !(self.override_subscription? || subscribed)
+        log = schedule_for(entity)
+        log.try(:destroy)
+        return
       end
     end
 

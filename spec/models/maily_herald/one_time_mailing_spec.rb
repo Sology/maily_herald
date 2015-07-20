@@ -157,7 +157,20 @@ describe MailyHerald::OneTimeMailing do
     it "should be delivered" do
       expect(@mailing.has_start_at_proc?).to be_truthy
 
+      expect(@mailing.processed_logs(@entity).count).to eq(0)
+      expect(@mailing.schedules.for_entity(@entity).count).to eq(0)
+
       @list.subscribe!(@entity)
+
+      expect(@list.subscription_for(@entity)).to be_a(MailyHerald::Subscription)
+      expect(@list.subscription_for(@entity)).to be_active
+      expect(@list.subscribed?(@entity)).to be_truthy
+
+      # automatic schedule updater should be triggered
+      expect(@mailing.schedules.for_entity(@entity).count).to eq(1)
+      expect(@mailing.schedules.for_entity(@entity).last.processing_at.to_i).to eq((@entity.created_at + 1.hour).to_i)
+
+      # manually setting schedules should not change anything now
       @mailing.set_schedules
 
       expect(@mailing.schedules.for_entity(@entity).count).to eq(1)

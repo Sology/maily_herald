@@ -56,7 +56,7 @@ module MailyHerald
     # Checks whether entity is subscribed to List.
     def subscribed? entity
       s = Subscription.get_from(entity) || subscription_for(entity)
-      .try(:active?)
+      s.try(:active?)
     end
 
     # Checks whether entity is not subscribed to List.

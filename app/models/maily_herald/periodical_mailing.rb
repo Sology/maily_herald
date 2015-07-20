@@ -75,12 +75,7 @@ module MailyHerald
     #
     # Schedule is {Log} object of type "schedule".
     def set_schedule_for entity, last_log = nil
-      # support entity with joined subscription table for better performance
-      if entity.has_attribute?(:maily_subscription_id)
-        subscribed = !!entity.maily_subscription_active
-      else
-        subscribed = self.list.subscribed?(entity)
-      end
+      subscribed = self.list.subscribed?(entity)
 
       if !self.period || !self.start_at || !enabled? || !(self.override_subscription? || subscribed)
         log = schedule_for(entity)
