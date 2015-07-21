@@ -38,6 +38,21 @@ module MailyHerald
     end
   end
 
+  class Initializer
+    def initialize klass
+      @klass = klass
+    end
+
+    def method_missing m, *args, &block
+      if %w{list ad_hoc_mailing one_time_mailing periodical_mailing sequence_mailing sequence}.include?(m.to_s)
+        options = args.extract_options!
+        @klass.send m, *args, options.merge(locked: true), &block
+      else
+        @klass.send m, *args, &block
+      end
+    end
+  end
+
   autoload :Utils,              'maily_herald/utils'
   autoload :TemplateRenderer,   'maily_herald/template_renderer'
   autoload :ModelExtensions,    'maily_herald/model_extensions'
@@ -99,6 +114,14 @@ module MailyHerald
       self.locked_lists.include?(name.to_s)
     end
 
+    def start_at_procs
+      @@start_at_procs ||= {}
+    end
+
+    def conditions_procs
+      @@conditions_procs ||= {}
+    end
+
     # Obtains Redis connection.
     def redis
       @redis ||= begin
@@ -133,11 +156,9 @@ module MailyHerald
     #
     # To be used in initializer file.
     def setup
-      @@contexts ||= {}
-
       logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
 
-      yield self
+      yield Initializer.new(self)
     end
 
     # Fetches or defines a {Context}.
@@ -150,6 +171,7 @@ module MailyHerald
     # @param name [Symbol] Identifier name of the Context.
     def context name, &block
       name = name.to_s
+      @@contexts ||= {}
 
       if block_given?
         @@contexts ||= {}

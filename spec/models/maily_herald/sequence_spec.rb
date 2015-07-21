@@ -90,7 +90,10 @@ describe MailyHerald::Sequence do
       @entity.should be_a(User)
       time = (@entity.created_at + rand(100).days + rand(24).hours + rand(60).minutes).round
       @sequence.start_at = time.to_s
+      expect(@sequence.has_start_at_proc?).to be_falsey
+      expect(@sequence.start_at_changed?).to be_truthy
       @sequence.save
+      expect(Time.parse(@sequence.start_at).to_i).to eq(time.to_i)
       @sequence.next_processing_time(@entity).should be_a(Time)
       @sequence.next_processing_time(@entity).should eq(time + @sequence.mailings.first.absolute_delay)
 

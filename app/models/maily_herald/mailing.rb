@@ -33,11 +33,9 @@ module MailyHerald
 
     after_save do
       if @conditions_proc
-        @@conditions_procs[self.id] = @conditions_proc
+        MailyHerald.conditions_procs[self.id] = @conditions_proc
       end
     end
-
-    @@conditions_procs = {}
 
     def conditions= v
       if v.respond_to? :call
@@ -48,16 +46,16 @@ module MailyHerald
     end
 
     def conditions
-      @conditions_proc || @@conditions_procs[self.id] || read_attribute(:conditions)
+      @conditions_proc || MailyHerald.conditions_procs[self.id] || read_attribute(:conditions)
     end
 
     def has_conditions_proc?
-      @conditions_proc || @@conditions_procs[self.id]
+      @conditions_proc || MailyHerald.conditions_procs[self.id]
     end
 
     def conditions_changed?
       if has_conditions_proc?
-        @conditions_proc != @@conditions_procs[self.id]
+        @conditions_proc != MailyHerald.conditions_procs[self.id]
       else
         super
       end
