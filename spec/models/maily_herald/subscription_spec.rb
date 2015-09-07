@@ -11,10 +11,10 @@ describe MailyHerald::Subscription do
 
   describe "Associations" do
     it "should have valid associations" do
-      @subscription.entity.should eq(@entity)
-      @subscription.list.should eq(@list)
-      @subscription.should be_valid
-      @subscription.should_not be_a_new_record
+      expect(@subscription.entity).to eq(@entity)
+      expect(@subscription.list).to eq(@list)
+      expect(@subscription).to be_valid
+      expect(@subscription).not_to be_a_new_record
     end
   end
 

@@ -10,23 +10,22 @@ describe MailyHerald do
       MailyHerald.context(:all_users).model.name.should eq(User.name)
       User.included_modules.should include(MailyHerald::ModelExtensions)
 
-      @user.should respond_to(:maily_herald_subscriptions)
-
-      @user.maily_herald_subscriptions.length.should be_zero
+      expect(@user).to respond_to(:maily_herald_subscriptions)
+      expect(@user.maily_herald_subscriptions.length).to eq(0)
     end
 
     it "should create mailings from initializer" do
       mailing = MailyHerald.one_time_mailing(:test_mailing)
-      mailing.should be_a MailyHerald::Mailing
-      mailing.should_not be_a_new_record
+      expect(mailing).to be_kind_of(MailyHerald::Mailing)
+      expect(mailing).not_to be_a_new_record
     end
 
     it "should create sequences from initializer" do
       sequence = MailyHerald.sequence(:newsletters)
-      sequence.should be_a MailyHerald::Sequence
-      sequence.should_not be_a_new_record
+      expect(sequence).to be_kind_of(MailyHerald::Sequence)
+      expect(sequence).not_to be_a_new_record
 
-      sequence.mailings.length.should eq(3)
+      expect(sequence.mailings.length).to eq(3)
     end
   end
 end

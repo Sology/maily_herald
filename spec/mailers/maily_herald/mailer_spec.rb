@@ -9,11 +9,11 @@ describe MailyHerald::Mailer do
 
   context "without subscription" do
     it "should not deliver" do
-      MailyHerald::Log.delivered.count.should eq(0)
+      expect(MailyHerald::Log.delivered.count).to eq(0)
 
       AdHocMailer.ad_hoc_mail(@entity).deliver
 
-      MailyHerald::Log.delivered.count.should eq(0)
+      expect(MailyHerald::Log.delivered.count).to eq(0)
     end
   end
 
@@ -23,11 +23,11 @@ describe MailyHerald::Mailer do
     end
 
     it "should deliver" do
-      MailyHerald::Log.delivered.count.should eq(0)
+      expect(MailyHerald::Log.delivered.count).to eq(0)
 
       AdHocMailer.ad_hoc_mail(@entity).deliver
 
-      MailyHerald::Log.delivered.count.should eq(1)
+      expect(MailyHerald::Log.delivered.count).to eq(1)
     end
   end
 end
