@@ -12,7 +12,6 @@ module MailyHerald
   # @attr [Fixnum]    sequence_id     {Sequence} association id.
   # @attr [Fixnum]    list_id         {List} association id.
   # @attr [String]    conditions      Delivery conditions as Liquid expression.
-  # @attr [String]    start_at        Time as string or Liquid expression.
   # @attr [String]    mailer_name     {Mailer} class name. 
   #                                   This refers to {Mailer} used by Dispatch while sending emails.
   # @attr [String]    name            Dispatch name.
@@ -70,6 +69,9 @@ module MailyHerald
       end
     end
 
+    # Sets start_at value of {OneTimeMailing}, {PeriodicalMailing} and {SequenceMailing}.
+    #
+    # @param v String with Liquid expression or `Proc` that evaluates to `Time`.
     def start_at= v
       if v.respond_to? :call
         @start_at_proc = v
@@ -78,6 +80,7 @@ module MailyHerald
       end
     end
 
+    # Returns time as string with Liquid expression or Proc.
     def start_at
       @start_at_proc || MailyHerald.start_at_procs[self.id] || read_attribute(:start_at)
     end
@@ -129,7 +132,9 @@ module MailyHerald
       write_attribute(:state, "archived")
     end
 
-    # Returns {List} associated with this dispatch
+    # Sets {List} associated with this dispatch
+    #
+    # @param l {List} name or {List} object
     def list= l
       l = MailyHerald::List.find_by_name(l.to_s) if l.is_a?(String) || l.is_a?(Symbol)
       super(l)

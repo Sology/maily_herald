@@ -37,6 +37,9 @@ module MailyHerald
       end
     end
 
+    # Sets mailing conditions.
+    #
+    # @param v String with Liquid expression or `Proc` that evaluates to `true` or `false`.
     def conditions= v
       if v.respond_to? :call
         @conditions_proc = v
@@ -45,6 +48,7 @@ module MailyHerald
       end
     end
 
+    # Returns time as string with Liquid expression or Proc.
     def conditions
       @conditions_proc || MailyHerald.conditions_procs[self.id] || read_attribute(:conditions)
     end

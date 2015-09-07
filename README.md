@@ -1,12 +1,12 @@
 # MailyHerald
 
-MailyHerald is a Ruby on Rails gem that helps you sending and managing your mailings. Think of Maily as a self-hosted Mailchimp alternative you can easily integrate with your site. MailyHerald is great both for email marketing and conducting daily stream of notifications you send to your users.
+MailyHerald is a Ruby on Rails gem that helps you sending and managing your application mailings. Think of Maily as a self-hosted Mailchimp alternative you can easily integrate with your site. MailyHerald is great both for email marketing and conducting daily stream of notifications you send to your users.
 
 With MailyHerald you can send:
 * ad-hoc mailings - arbitrary emails sent to one or more users at given point in time (i.e. special offers, announcements),
 * one-time mailings (i.e. account activation or welcome emails),
 * periodical mailings (i.e. weekly notifications, reminders),
-* mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (i.e. onboarding emails, site feature overview).
+* mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (i.e. onboarding emails, site feature overview, reminders).
 
 Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All mailing deliveries are scheduled individually for each recipient, tracked and logged.
 
@@ -33,18 +33,18 @@ or put in your Gemfile
 * Designed for Ruby on Rails
 * Self-hosted
 * Seamless and flexible integration
-* Asynchronous processing
-* Individual delivery scheduling 
+* Asynchronous email processing
+* Per-recipient delivery scheduling
 * Great both for developers (API) and end-users (Web UI) 
 * Ad-hoc email templating using [Liquid](http://liquidmarkup.org/) syntax
-* Three different mailing types
+* Four different mailing types
 * User-friendly subscription management i.e. via automatic & personal opt-out links
 * Correspondence logging
-* Mailing conditions
+* Delivery conditions
 
 ## Development state
 
-MailyHerald is relatively young piece of software and can't be considered stable. Although it has been deployed to few production environments for quite some time now, we can't guarantee it will suite your needs too.
+MailyHerald is relatively young piece of software and  it has been deployed only to few production environments.
 
 If you decide to use it, please tell us what you think about it, post some issues on GitHub etc. We're waiting for your feedback.
 
@@ -74,7 +74,7 @@ Maily Contexts are abstraction layer for accessing collections of entities and t
 
 There are three main things that Contexts do:
 
-* They define sets of entities via Rails scopes (i.e. `User.activated` meaning all application users that activated their accounts). 
+* They define sets of entities via standard Rails scopes (i.e. `User.activated` meaning all application users that activated their accounts).
 * They specify destination email addresses for entities (i.e. you can define that `User#email` method returns email address or specify a custom proc that does that).
 * They specify additional entity attributes that can be used inside Mailing templates, conditions etc. (basically - attributes accessible via Liquid).
 
@@ -82,7 +82,7 @@ There are three main things that Contexts do:
 
 Lists are sets of entities that receive certain mailings. Entities are added to Lists by creating Subscriptions. It is entirely up to you how you manage subscriptions in application. Typically, you put some checkbox in user's profile page that subscribes and unsubscribes them from mailing lists.
 
-Each Subscription has it's unique token allowing users to be provided with one click opt-out link.
+Each Subscription has it's unique token allowing users to be provided with one-click opt-out link.
 
 **Mailers**
 
@@ -92,9 +92,9 @@ There's also a possibility to send Mailings without using any of your custom Mai
 
 **Delivery**
 
-MailyHerald uses great gem [Sidekiq](http://sidekiq.org/) to process deliveries in the background. This applies to Periodical and Sequence Mailings - their delivieries are scheduled individually for each entity on the subscription list. 
+MailyHerald uses great gem [Sidekiq](http://sidekiq.org/) to process deliveries in the background. This applies to all kinds of Mailings - their delivieries are scheduled individually for each entity on the subscription list.
 
-Maily needs to check periodically for scheduled mailings and if their time come - queue them for delivery. This is job for MailyHerald Paperboy - tiny daemon that runs in the background and check the schedules. It is essential to make you periodical and sequence mailings work.
+Maily needs to check periodically for scheduled mailings and if their time come - queue them for delivery. This is job for MailyHerald Paperboy - tiny daemon that runs in the background and check the schedules. It is essential to make your mailings work.
 
 ## Usage
 
@@ -184,11 +184,17 @@ config.periodical_mailing :weekly_newsletter do |mailing|
 end
 ```
 
+**Configuration locking**
+
+By default, all contexts, lists and mailings initialized inside `MailyHerald.setup` block are locked and can't be edited at runtime. This constraint is enforced to maintain the nature of RoR application initializer files. Things set up in the initializer should be always read-only because initializer is executed every time the application spawns.
+
+If you need to set up mailings programatically and make them unlocked, simply just don't use `MailyHerald.setup`. Instead, use methods from `MailyHerald` class directly. You can put your code for example in DB seed file or some rake task.
+
 ### Mailers
 
 You don't need to have any Mailer to use MailyHerald. It works perfectly fine with its generic `MailyHerald::Mailer` and mailing templates written in Luquid. 
 
-But if you still want your fancy Mailer views and features, you need to modify it a bit.
+But if you still want your fancy Mailer views and features, you need to modify them a bit.
 
 First, each Mailer you want to use with MailyHerald needs to extend `MailyHerald::Mailer` class. 
 Then each Mailer method must be named after mailing identification name and accept only one parameter which is your entity (i.e. `User` class object).
@@ -234,33 +240,37 @@ When you use Liquid for email templating, you should use following syntax:
 
 Visiting opt-out url disables subscription and by default redirects to "/".
 
-### Delivery
+### Delivery and background processing
 
-From now on, Maily will handle and track your regular mail deliveries:
+MailyHerald mailings are always sent in background. They won't block you application thread - that's guaranteed.
 
-```ruby
-UserMailer.hello(User.first).deliver
-```
-
-Of course, you can also run the mailing for all users in scope at once:
-
-```ruby
-MailyHerald.dispatch(:hello).run
-```
-
-See [API Docs](http://www.rubydoc.info/gems/maily_herald) for more details about delivery methods.
-
-### Background processing
-
-Start MailyHerald Paperboy which will take care of your other periodical and sequence deliveries:
+In order to make your deliveries work, you need to run MailyHerald Paperboy which will take care of it:
 
 ```
 $ maily_herald paperboy --start
 ```
 
+Paperboy will monitor your mailing schedules and handle their delivery.
+
+You can't manually trigger delivery of one time, periodical and sequence mailings. Their schedules and deliveries are maintained automatically.
+
+Ad-hoc mailing on the other hand can (and should!) be manually scheduled for delivery:
+
+```ruby
+UserMailer.password_reset(User.first).deliver
+```
+
+This code uses standard Action Mailer syntax but instead of sending the email directly, it basically queues background delivery of ad-hoc mailing named `password_reset` to given user. Alternative Maily syntax is:
+
+```ruby
+MailyHerald.ad_hoc_mailing(:password_reset).schedule_delivery_to User.first, Time.now
+```
+
 **That's it!**
 
 Your Maily setup is now complete.
+
+See [API Docs](http://www.rubydoc.info/gems/maily_herald) for more details about usage and configuration.
 
 ## Configuring
 
@@ -277,7 +287,7 @@ You can configure your Maily using config file `config/maily_herald.yml`. Suppor
 
 ### Deployments
 
-Maily has some simple support for Capistrano built-in. It supports both v2 and v3 and automates the task of starting, stopping and restarting Paperboy daemon during deployments.
+Maily has built-in simple support for Capistrano. It supports both v2 and v3 and automates the task of starting, stopping and restarting Paperboy daemon during deployments.
 
 To enable, just put following line into your `Capfile`:
 
@@ -287,7 +297,7 @@ require 'maily_herald/capistrano'
 
 ### Opt-out URLs
 
-By default, visiting opt-out URL disables subscription and redirects to "/". You can easily customize the redirect path by specifying `token_redirect` proc:
+By default, visiting opt-out URL silently disables subscription and redirects to "/". You can easily customize the redirect path by specifying `token_redirect` proc:
 
 ```ruby
 # Evaluated within config:
