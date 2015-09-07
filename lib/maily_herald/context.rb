@@ -210,6 +210,8 @@ module MailyHerald
     # Obtains {Context} attributes in a form of (nested) +Hash+ which 
     # values are procs each returning single Entity attribute value.
     def attributes_list
+      return {} unless @attributes
+
       attributes = @attributes.dup
       attributes.setup 
       attributes.for_drop
@@ -217,6 +219,8 @@ module MailyHerald
 
     # Returns Liquid drop created from Context attributes.
     def drop_for entity, subscription
+      return {} unless @attributes
+
       attributes = @attributes.dup
       attributes.setup entity, subscription
       Drop.new(attributes.for_drop)

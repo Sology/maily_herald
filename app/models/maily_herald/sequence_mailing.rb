@@ -52,6 +52,10 @@ module MailyHerald
       self.sequence.enabled? && super
     end
 
+    def locked?
+      MailyHerald.dispatch_locked?(self.sequence.name)
+    end
+
     private
 
     def deliver_with_mailer schedule
