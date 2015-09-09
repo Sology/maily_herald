@@ -190,11 +190,73 @@ By default, all contexts, lists and mailings initialized inside `MailyHerald.set
 
 If you need to set up mailings programatically and make them unlocked, simply just don't use `MailyHerald.setup`. Instead, use methods from `MailyHerald` class directly. You can put your code for example in DB seed file or some rake task.
 
+### Different mailing types
+
+**AdHocMailing** is the most similar to regular Ruby on Rails emails sent using ActionMailer. The only difference is that their delivery is handled by Maily and thus backgrounded and logged. 
+
+**OneTimeMailing** deliveres are performed only once to single recpient at scheduled delivery time. Is fully automatic and its delivery can't be manually triggered. OneTimeMailing schedules are created basing on `start_at` attribute individually for each recipient.
+
+**PeriodicalMailing** handles multiple, periodical email deliveries to single recipient. It is also automatic and apart `start_at` attribute uses also a `period` whichdefines time distance between consecutive deliveries.
+
+**Sequence** allows to send multiple different mailings to given entity with various time delays. It is achieved by defining SequenceMailings associated to Sequence with delivery delays stored in `absolute_delay` attributes. Mailing delivery delay is calculated from a point in time defined in Sequence's `start_at` attribute (similarly to PeriodicalMailing).
+
+### Procs and Liquid syntax
+
+Mailing attributes like `start_at` and `conditions` can be defined programatically as procs or as a string using Liquid syntax. Here's the example of those two cases:
+
+```ruby
+# Using Proc:
+mailing.start_at = Proc.new{|user| user.created_at + 5.minutes}
+
+# Using Liquid:
+mailing.start_at = "user.created_at | plus: 5, 'minutes'"
+```
+
+Liquid syntax is obviously more convenient for non-programmers (and can be safely used i.e. in WebUI) but requires some additional setup inside Maily Context. Context attributes available within Liquid templates have to be defined:
+
+```ruby
+config.context :all_users do |context|
+  context.scope {User.all}
+  context.destination = :email
+  context.attributes do |user| 
+    attribute_group(:user) do
+      attribute(:name) {user.name}
+      attribute(:email) {user.email}
+      attribute(:created_at) {user.created_at}
+    end
+  end
+end
+```
+
+Maily provides some Liquid filters that are particularily useful for time manipulation:
+
+* `plus: <number>, '<period>'`
+* `minus: <number>, '<period>'`
+
+They can be used for incrementing and decrementing time value. `<number>` is simply some integer; `<period>` is one of 'minutes', 'hours', 'days' etc.
+
+Mailing body can be also defined programatically using custom Mailer. The other way is to not define explicit Mailer but rather set subject and template as Liquid templates.
+
+```ruby
+# Using custom ActionMailer:
+config.ad_hoc_mailing :hello do |mailing|
+  mailing.list = :all_users
+  mailing.mailer_name = "UserMailer" # In this case, you should have a mailer called 'UserMailer' that defines method 'hello'.
+  mailing.enable
+end
+
+# Using Liquid templates:
+config.ad_hoc_mailing :hello do |mailing|
+  mailing.list = :all_users
+  mailing.subject = "Hello {{user.name}}!"
+  mailing.template = "What's up?"
+  mailing.enable
+end
+```
+
 ### Mailers
 
-You don't need to have any Mailer to use MailyHerald. It works perfectly fine with its generic `MailyHerald::Mailer` and mailing templates written in Luquid. 
-
-But if you still want your fancy Mailer views and features, you need to modify them a bit.
+If you want to use your custom ActionMailers with Maily, you need to modify them a bit.
 
 First, each Mailer you want to use with MailyHerald needs to extend `MailyHerald::Mailer` class. 
 Then each Mailer method must be named after mailing identification name and accept only one parameter which is your entity (i.e. `User` class object).
@@ -362,7 +424,7 @@ Then of course you need to tell Maily about that too:
 * [Showcase](http://showcase.sology.eu/maily_herald)
 * [Sample application](https://github.com/Sology/maily_testapp)
 
-For bug reports or feature requests see the [issues on Github](https://github.com/Sology/maily_herald/issues).  
+Although we work hard on MailyHerald development, We can't guarantee it is free of bugs. If you find one, please make sure to report it using [issues tracker on Github](https://github.com/Sology/maily_herald/issues).  You can also post your feature requests there too.
 
 ## License
 

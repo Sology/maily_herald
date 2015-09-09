@@ -318,6 +318,7 @@ describe MailyHerald::PeriodicalMailing do
 
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.delivered.count).to eq(1)
+      expect(@mailing.schedule_for(@entity)).not_to be_nil
 
       @entity.update_attribute(:weekly_notifications, false)
       @entity.save
@@ -329,6 +330,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.delivered.count).to eq(1)
       expect(MailyHerald::Log.skipped.count).to eq(1)
+      expect(@mailing.schedule_for(@entity)).not_to be_nil
 
       @entity.update_attribute(:weekly_notifications, true)
 
