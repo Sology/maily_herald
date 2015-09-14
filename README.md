@@ -309,7 +309,7 @@ MailyHerald mailings are always sent in background. They won't block you applica
 In order to make your deliveries work, you need to run MailyHerald Paperboy which will take care of it:
 
 ```
-$ maily_herald paperboy --start
+$ bundle exec maily_herald paperboy --start
 ```
 
 Paperboy will monitor your mailing schedules and handle their delivery.

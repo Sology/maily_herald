@@ -18,6 +18,8 @@ module MailyHerald
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
+      write_attribute(:conditions, nil) if self.conditions.try(:empty?)
+      write_attribute(:from, nil) if self.from.try(:empty?)
     end
 
     after_initialize do
