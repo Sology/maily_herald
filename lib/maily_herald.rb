@@ -34,7 +34,7 @@ module MailyHerald
 
     def perform id
       dispatch = MailyHerald::Dispatch.find(id)
-      dispatch.update_schedules if dispatch.respond_to?(:update_schedules)
+      dispatch.set_schedules if dispatch.respond_to?(:set_schedules)
     end
   end
 

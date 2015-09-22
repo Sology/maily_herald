@@ -104,5 +104,39 @@ module MailyHerald
     def scheduled?
       self.status == :scheduled
     end
+
+    # Set attributes of a schedule so it has 'skipped' status.
+    def skip reason
+      if self.status == :scheduled
+        self.status = :skipped
+        self.data[:skip_reason] = reason
+        true
+      end
+    end
+
+    # Set attributes of a schedule so it is postponed.
+    def postpone_delivery
+      if !self.data[:delivery_attempts] || self.data[:delivery_attempts].length < 3
+        self.data[:original_processing_at] ||= self.processing_at
+        self.data[:delivery_attempts] ||= []
+        self.data[:delivery_attempts].push(date_at: Time.now, action: :postpone, reason: :not_processable)
+        self.processing_at = Time.now + 1.day
+        true
+      end
+    end
+
+    # Set attributes of a schedule so it has 'delivered' status.
+    # @param content Body of delivered email.
+    def deliver content
+      self.status = :delivered
+      self.data[:content] = content
+    end
+
+    # Set attributes of a schedule so it has 'error' status.
+    # @param msg Error description.
+    def error msg
+      self.status = :error
+      self.data[:msg] = msg
+    end
   end
 end

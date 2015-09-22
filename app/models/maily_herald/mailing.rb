@@ -18,7 +18,7 @@ module MailyHerald
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
-      write_attribute(:conditions, nil) if self.conditions.try(:empty?)
+      write_attribute(:conditions, nil) if !self.has_conditions_proc? && self.conditions.try(:empty?)
       write_attribute(:from, nil) if self.from.try(:empty?)
     end
 
@@ -195,23 +195,29 @@ module MailyHerald
       unless processable?(entity)
         # Most likely the entity went out of the context scope.
         # Let's leave the log for now just in case it comes back into the scope.
-        MailyHerald.logger.log_processing(self, entity, prefix: "Not processable", level: :debug) 
-        return 
+        MailyHerald.logger.log_processing(self, entity, prefix: "Not processable. Delaying schedule by one day", level: :debug) 
+        skip_reason = in_scope?(entity) ? :not_processable : :not_in_scope
+        schedule.skip(skip_reason) unless schedule.postpone_delivery
+        return schedule
       end
 
       unless conditions_met?(entity)
         MailyHerald.logger.log_processing(self, entity, prefix: "Conditions not met", level: :debug) 
-        return {status: :skipped}
+        schedule.skip(:conditions_unmet)
+        return schedule
       end
 
       mail = yield # Let mailer do his job
 
       MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
+      schedule.deliver(mail.to_s)
 
-      return {status: :delivered, data: {content: mail.to_s}}
+      return schedule
     rescue StandardError => e
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
-      return {status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"}}
+      schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
+
+      return schedule
     end
 
     private

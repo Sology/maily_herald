@@ -140,6 +140,14 @@ module MailyHerald
       super(l)
     end
 
+    def subscription_valid? entity
+      self.override_subscription? || self.list.subscribed?(entity)
+    end
+
+    def in_scope? entity
+      self.list.context.scope.exists?(entity)
+    end
+
     # Checks if dispatch can be sent to given entity.
     #
     # Following checks are performed:
@@ -149,7 +157,7 @@ module MailyHerald
     #
     # @param entity [ActiveRecord::Base] Recipient
     def processable? entity
-      self.enabled? && (self.override_subscription? || self.list.subscribed?(entity)) && self.list.context.scope.exists?(entity)
+      self.enabled? && subscription_valid?(entity) && in_scope?(entity)
     end
 
     # Check if dispatch is locked.

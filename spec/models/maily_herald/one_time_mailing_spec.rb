@@ -8,6 +8,10 @@ describe MailyHerald::OneTimeMailing do
     expect(@list.context).to be_a(MailyHerald::Context)
   end
 
+  after(:all) do
+    Timecop.return
+  end
+
   describe "with subscription" do
     before(:each) do
       @list.subscribe!(@entity)
@@ -103,7 +107,7 @@ describe MailyHerald::OneTimeMailing do
         @mailing = MailyHerald.one_time_mailing(:test_mailing)
       end
 
-      it "should not process mailings" do
+      it "should not process mailings, postpone them and finally skip them" do
         expect(@list.context.scope).to include(@entity)
         expect(@mailing).to be_processable(@entity)
         expect(@mailing).to be_enabled
@@ -114,6 +118,44 @@ describe MailyHerald::OneTimeMailing do
         expect(@list).to be_subscribed(@entity)
 
         expect(@mailing).not_to be_processable(@entity)
+
+        schedule = @mailing.schedule_for(@entity)
+        processing_at = schedule.processing_at
+        expect(schedule).not_to be_nil
+        expect(schedule.processing_at).to be <= Time.now
+        
+        @mailing.run
+
+        schedule.reload
+        expect(schedule).to be_scheduled
+        expect(schedule.processing_at.to_i).to eq((Time.now + 1.day).to_i)
+        expect(schedule.data[:original_processing_at]).to eq(processing_at)
+        expect(schedule.data[:delivery_attempts].length).to eq(1)
+
+        Timecop.freeze schedule.processing_at + 1
+
+        @mailing.run
+
+        schedule.reload
+        expect(schedule).to be_scheduled
+        expect(schedule.data[:delivery_attempts].length).to eq(2)
+
+        Timecop.freeze schedule.processing_at + 1
+
+        @mailing.run
+
+        schedule.reload
+        expect(schedule).to be_scheduled
+        expect(schedule.data[:delivery_attempts].length).to eq(3)
+
+        Timecop.freeze schedule.processing_at + 1
+
+        @mailing.run
+
+        schedule.reload
+        expect(schedule).to be_skipped
+        expect(schedule.data[:delivery_attempts].length).to eq(3)
+        expect(schedule.data[:skip_reason]).to eq(:not_in_scope)
       end
     end
   end

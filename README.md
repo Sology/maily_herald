@@ -312,7 +312,7 @@ In order to make your deliveries work, you need to run MailyHerald Paperboy whic
 $ bundle exec maily_herald paperboy --start
 ```
 
-Paperboy will monitor your mailing schedules and handle their delivery.
+Paperboy will monitor your mailing schedules and queue their delivery. The actual sending of emails is handled in background as Sidekiq job, so make sure you run Sidekiq along with Paperboy.
 
 You can't manually trigger delivery of one time, periodical and sequence mailings. Their schedules and deliveries are maintained automatically.
 

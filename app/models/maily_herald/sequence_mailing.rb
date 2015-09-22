@@ -65,11 +65,11 @@ module MailyHerald
         # make sure schedule hasn't been processed in the meantime
         if schedule && schedule.mailing == self && schedule.processing_at && schedule.processing_at <= current_time && schedule.scheduled?
 
-          attrs = super schedule
-          if attrs
-            schedule.attributes = attrs
-            schedule.processing_at = current_time
+          schedule = super schedule
+          if schedule
+            schedule.processing_at = current_time unless schedule.processing_at_changed?
             schedule.save!
+
             self.sequence.set_schedule_for(schedule.entity)
           end
         end
