@@ -76,7 +76,7 @@ module MailyHerald
       if v.respond_to? :call
         @start_at_proc = v
       else
-        super(v)
+        super(v.is_a?(Time) ? v.to_s : v)
       end
     end
 

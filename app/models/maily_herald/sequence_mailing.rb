@@ -67,10 +67,10 @@ module MailyHerald
 
           schedule = super schedule
           if schedule
-            schedule.processing_at = current_time unless schedule.processing_at_changed?
+            schedule.processing_at = current_time if schedule.processed?
             schedule.save!
 
-            self.sequence.set_schedule_for(schedule.entity)
+            self.sequence.set_schedule_for(schedule.entity) if schedule.processed?
           end
         end
       end if schedule

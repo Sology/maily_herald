@@ -50,7 +50,7 @@ module MailyHerald
     # {#start_at} mailing attribute.
     def start_processing_time entity
       if processed_logs(entity).first
-        processed_logs(entity).first.processed_at
+        processed_logs(entity).first.processing_at
       else
         subscription = self.list.subscription_for(entity)
 
@@ -125,10 +125,19 @@ module MailyHerald
     def calculate_processing_time entity, last_log = nil
       last_log ||= processed_logs(entity).last
 
+      spt = start_processing_time(entity)
+
       if last_log && last_log.processing_at
         last_log.processing_at + self.period
-      elsif start_processing_time(entity)
-        start_processing_time(entity)
+      elsif individual_scheduling? && spt
+        spt
+      elsif general_scheduling?
+        if spt >= Time.now
+          spt
+        else
+          diff = (Time.now - spt).to_f
+          spt + ((diff/self.period).ceil * self.period)
+        end
       else
         nil
       end
@@ -153,7 +162,7 @@ module MailyHerald
         if schedule && schedule.processing_at <= current_time && schedule.scheduled?
           schedule = super(schedule)
           if schedule
-            schedule.processing_at = current_time unless schedule.processing_at_changed?
+            schedule.processing_at = current_time if schedule.processed?
             schedule.save!
 
             set_schedule_for schedule.entity, schedule

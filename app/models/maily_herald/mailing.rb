@@ -67,6 +67,16 @@ module MailyHerald
       end
     end
 
+    def general_scheduling?
+      self.start_at.is_a?(String) && Time.parse(self.start_at).is_a?(Time)
+    rescue
+      false
+    end
+
+    def individual_scheduling?
+      !general_scheduling?
+    end
+
     def ad_hoc?
       self.class == AdHocMailing
     end

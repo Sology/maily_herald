@@ -105,6 +105,10 @@ module MailyHerald
       self.status == :scheduled
     end
 
+    def processed?
+      [:delivered, :skipped, :error].include?(self.status)
+    end
+
     # Set attributes of a schedule so it has 'skipped' status.
     def skip reason
       if self.status == :scheduled

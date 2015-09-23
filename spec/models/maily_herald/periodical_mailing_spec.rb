@@ -342,4 +342,64 @@ describe MailyHerald::PeriodicalMailing do
       expect(MailyHerald::Log.delivered.count).to eq(2)
     end
   end
+
+  describe "general scheduling" do
+    before(:each) do
+      @entity = FactoryGirl.create :user
+
+      @mailing = MailyHerald.periodical_mailing(:general_scheduling_mailing) do |mailing|
+        mailing.enable
+        mailing.list = :generic_list
+        mailing.subject = "Test mailing"
+        mailing.start_at = Time.now.to_s
+        mailing.period = 1.day
+        mailing.template = "User name: {{user.name}}."
+      end
+
+      expect(@mailing).to be_valid
+      expect(@mailing).to be_persisted
+      expect(@mailing).to be_enabled
+    end
+
+    after(:each) do
+      @mailing.destroy
+    end
+
+    it "should detect individual/general scheduling properly" do
+      expect(@mailing.individual_scheduling?).to be_falsy
+
+      @mailing.start_at = "user.created_at"
+      expect(@mailing.individual_scheduling?).to be_truthy
+    end
+
+    it "should create schedules for the next period" do
+      schedule = @mailing.schedule_for(@entity)
+      expect(schedule).to be_nil
+
+      time = Time.now - 5.hours
+      @mailing.start_at = time
+      @mailing.save!
+
+      @list.subscribe!(@entity)
+
+      schedule = @mailing.schedule_for(@entity)
+      expect(schedule.processing_at.to_i).not_to eq(time.to_i)
+      expect(schedule.processing_at.to_i).to eq((time + @mailing.period).to_i)
+    end
+
+    it "should create schedules for the first period" do
+      schedule = @mailing.schedule_for(@entity)
+      expect(schedule).to be_nil
+
+      time = Time.now + 5.hours
+      @mailing.start_at = time
+      @mailing.save!
+
+      @list.subscribe!(@entity)
+
+      schedule = @mailing.schedule_for(@entity)
+      expect(schedule.processing_at.to_i).to eq(time.to_i)
+      expect(schedule.processing_at.to_i).not_to eq((time + @mailing.period).to_i)
+    end
+  end
 end
