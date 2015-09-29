@@ -45,8 +45,9 @@ module MailyHerald
       end
 
       subscribed = self.list.subscribed?(entity)
+      start_time = start_processing_time(entity)
 
-      if !self.start_at || !enabled? || !(self.override_subscription? || subscribed)
+      if !self.start_at || !enabled? || !start_time || !(self.override_subscription? || subscribed)
         log = schedule_for(entity)
         log.try(:destroy)
         return
@@ -58,7 +59,7 @@ module MailyHerald
       log.with_lock do
         log.set_attributes_for(self, entity, {
           status: :scheduled,
-          processing_at: start_processing_time(entity)
+          processing_at: start_time,
         })
         log.save!
       end

@@ -86,18 +86,20 @@ describe MailyHerald::Sequence do
       expect(@sequence.next_processing_time(@entity)).to be_kind_of(Time)
     end
 
-    it "should use absolute start date if provided and greater that evaluated start date" do
+    it "should use absolute start date if provided and greater than evaluated start date" do
       expect(@entity).to be_kind_of(User)
       time = (@entity.created_at + rand(100).days + rand(24).hours + rand(60).minutes).round
       @sequence.start_at = time.to_s
       expect(@sequence.has_start_at_proc?).to be_falsey
       expect(@sequence.start_at_changed?).to be_truthy
-      @sequence.save
+      @sequence.save!
       expect(Time.parse(@sequence.start_at).to_i).to eq(time.to_i)
       expect(@sequence.next_processing_time(@entity)).to be_kind_of(Time)
       expect(@sequence.next_processing_time(@entity)).to eq(time + @sequence.mailings.first.absolute_delay)
 
       @subscription = @sequence.subscription_for(@entity)
+      expect(@subscription).to be_active
+      expect(@sequence.processed_mailings(@entity)).to be_empty
     end
   end
 

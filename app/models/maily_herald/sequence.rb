@@ -132,8 +132,10 @@ module MailyHerald
       # TODO handle override subscription?
 
       subscribed = self.list.subscribed?(entity)
+      mailing = next_mailing(entity)
+      start_time = calculate_processing_time_for(entity, mailing) if mailing
 
-      if !subscribed || !self.start_at || !enabled? || !(mailing = next_mailing(entity))
+      if !subscribed || !self.start_at || !enabled? || !mailing || !start_time 
         log = schedule_for(entity)
         log.try(:destroy)
         return
@@ -144,7 +146,7 @@ module MailyHerald
       log.with_lock do
         log.set_attributes_for(mailing, entity, {
           status: :scheduled,
-          processing_at: calculate_processing_time_for(entity, mailing)
+          processing_at: start_time,
         })
         log.save!
       end
@@ -193,7 +195,7 @@ module MailyHerald
           evaluated_start = evaluator.evaluate_start_at(self.start_at)
         end
 
-        evaluated_start + mailing.absolute_delay
+        evaluated_start ? evaluated_start + mailing.absolute_delay : nil
       end
     end
 

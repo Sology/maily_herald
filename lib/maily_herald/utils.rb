@@ -73,7 +73,7 @@ module MailyHerald
         raise StandardError unless template.errors.empty?
 
         liquid_context = Liquid::Context.new([@drop, template.assigns], template.instance_assigns, template.registers, true, {})
-        @drop.context = liquid_context
+        @drop.context = liquid_context if @drop.is_a?(Liquid::Drop)
 
         val = condition.evaluate liquid_context
         raise(ArgumentError, "Conditions do not evaluate to boolean (got `#{val}`)") unless [true, false].include?(val)
@@ -89,7 +89,7 @@ module MailyHerald
           liquid_context = Liquid::Context.new([@drop], {}, {}, true, {})
           liquid_context.add_filters([Filters::Date])
 
-          @drop.context = liquid_context
+          @drop.context = liquid_context if @drop.is_a?(Liquid::Drop)
           #liquid_context[markup]
 
           variable = Liquid::Variable.new markup

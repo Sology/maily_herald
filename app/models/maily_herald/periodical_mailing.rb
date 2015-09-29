@@ -76,21 +76,21 @@ module MailyHerald
     # Schedule is {Log} object of type "schedule".
     def set_schedule_for entity, last_log = nil
       subscribed = self.list.subscribed?(entity)
+      log = schedule_for(entity)
+      last_log ||= processed_logs(entity).last
+      processing_at = calculate_processing_time(entity, last_log)
 
-      if !self.period || !self.start_at || !enabled? || !(self.override_subscription? || subscribed)
+      if !self.period || !self.start_at || !enabled? || !processing_at || !(self.override_subscription? || subscribed)
         log = schedule_for(entity)
         log.try(:destroy)
         return
       end
 
-      log = schedule_for(entity)
-      last_log ||= processed_logs(entity).last
-
       log ||= Log.new
       log.with_lock do
         log.set_attributes_for(self, entity, {
           status: :scheduled,
-          processing_at: calculate_processing_time(entity, last_log)
+          processing_at: processing_at,
         })
         log.save!
       end
@@ -136,7 +136,7 @@ module MailyHerald
           spt
         else
           diff = (Time.now - spt).to_f
-          spt + ((diff/self.period).ceil * self.period)
+          spt ? spt + ((diff/self.period).ceil * self.period) : nil
         end
       else
         nil
