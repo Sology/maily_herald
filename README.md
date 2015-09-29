@@ -166,6 +166,8 @@ config.list :newsletters do |list|
 end
 ```
 
+Newly-created lists are empty by default. Make sure to add entities to them i.e. by using `MailyHerald.subscribe` method.
+
 **Set up your mailings**
 
 ```ruby
@@ -173,6 +175,7 @@ config.one_time_mailing :hello do |mailing|
   mailing.title = "Hello mailing"
   mailing.list = :notifications
   mailing.mailer_name = "UserMailer"
+  mailing.start_at = Proc.new{|user| user.created_at + 1.hour}
   mailing.enable # mailings are disabled by default
 end
 
@@ -180,6 +183,8 @@ config.periodical_mailing :weekly_newsletter do |mailing|
   mailing.title = "Weekly newsletter"
   mailing.list = :newsletters
   mailing.mailer_name = "UserMailer"
+  mailing.start_at = Proc.new{|user| user.created_at + 1.week}
+  mailing.period = 1.week
   mailing.enable
 end
 ```
@@ -189,6 +194,8 @@ end
 By default, all contexts, lists and mailings initialized inside `MailyHerald.setup` block are locked and can't be edited at runtime. This constraint is enforced to maintain the nature of RoR application initializer files. Things set up in the initializer should be always read-only because initializer is executed every time the application spawns.
 
 If you need to set up mailings programatically and make them unlocked, simply just don't use `MailyHerald.setup`. Instead, use methods from `MailyHerald` class directly. You can put your code for example in DB seed file or some rake task.
+
+You would typically put your `MailyHerald.setup` block in the Maily initializer file. Keep in mind, that this file is evaluated every time Rails boots up so changes made there (i.e. new mailings added) will be reflected at next application launch.
 
 ### Different mailing types
 
