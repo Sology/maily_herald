@@ -39,7 +39,7 @@ module MailyHerald
             mail
           end
         else
-          #MailyHerald.logger.log_processing(mailing, entity, mail, prefix: "Delivery outside Maily")
+          MailyHerald.logger.log_processing(mailing, entity, mail, prefix: "Attempt to deliver email without schedule. No mail was sent", level: :debug)
 
           #ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
             #self.set_payload_for_mail(payload, mail)
