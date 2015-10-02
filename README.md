@@ -38,7 +38,7 @@ or put in your Gemfile
 * Asynchronous email processing
 * Per-recipient delivery scheduling
 * Great both for developers (API) and end-users (Web UI) 
-* Ad-hoc email templating using [Liquid](http://liquidmarkup.org/) syntax
+* On-the-fly email templating using [Liquid](http://liquidmarkup.org/) syntax
 * Four different mailing types
 * User-friendly subscription management i.e. via automatic & personal opt-out links
 * Correspondence logging
