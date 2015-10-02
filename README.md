@@ -1,18 +1,20 @@
 # MailyHerald
 
+![MailyHerald with its Web UI](./doc/webui.png)
+
 MailyHerald is a Ruby on Rails gem that helps you sending and managing your application mailings. Think of Maily as a self-hosted Mailchimp alternative you can easily integrate with your site. MailyHerald is great both for email marketing and conducting daily stream of notifications you send to your users.
 
 With MailyHerald you can send:
-* ad-hoc mailings - arbitrary emails sent to one or more users at given point in time (i.e. special offers, announcements),
-* one-time mailings (i.e. account activation or welcome emails),
+* ad-hoc mailings - arbitrary emails sent to one or more users at given point in time (i.e. password reset instructions, special offers, announcements),
+* one-time mailings (i.e. account activation, welcome emails),
 * periodical mailings (i.e. weekly notifications, reminders),
 * mailing sequences - multiple ordered emails delivered with certain delays since specific point in time (i.e. onboarding emails, site feature overview, reminders).
 
-Maily keeps track of user subscriptions and allow them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All mailing deliveries are scheduled individually for each recipient, tracked and logged.
+Maily keeps track of user subscriptions and allows them to easily opt out. You can define who receives which emails and specify conditions that control delivery. All mailing deliveries are scheduled individually for each recipient, tracked and logged.
 
-Maily seamlessly integrates with your app. It can use your regular Mailers or you can build email contents with [Liquid](http://liquidmarkup.org/) markup templates.
+Maily seamlessly integrates with your app. It can use your regular Action Mailers or you can build email contents with [Liquid](http://liquidmarkup.org/) markup templates.
 
-Core Maily features are accessible for Rails programmers via API. Apart from that, Maily has a nice web UI provided by separate [maily_herald-webui](https://github.com/Sology/maily_herald-webui) gem.
+Core Maily features are accessible for Rails programmers via API. Apart from that, Maily has a nice Web UI provided by separate [maily_herald-webui](https://github.com/Sology/maily_herald-webui) gem.
 
 ## Requirements
 
@@ -44,16 +46,16 @@ or put in your Gemfile
 
 ## Development state
 
-MailyHerald is relatively young piece of software and  it has been deployed only to few production environments.
+MailyHerald is relatively young piece of software and  it has been deployed to few production environments.
 
 If you decide to use it, please tell us what you think about it, post some issues on GitHub etc. We're waiting for your feedback.
 
 Here are some things we would like to implement in the future:
 
-* better mailing scheduling,
 * message analytics,
 * link tracking,
-* better Web UI,
+* fetching bounces from email service (Amazon SMS, Mandrill, Sendgrid etc.),
+* better templating,
 * _put your beloved feature here_.
 
 ## How it works
@@ -80,7 +82,7 @@ There are three main things that Contexts do:
 
 **Lists and Subscriptions**
 
-Lists are sets of entities that receive certain mailings. Entities are added to Lists by creating Subscriptions. It is entirely up to you how you manage subscriptions in application. Typically, you put some checkbox in user's profile page that subscribes and unsubscribes them from mailing lists.
+Lists are sets of entities that receive certain mailings. Entities are added to Lists by creating Subscriptions. It is entirely up to you how you manage subscriptions in application. Typically, you would put some checkbox in user's profile page which subscribes and unsubscribes them from mailing lists.
 
 Each Subscription has it's unique token allowing users to be provided with one-click opt-out link.
 
@@ -94,7 +96,7 @@ There's also a possibility to send Mailings without using any of your custom Mai
 
 MailyHerald uses great gem [Sidekiq](http://sidekiq.org/) to process deliveries in the background. This applies to all kinds of Mailings - their delivieries are scheduled individually for each entity on the subscription list.
 
-Maily needs to check periodically for scheduled mailings and if their time come - queue them for delivery. This is job for MailyHerald Paperboy - tiny daemon that runs in the background and check the schedules. It is essential to make your mailings work.
+Maily needs to check periodically for scheduled mailings and if their time come - queue them for delivery. This is job for MailyHerald Paperboy - tiny daemon that runs in the background and checks the schedules. It is essential to make your mailings work.
 
 ## Usage
 
@@ -111,9 +113,10 @@ rake db:migrate
 
 ### Defaults (optional)
 
-In some cases, you need to specify default `from` and `host` mailer options in order to ensure proper email rendering:
+In some cases, you need to specify default `from` and `host` mailer options in your application in order to ensure proper email rendering:
 
 ```ruby
+# config/application.rb
 config.action_mailer.default_options = { from: "hello@mailyherald.org" }
 config.action_mailer.default_url_options = { host: "mailyherald.org" }
 
@@ -121,7 +124,7 @@ config.action_mailer.default_url_options = { host: "mailyherald.org" }
 
 ### Initializer
 
-Generate and setup an initializer.
+Generate an initializer:
 
 ```ruby
 rails g maily_herald:install
@@ -157,16 +160,12 @@ end
 Following means that all users in `:active_users` context scope can be subscribed to `:newsletters` list.
 
 ```ruby
-config.list :notifications do |list|
-  list.context_name = :active_users
-end
-
 config.list :newsletters do |list|
   list.context_name = :active_users
 end
 ```
 
-Newly-created lists are empty by default. Make sure to add entities to them i.e. by using `MailyHerald.subscribe` method.
+MailyHerald lists are opt-in lists. They are empty by default so make sure to add entities to them i.e. by using `MailyHerald.subscribe` method.
 
 **Set up your mailings**
 
@@ -193,7 +192,7 @@ end
 
 By default, all contexts, lists and mailings initialized inside `MailyHerald.setup` block are locked and can't be edited at runtime. This constraint is enforced to maintain the nature of RoR application initializer files. Things set up in the initializer should be always read-only because initializer is executed every time the application spawns.
 
-If you need to set up mailings programatically and make them unlocked, simply just don't use `MailyHerald.setup`. Instead, use methods from `MailyHerald` class directly. You can put your code for example in DB seed file or some rake task.
+If you need to set up mailings programatically and make them unlocked, simply just don't use `MailyHerald.setup`. Instead, use methods from `MailyHerald` class directly. You can then put your code i.e. in a DB seed file or some rake task.
 
 You would typically put your `MailyHerald.setup` block in the Maily initializer file. Keep in mind, that this file is evaluated every time Rails boots up so changes made there (i.e. new mailings added) will be reflected at next application launch.
 
@@ -203,9 +202,9 @@ You would typically put your `MailyHerald.setup` block in the Maily initializer 
 
 **OneTimeMailing** deliveres are performed only once to single recpient at scheduled delivery time. Is fully automatic and its delivery can't be manually triggered. OneTimeMailing schedules are created basing on `start_at` attribute individually for each recipient.
 
-**PeriodicalMailing** handles multiple, periodical email deliveries to single recipient. It is also automatic and apart `start_at` attribute uses also a `period` whichdefines time distance between consecutive deliveries.
+**PeriodicalMailing** handles multiple, periodical email deliveries to single recipient. It is also automatic and apart `start_at` attribute uses also a `period` which defines time distance between consecutive deliveries.
 
-**Sequence** allows to send multiple different mailings to given entity with various time delays. It is achieved by defining SequenceMailings associated to Sequence with delivery delays stored in `absolute_delay` attributes. Mailing delivery delay is calculated from a point in time defined in Sequence's `start_at` attribute (similarly to PeriodicalMailing).
+**Sequence** allows yout to send multiple different mailings to given entity with various time delays. It is achieved by defining SequenceMailings associated to Sequence with delivery delays stored in their `absolute_delay` attributes. Mailing delivery delay is calculated from a point in time defined in Sequence's `start_at` attribute (similarly to PeriodicalMailing).
 
 ### Procs and Liquid syntax
 
@@ -302,7 +301,8 @@ Maily provides you with URL helper that generates opt-out URLs (i.e. in your Act
 maily_herald_engine.unsubscribe_url(@maily_subscription)
 ```
 
-When you use Liquid for email templating, you should use following syntax:
+When you use Liquid for email templating, your context will always include special attribute @subscription@ that allows you to easily output unique opt-out url. Use the following syntax:
+
 ```
 {{subscription.token_url}}
 ```
@@ -335,7 +335,7 @@ This code uses standard Action Mailer syntax but instead of sending the email di
 MailyHerald.ad_hoc_mailing(:password_reset).schedule_delivery_to User.first, Time.now
 ```
 
-**That's it!**
+### That's it!
 
 Your Maily setup is now complete.
 
@@ -353,6 +353,14 @@ You can configure your Maily using config file `config/maily_herald.yml`. Suppor
 * `redis_driver`: string
 
 ## Other stuff
+
+### Periodical mailing scheduling
+
+Periodical mailing is kind of special one and has two modes of scheduling: general and individual. If you specify @start_at@ as an absolute time, i.e. @"2111-01-01 11:11"@, it goes into general scheduling mode and consecutive mailings will be delivered to all subscribed entities at the same time at every period. This way you can send i.e. weekly newsletters every Monday to all subscribers.
+
+When you specify @start_at@ as a individual time, i.e. @"user.start_at"@ - individual scheduling mode will be enabled. In this case, delivery periods will count individually for each user and deliveires will be made accordingly.
+
+Individual scheduling mode is the only mode available for all other mailing types.
 
 ### Deployments
 
