@@ -21,6 +21,11 @@ module MailyHerald
     class << self
       #TODO make it instance method so we get access to instance attributes
       def deliver_mail(mail) #:nodoc:
+        unless mail.maily_herald_data
+          MailyHerald.logger.error("Unable to send message. Invalid mailing provided.")
+          return
+        end
+
         mailing = mail.maily_herald_data[:mailing]
         entity = mail.maily_herald_data[:entity]
         schedule = mail.maily_herald_data[:schedule]
@@ -40,11 +45,6 @@ module MailyHerald
           end
         else
           MailyHerald.logger.log_processing(mailing, entity, mail, prefix: "Attempt to deliver email without schedule. No mail was sent", level: :debug)
-
-          #ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
-            #self.set_payload_for_mail(payload, mail)
-            #yield # Let Mail do the delivery actions
-          #end
         end
       end
     end
@@ -53,9 +53,11 @@ module MailyHerald
       return @_message if @_mail_was_called && headers.blank? && !block
 
       # Assign instance variables availabe for template
-      @maily_subscription = @_message.maily_herald_data[:subscription]
-      @maily_entity = @_message.maily_herald_data[:entity]
-      @maily_mailing = @_message.maily_herald_data[:mailing]
+      if @_message.maily_herald_data
+        @maily_subscription = @_message.maily_herald_data[:subscription]
+        @maily_entity = @_message.maily_herald_data[:entity]
+        @maily_mailing = @_message.maily_herald_data[:mailing]
+      end
 
       super
     end
@@ -84,18 +86,22 @@ module MailyHerald
         @maily_herald_entity = args[1]
       end
 
-      @_message.maily_herald_data = {
-        schedule: @maily_herald_schedule,
-        mailing: @maily_herald_mailing,
-        entity: @maily_herald_entity,
-        subscription: @maily_herald_mailing.subscription_for(@maily_herald_entity),
-      }
+      if @maily_herald_mailing
+        @_message.maily_herald_data = {
+          schedule: @maily_herald_schedule,
+          mailing: @maily_herald_mailing,
+          entity: @maily_herald_entity,
+          subscription: @maily_herald_mailing.subscription_for(@maily_herald_entity),
+        }
+      end
 
       lookup_context.skip_default_locale!
       super(args[0], @maily_herald_entity)
 
-      @_message.to = @maily_herald_mailing.destination(@maily_herald_entity) unless @_message.to
-      @_message.from = @maily_herald_mailing.from unless @_message.from
+      if @maily_herald_mailing
+        @_message.to = @maily_herald_mailing.destination(@maily_herald_entity) unless @_message.to
+        @_message.from = @maily_herald_mailing.from unless @_message.from
+      end
 
       @_message
     end
