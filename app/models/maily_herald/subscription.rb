@@ -57,7 +57,7 @@ module MailyHerald
     end
 
     def token_url
-      MailyHerald::Engine.routes.url_helpers.ubsubscribe_url(self)
+      MailyHerald::Engine.routes.url_helpers.maily_unsubscribe_url(self)
     end
 
     def to_liquid
