@@ -54,7 +54,7 @@ Here are some things we would like to implement in the future:
 
 * message analytics,
 * link tracking,
-* fetching bounces from email service (Amazon SMS, Mandrill, Sendgrid etc.),
+* fetching bounces from email service (Amazon SES, Mandrill, Sendgrid etc.),
 * better templating,
 * _put your beloved feature here_.
 
