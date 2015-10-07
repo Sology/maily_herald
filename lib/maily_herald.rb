@@ -156,9 +156,14 @@ module MailyHerald
     #
     # To be used in initializer file.
     def setup
-      logger.warn("Maily migrations seems to be pending. Skipping setup...") && return if ([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
+      logger.warn("Maily migrations seems to be pending. Skipping setup...") && return unless schema_loaded?
 
       yield Initializer.new(self)
+    end
+
+    # Checks if Maily tables are present.
+    def schema_loaded?
+      !([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
     end
 
     # Fetches or defines a {Context}.
@@ -375,6 +380,7 @@ module MailyHerald
     # Read options from config file
     def read_options cfile = "config/maily_herald.yml"
       opts = {}
+      cfile = Pathname.new(cfile).relative? ? Rails.root + cfile : cfile
       if File.exist?(cfile)
         opts = YAML.load(ERB.new(IO.read(cfile)).result)
       end

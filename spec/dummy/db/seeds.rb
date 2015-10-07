@@ -1,3 +1,5 @@
+load "#{Rails.root}/config/initializers/maily_herald.rb" if MailyHerald.schema_loaded? && !MailyHerald::List.any?
+
 MailyHerald.one_time_mailing :test_mailing do |mailing|
   mailing.enable
   mailing.title = "Test mailing"

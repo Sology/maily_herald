@@ -356,9 +356,9 @@ You can configure your Maily using config file `config/maily_herald.yml`. Suppor
 
 ### Periodical mailing scheduling
 
-Periodical mailing is kind of special one and has two modes of scheduling: general and individual. If you specify @start_at@ as an absolute time, i.e. @"2111-01-01 11:11"@, it goes into general scheduling mode and consecutive mailings will be delivered to all subscribed entities at the same time at every period. This way you can send i.e. weekly newsletters every Monday to all subscribers.
+Periodical mailing is kind of special one and has two modes of scheduling: general and individual. If you specify `start_at` as an absolute time, i.e. `"2111-01-01 11:11"`, it goes into general scheduling mode and consecutive mailings will be delivered to all subscribed entities at the same time at every period. This way you can send i.e. weekly newsletters every Monday to all subscribers.
 
-When you specify @start_at@ as a individual time, i.e. @"user.start_at"@ - individual scheduling mode will be enabled. In this case, delivery periods will count individually for each user and deliveires will be made accordingly.
+When you specify `start_at` as a individual time, i.e. `"user.start_at"` - individual scheduling mode will be enabled. In this case, delivery periods will count individually for each user and deliveires will be made accordingly.
 
 Individual scheduling mode is the only mode available for all other mailing types.
 
@@ -430,6 +430,18 @@ Then of course you need to tell Maily about that too:
 # config/maily_herald.yml
 ---
 :redis_namespace: maily
+```
+
+## Contributing
+
+Please aim your pull requests to 'development' branch.
+
+Your changes should be well tested. To set up test environment just run:
+
+```
+RAILS_ENV=test rake db:setup
+rspec
+guard # execute specs interactively
 ```
 
 ## More Information
