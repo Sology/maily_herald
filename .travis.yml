@@ -1,1 +1,3 @@
-script: bundle exec rspec
+script: 
+  - RAILS_ENV=test bundle exec rake db:setup
+  - bundle exec rspec
