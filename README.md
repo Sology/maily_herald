@@ -198,7 +198,7 @@ You would typically put your `MailyHerald.setup` block in the Maily initializer 
 
 ### Different mailing types
 
-**AdHocMailing** is the most similar to regular Ruby on Rails emails sent using ActionMailer. The only difference is that their delivery is handled by Maily and thus backgrounded and logged. 
+**AdHocMailing** is the most similar to regular Ruby on Rails emails sent using ActionMailer. The only difference is that their delivery is handled by Maily and thus logged and can be backgrounded. 
 
 **OneTimeMailing** deliveres are performed only once to single recpient at scheduled delivery time. Is fully automatic and its delivery can't be manually triggered. OneTimeMailing schedules are created basing on `start_at` attribute individually for each recipient.
 
@@ -311,7 +311,7 @@ Visiting opt-out url disables subscription and by default redirects to "/".
 
 ### Delivery and background processing
 
-MailyHerald mailings are always sent in background. They won't block you application thread - that's guaranteed.
+Scheduled MailyHerald mailings are always sent in background. 
 
 In order to make your deliveries work, you need to run MailyHerald Paperboy which will take care of it:
 
@@ -326,14 +326,16 @@ You can't manually trigger delivery of one time, periodical and sequence mailing
 Ad-hoc mailing on the other hand can (and should!) be manually scheduled for delivery:
 
 ```ruby
+MailyHerald.ad_hoc_mailing(:password_reset).schedule_delivery_to User.first, Time.now
+```
+
+Alernatively, for Action Mailer compatibility, you can use standard syntax of sending emails:
+
+```ruby
 UserMailer.password_reset(User.first).deliver
 ```
 
-This code uses standard Action Mailer syntax but instead of sending the email directly, it basically queues background delivery of ad-hoc mailing named `password_reset` to given user. Alternative Maily syntax is:
-
-```ruby
-MailyHerald.ad_hoc_mailing(:password_reset).schedule_delivery_to User.first, Time.now
-```
+This code however will process email delivery now, in the current thread - just like regular Action Mailer.
 
 ### That's it!
 
