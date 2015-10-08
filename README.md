@@ -298,7 +298,7 @@ mount MailyHerald::Engine => "/unsubscribe", :as => "maily_herald_engine"
 Maily provides you with URL helper that generates opt-out URLs (i.e. in your ActionMailer views):
 
 ```ruby
-maily_herald_engine.unsubscribe_url(@maily_subscription)
+maily_herald_engine.maily_unsubscribe_url(@maily_subscription)
 ```
 
 When you use Liquid for email templating, your context will always include special attribute @subscription@ that allows you to easily output unique opt-out url. Use the following syntax:
