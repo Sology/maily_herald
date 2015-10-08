@@ -50,7 +50,7 @@ module MailyHerald
       @options ||= OPTIONS.dup
       @options.merge!(opts) if opts
 
-      @options[:target] = Pathname.new(@options[:target]).relative? ? Rails.root + @options[:target] : @options[:target]
+      @options[:target] = Rails.root + @options[:target] if @options[:target].is_a?(String) && Pathname.new(@options[:target]).relative? && defined?(Rails)
 
       @logger = Logger.new(@options[:target])
       @logger.level = @options[:level]

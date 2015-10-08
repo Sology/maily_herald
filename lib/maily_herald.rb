@@ -380,7 +380,7 @@ module MailyHerald
     # Read options from config file
     def read_options cfile = "config/maily_herald.yml"
       opts = {}
-      cfile = Pathname.new(cfile).relative? ? Rails.root + cfile : cfile
+      cfile = Pathname.new(cfile).relative? && defined?(Rails) ? Rails.root + cfile : cfile
       if File.exist?(cfile)
         opts = YAML.load(ERB.new(IO.read(cfile)).result)
       end
