@@ -2,6 +2,10 @@ require 'maily_herald/version'
 
 require 'liquid'
 require 'sidekiq'
+begin
+  require 'sidekiq/api'
+rescue LoadError
+end
 require 'redis'
 
 if defined?(::Rails::Engine)
