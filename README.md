@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Sology/maily_herald.svg?branch=master)](https://travis-ci.org/Sology/maily_herald)
+
 # MailyHerald
 
 ![MailyHerald with its Web UI](./doc/webui.png)
