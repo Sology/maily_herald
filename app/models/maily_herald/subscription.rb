@@ -31,7 +31,7 @@ module MailyHerald
 
         entity.attributes.each do |k, v|
           if match = k.match(/^maily_subscription_(\w+)$/)
-            subscription.send("#{match[1]}=", %w{data settings}.include?(match[1]) ? YAML.load(v) : v)
+            subscription.send("#{match[1]}=", %w{data settings}.include?(match[1]) && v ? YAML.load(v) : v)
           end
         end
 
