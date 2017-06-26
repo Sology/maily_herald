@@ -55,15 +55,15 @@ module MailyHerald
 
     # Checks whether entity is subscribed to List.
     def subscribed? entity
-      s = Subscription.get_from(entity) || subscription_for(entity)
-      s.try(:active?)
+      s = MailyHerald::Subscription.get_from(entity) || subscription_for(entity)
+      !!s.try(:active?)
     end
 
     # Checks whether entity is not subscribed to List.
     #
     # True if user has inactive subscription or never been subscribed.
     def unsubscribed? entity
-      s = Subscription.get_from(entity) || subscription_for(entity)
+      s = MailyHerald::Subscription.get_from(entity) || subscription_for(entity)
       s ? !s.active? : true
     end
 
