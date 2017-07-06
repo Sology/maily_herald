@@ -120,7 +120,7 @@ module MailyHerald
     #
     # @raise [ArgumentError] if the conditions do not evaluate to boolean.
     def conditions_met? entity
-      subscription = Subscription.get_from(entity) || self.list.subscription_for(entity)
+      subscription = MailyHerald::Subscription.get_from(entity) || self.list.subscription_for(entity)
 
       if has_conditions_proc?
         !!conditions.call(entity, subscription)
