@@ -1,0 +1,67 @@
+namespace :load do
+  task :defaults do
+    set :maily_herald_default_hooks, -> { true }
+
+    set :maily_herald_env, -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
+    set :maily_herald_role, -> { :app }
+
+    set :rbenv_map_bins, fetch(:rbenv_map_bins).to_a.concat(%w(maily_herald))
+    set :rvm_map_bins, fetch(:rvm_map_bins).to_a.concat(%w(maily_herald))
+  end
+end
+
+namespace :deploy do
+  before :starting, :check_maily_herald_hooks do
+    invoke 'maily_herald:add_default_hooks' if fetch(:maily_herald_default_hooks)
+  end
+  after :publishing, :restart_maily_herald do
+    invoke 'maily_herald:restart' if fetch(:maily_herald_default_hooks)
+  end
+end
+
+namespace :maily_herald do
+  def stop_maily_herald
+    execute :bundle, :exec, :maily_herald, "paperboy", "--stop"
+  end
+
+  def start_maily_herald
+    execute :bundle, :exec, :maily_herald, "paperboy", "--start"
+  end
+
+  def restart_maily_herald
+    execute :bundle, :exec, :maily_herald, "paperboy", "--restart"
+  end
+
+  task :add_default_hooks do
+    after 'deploy:updated', 'maily_herald:stop'
+    after 'deploy:reverted', 'maily_herald:stop'
+    after 'deploy:published', 'maily_herald:start'
+  end
+
+  desc 'Stop maily_herald'
+  task :stop do
+    on roles fetch(:maily_herald_role) do
+      within release_path do
+        stop_maily_herald
+      end
+    end
+  end
+
+  desc 'Start maily_herald'
+  task :start do
+    on roles fetch(:maily_herald_role) do
+      within release_path do
+        start_maily_herald
+      end
+    end
+  end
+
+  desc 'Restart maily_herald'
+  task :restart do
+    on roles fetch(:maily_herald_role) do
+      within release_path do
+        restart_maily_herald
+      end
+    end
+  end
+end

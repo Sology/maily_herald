@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
 
   s.add_dependency "rails", ">= 4.2.0"
+  s.add_dependency "liquid", "~> 3.0.6"
+  s.add_dependency "sidekiq"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
@@ -24,4 +26,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard"
   s.add_development_dependency "guard-rspec"
   s.add_development_dependency "guard-shell"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "timecop"
+  s.add_development_dependency "spring-commands-rspec"
+  s.add_development_dependency "yard"
+  s.add_development_dependency "redcarpet" # for yard markdown formatting
 end

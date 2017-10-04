@@ -7,7 +7,21 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 require 'support/factory_girl'
-require "database_cleaner"
+require 'database_cleaner'
+require 'sidekiq/testing'
+require 'timecop'
+
+require 'simplecov'
+SimpleCov.start do
+  add_filter '/config/'
+  add_filter '/spec/dummy'
+  add_group 'Controllers', 'app/controllers'
+  add_group 'Helpers', 'app/helpers'
+  add_group 'Mailers', 'app/mailers'
+  add_group 'Models', 'app/models'
+  add_group 'Libraries', 'lib'
+  add_group 'Specs', 'spec'
+end
 
 ENGINE_RAILS_ROOT=File.join(File.dirname(__FILE__), '../')
 Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
@@ -31,6 +45,7 @@ Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
 
+keep_tables = %w[maily_herald_dispatches maily_herald_lists]
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -41,8 +56,8 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
 
   config.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean_with(:truncation)
+    DatabaseCleaner.strategy = :truncation, {except: keep_tables}
+    DatabaseCleaner.clean_with(:truncation, {except: keep_tables})
   end
 
   config.before(:each) do

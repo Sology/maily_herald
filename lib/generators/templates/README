@@ -1,0 +1,2 @@
+Welcome to MailyHerald!
+Don't forget to create your contexts in initializer (config/initializers/maily_herald.rb).

@@ -1,4 +1,4 @@
-class ApplicationMailer < ActionMailer::Base
-  default from: 'from@example.com'
+class ApplicationMailer < MailyHerald::Mailer
+  default from: "no-reply@mailyherald.org"
   layout 'mailer'
 end
