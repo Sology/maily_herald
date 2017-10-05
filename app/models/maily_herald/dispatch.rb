@@ -41,7 +41,11 @@ module MailyHerald
     before_destroy do |dispatch|
       if dispatch.locked?
         dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.")
-        throw :abort
+        if Rails::VERSION::MAJOR == 5
+          throw :abort
+        else
+          false
+        end
       end
     end
 
@@ -145,7 +149,7 @@ module MailyHerald
     end
 
     def in_scope? entity
-      self.list.context.scope.exists?(entity)
+      self.list.context.scope.include?(entity)
     end
 
     # Checks if dispatch can be sent to given entity.

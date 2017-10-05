@@ -5,7 +5,7 @@ describe MailyHerald::List do
   describe "Initial" do
     let!(:entity) { create :user }
     let!(:product) { create :product }
-    let(:list) { MailyHerald.list(:generic_list) }
+    let(:list) { MailyHerald.list :generic_list }
     let(:list2) { MailyHerald::List.new }
 
     before do
@@ -54,7 +54,7 @@ describe MailyHerald::List do
     context "lockable" do
       it { expect(list).to be_locked }
 
-      it "should NOT alter lsit attributes" do
+      it "should NOT alter list attributes" do
         list.title = "foo"
         expect(list.save).to be_falsy
         expect(list.errors.messages).to include(:base)

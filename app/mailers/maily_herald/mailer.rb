@@ -95,7 +95,12 @@ module MailyHerald
         }
       end
 
-      lookup_context.skip_default_locale!
+      if Rails::VERSION::MAJOR == 5
+        lookup_context.locale = nil
+      else
+        lookup_context.skip_default_locale!
+      end
+
       super(args[0], @maily_herald_entity)
 
       if @maily_herald_mailing

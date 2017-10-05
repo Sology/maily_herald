@@ -26,7 +26,11 @@ module MailyHerald
     before_destroy do |list|
       if list.locked?
         list.errors.add(:base, "Can't destroy this list because it is locked.")
-        throw :abort
+        if Rails::VERSION::MAJOR == 5
+          throw :abort
+        else
+          false
+        end
       end
     end
 
