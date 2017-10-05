@@ -3,7 +3,7 @@ require 'rails_helper'
 describe MailyHerald::Subscription do
 
   let(:entity) { create :user }
-  let(:mailing) { MailyHerald.one_time_mailing :test_mailing }
+  let(:mailing) { create :test_mailing }
   let(:list) { mailing.list }
   let!(:subscription) { list.subscribe! entity }
 

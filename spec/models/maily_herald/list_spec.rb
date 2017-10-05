@@ -40,11 +40,12 @@ describe MailyHerald::List do
     end
 
     context "list logs" do
+      let!(:mailing) { create :test_mailing }
+
       it "should fetch all logs for list" do
         list.subscribe!(entity)
         expect(list.subscribers.first).to eq(entity)
 
-        mailing = MailyHerald.one_time_mailing(:test_mailing)
         mailing.run
 
         expect(list.logs).to include(mailing.logs.first)

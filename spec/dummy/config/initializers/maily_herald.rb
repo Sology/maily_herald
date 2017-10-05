@@ -34,23 +34,4 @@ MailyHerald.setup do |config|
     mailing.start_at = "user.created_at"
     mailing.template = "User name: {{user.name}}."
   end
-
-  config.one_time_mailing :test_mailing do |mailing|
-    mailing.enable
-    mailing.title = "Test mailing"
-    mailing.subject = "Test mailing"
-    mailing.list = :generic_list
-    mailing.start_at = "user.created_at"
-    mailing.template = "User name: {{user.name}}."
-  end
-
-  config.periodical_mailing :weekly_summary do |mailing|
-    mailing.enable
-    mailing.title = "Weekly summary"
-    mailing.subject = "Weekly summary"
-    mailing.list = :generic_list
-    mailing.start_at = Proc.new{|user| user.created_at + 1.week}
-    mailing.period = 1.week
-    mailing.template = "User name: {{user.name}}."
-  end
 end

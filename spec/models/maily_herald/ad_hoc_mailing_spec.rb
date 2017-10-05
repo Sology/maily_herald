@@ -4,7 +4,7 @@ describe MailyHerald::AdHocMailing do
 
   let!(:entity) { create :user }
   let!(:list) { MailyHerald.list :generic_list }
-  let!(:mailing) { MailyHerald.ad_hoc_mailing :ad_hoc_mail }
+  let!(:mailing) { create :ad_hoc_mailing, list: list }
 
   it { expect(list.context).to be_a(MailyHerald::Context) }
 

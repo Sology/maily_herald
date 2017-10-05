@@ -3,7 +3,7 @@ require 'rails_helper'
 describe MailyHerald::Log do
 
   let!(:entity) { create :user }
-  let!(:mailing) { MailyHerald.periodical_mailing :weekly_summary }
+  let!(:mailing) { create :weekly_summary }
 
   context "associations" do
     let!(:log) { MailyHerald::Log.create_for mailing, entity, {status: :delivered} }

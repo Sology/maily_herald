@@ -3,7 +3,7 @@ require 'rails_helper'
 describe MailyHerald::Mailing do
 
   describe "Validations" do
-    let!(:mailing) { MailyHerald.one_time_mailing :test_mailing }
+    let!(:mailing) { create :test_mailing }
 
     it { expect(mailing).to be_valid }
 
