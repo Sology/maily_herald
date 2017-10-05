@@ -8,7 +8,7 @@ module MailyHerald
     validates   :start_at,      presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}
 
-    after_save :update_schedules_callback, if: Proc.new{|m| m.state_changed? || m.period_changed? || m.start_at_changed? || m.override_subscription?}
+    after_save :update_schedules_callback, if: Proc.new{|m| m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:period) || m.saved_change_to_attribute?(:start_at) || m.override_subscription?}
 
     def period_in_days
       "%.2f" % (self.period.to_f / 1.day.seconds)
