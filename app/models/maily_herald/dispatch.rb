@@ -40,7 +40,7 @@ module MailyHerald
     end
     before_destroy do |dispatch|
       if dispatch.locked?
-        dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.") 
+        dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.")
         throw :abort
       end
     end
