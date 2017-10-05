@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::Subscription do
   before(:each) do

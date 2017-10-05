@@ -8,3 +8,4 @@ spec/dummy/tmp/
 .ruby-version
 .ruby-gemset
 tmp
+coverage/*

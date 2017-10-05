@@ -30,7 +30,7 @@ module MailyHerald
   #                                   Valid only for {PeriodicalMailing}.
   # @attr [String]    override_subscription Defines whether email should be sent regardless of 
   #                                   entity subscription state.
-  class Dispatch < ActiveRecord::Base
+  class Dispatch < ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
 
     validates   :list,          presence: true

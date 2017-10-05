@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::Utils do
   describe MailyHerald::Utils::MarkupEvaluator do

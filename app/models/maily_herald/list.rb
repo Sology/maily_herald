@@ -8,7 +8,7 @@ module MailyHerald
   # @attr [String]    name
   # @attr [String]    title
   # @attr [String]    context_name    Name of the {Context} used by List.
-  class List < ActiveRecord::Base
+  class List < ApplicationRecord
     include MailyHerald::Autonaming
 
     if Rails::VERSION::MAJOR == 3

@@ -1,5 +1,5 @@
 module MailyHerald
-  class Subscription < ActiveRecord::Base
+  class Subscription < ApplicationRecord
     belongs_to  :entity,        polymorphic: true
     belongs_to  :list,          class_name: "MailyHerald::List"
 
