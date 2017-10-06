@@ -145,7 +145,7 @@ module MailyHerald
 
     # Get next email processing time for given entity.
     def next_processing_time entity
-      schedule_for(entity).processing_at
+      schedule_for(entity).processing_at if schedule_for(entity)
     end
 
     def to_s
