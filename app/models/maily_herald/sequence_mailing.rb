@@ -21,7 +21,7 @@ module MailyHerald
       self.list_id = self.sequence.list_id
     end
 
-    after_save :update_schedules_callback, if: Proc.new{|m| !m.skip_updating_schedules && (m.state_changed? || m.absolute_delay_changed?)} 
+    after_save :update_schedules_callback, if: Proc.new{|m| !m.skip_updating_schedules && (m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:absolute_delay))} 
 
     def absolute_delay_in_days
       "%.2f" % (self.absolute_delay.to_f / 1.day.seconds)

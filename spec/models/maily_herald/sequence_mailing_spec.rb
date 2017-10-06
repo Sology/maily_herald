@@ -1,18 +1,27 @@
 require 'rails_helper'
 
 describe MailyHerald::SequenceMailing do
-  before(:each) do
-    @sequence = MailyHerald.sequence(:newsletters)
-    @mailing = @sequence.mailings.first
+  let!(:sequence) { create :newsletters }
+
+  context "initial" do
+    it { expect(sequence).to be_valid }
+    it { expect(sequence).to be_persisted }
+    it { expect(sequence.mailings).not_to be_empty }
+    it { expect(sequence.mailings.count).to eq(3) }
   end
 
-  describe "Validations" do
-    it do
-      @mailing.absolute_delay = nil
-      expect(@mailing).not_to be_valid
+  context "validations" do
+    let(:mailing) { sequence.mailings.first }
 
-      @mailing.absolute_delay = ""
-      expect(@mailing).not_to be_valid
+    context "invalid attributes - nil absolute_delay" do
+      before { mailing.absolute_delay = nil }
+      it { expect(mailing).not_to be_valid }
+    end
+
+    context "invalid attributes - blank absolute_delay" do
+      before { mailing.absolute_delay = "" }
+      it { expect(mailing).not_to be_valid }
     end
   end
+
 end
