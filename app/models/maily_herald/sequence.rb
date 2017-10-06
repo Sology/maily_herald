@@ -9,12 +9,13 @@ module MailyHerald
 
     include MailyHerald::Autonaming
 
-    has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
     if Rails::VERSION::MAJOR == 3
       has_many    :mailings,          class_name: "MailyHerald::SequenceMailing", order: "absolute_delay ASC", dependent: :destroy
     else
       has_many    :mailings,          -> { order("absolute_delay ASC") }, class_name: "MailyHerald::SequenceMailing", dependent: :destroy
     end
+
+    has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
 
     validates   :list,                presence: true
 
