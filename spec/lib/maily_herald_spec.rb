@@ -1,31 +1,27 @@
 require 'rails_helper'
 
 describe MailyHerald do
-  describe "setup" do
-    before(:each) do
-      @user = FactoryGirl.create :user
-    end
 
-    it "should extend context entity models" do
-      MailyHerald.context(:all_users).model.name.should eq(User.name)
-      User.included_modules.should include(MailyHerald::ModelExtensions)
+  let!(:entity) { create :user }
 
-      expect(@user).to respond_to(:maily_herald_subscriptions)
-      expect(@user.maily_herald_subscriptions.length).to eq(0)
-    end
+  it { expect(MailyHerald.context(:all_users).model.name).to eq(User.name) }
+  it { expect(User.included_modules).to include(MailyHerald::ModelExtensions) }
+  it { expect(entity).to respond_to(:maily_herald_subscriptions) }
+  it { expect(entity.maily_herald_subscriptions.length).to eq(0) }
 
-    it "should create mailings from initializer" do
-      mailing = MailyHerald.one_time_mailing(:test_mailing)
-      expect(mailing).to be_kind_of(MailyHerald::Mailing)
-      expect(mailing).not_to be_a_new_record
-    end
+  context "creating mailings" do
+    let(:mailing) { create :test_mailing }
 
-    it "should create sequences from initializer" do
-      sequence = MailyHerald.sequence(:newsletters)
-      expect(sequence).to be_kind_of(MailyHerald::Sequence)
-      expect(sequence).not_to be_a_new_record
-
-      expect(sequence.mailings.length).to eq(3)
-    end
+    it { expect(mailing).to be_kind_of(MailyHerald::Mailing) }
+    it { expect(mailing).not_to be_a_new_record }
   end
+
+  context "creating sequences" do
+    let(:sequence) { create :newsletters }
+
+    it { expect(sequence).to be_kind_of(MailyHerald::Sequence) }
+    it { expect(sequence).not_to be_a_new_record }
+    it { expect(sequence.mailings.length).to eq(3) }
+  end
+
 end
