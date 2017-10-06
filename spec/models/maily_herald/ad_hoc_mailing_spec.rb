@@ -3,8 +3,8 @@ require 'rails_helper'
 describe MailyHerald::AdHocMailing do
 
   let!(:entity) { create :user }
-  let!(:list) { MailyHerald.list :generic_list }
   let!(:mailing) { create :ad_hoc_mailing }
+  let!(:list) { mailing.list }
 
   it { expect(list.context).to be_a(MailyHerald::Context) }
 
