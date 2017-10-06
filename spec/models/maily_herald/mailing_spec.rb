@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe MailyHerald::Mailing do
 
-  describe "Validations" do
+  context "validations" do
     let!(:mailing) { create :test_mailing }
 
     it { expect(mailing).to be_valid }
@@ -22,7 +22,7 @@ describe MailyHerald::Mailing do
     end
   end
   
-  describe "Locking" do
+  context "locking" do
     let!(:mailing) { MailyHerald.one_time_mailing :locked_mailing }
 
     it { expect(mailing).to be_locked }
