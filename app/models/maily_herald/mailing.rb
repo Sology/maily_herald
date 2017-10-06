@@ -194,8 +194,9 @@ module MailyHerald
       build_mail(schedule).deliver
     rescue StandardError => e
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
-      schedule.update_attributes(status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"})
-      return nil
+      schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
+
+      Rails.env.test? ? raise : (return nil)
     end
 
     # Called from Mailer, block required
@@ -227,7 +228,7 @@ module MailyHerald
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
 
-      return schedule
+      Rails.env.test? ? raise : (return schedule)
     end
 
     private

@@ -38,7 +38,7 @@ module MailyHerald
         if schedule
           mailing.send(:deliver_with_mailer, schedule) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
-              self.set_payload_for_mail(payload, mail)
+              set_payload_for_mail(payload, mail)
               yield # Let Mail do the delivery actions
             end
             mail
@@ -61,8 +61,6 @@ module MailyHerald
 
       super
     end
-
-    protected
 
     def process(*args) #:nodoc:
       class << @_message

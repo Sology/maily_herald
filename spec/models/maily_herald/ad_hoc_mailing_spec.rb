@@ -50,12 +50,12 @@ describe MailyHerald::AdHocMailing do
 
           it { expect(ret).to be_kind_of(Array) }
           it { expect(ret.first).to be_kind_of(MailyHerald::Log) }
-          pending { expect(ret.first).to be_delivered }
-          pending { expect(ret.first.mail).to be_kind_of(Mail::Message) }
+          it { expect(ret.first).to be_delivered }
+          it { expect(ret.first.mail).to be_kind_of(Mail::Message) }
           it { ret; expect(MailyHerald::Subscription.count).to eq(1) }
-          pending { ret; expect(MailyHerald::Log.delivered.count).to eq(1) }
+          it { ret; expect(MailyHerald::Log.delivered.count).to eq(1) }
 
-          pending "log should have proper values" do
+          it "log should have proper values" do
             ret
             log = MailyHerald::Log.delivered.first
             expect(log.entity).to eq(entity)
@@ -74,23 +74,23 @@ describe MailyHerald::AdHocMailing do
       it { expect(MailyHerald::Log.delivered.count).to eq(0) }
 
       context "without explicit scheduling" do
-        pending { expect(msg).to be_kind_of(Mail::Message) }
-        pending { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
-        pending { msg; expect(MailyHerald::Log.delivered.first.entity).to eq(entity) }
+        it { expect(msg).to be_kind_of(Mail::Message) }
+        it { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
+        it { msg; expect(MailyHerald::Log.delivered.first.entity).to eq(entity) }
       end
 
       context "with explicit scheduling" do
         before { mailing.schedule_delivery_to entity, Time.now - 5 }
 
         context "subscription active" do
-          pending { expect(msg).to be_kind_of(Mail::Message) }
-          pending { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
+          it { expect(msg).to be_kind_of(Mail::Message) }
+          it { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
         end
 
         context "subscription inactive" do
           before { list.unsubscribe!(entity) }
 
-          pending { msg; expect(MailyHerald::Log.delivered.count).to eq(0)}
+          it { msg; expect(MailyHerald::Log.delivered.count).to eq(0)}
         end
       end
     end
@@ -117,8 +117,8 @@ describe MailyHerald::AdHocMailing do
 
       before { mailing.schedule_delivery_to entity, Time.now - 5 }
 
-      pending { expect(msg).to be_kind_of(Mail::Message) }
-      pending { msg; expect(MailyHerald::Log.delivered.count).to eq(1)}
+      it { expect(msg).to be_kind_of(Mail::Message) }
+      it { msg; expect(MailyHerald::Log.delivered.count).to eq(1)}
     end
   end
 
