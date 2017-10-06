@@ -27,7 +27,7 @@ module MailyHerald
         self.override_subscription = false
       end
     end
-    after_save :update_schedules_callback, if: Proc.new{|s| s.state_changed? || s.start_at_changed?}
+    after_save :update_schedules_callback, if: Proc.new{ |s| s.saved_change_to_attribute?(:state) || s.saved_change_to_attribute?(:start_at) }
 
     # Fetches or defines an {SequenceMailing}.
     #
