@@ -97,7 +97,7 @@ describe MailyHerald::PeriodicalMailing do
     it { expect(mailing.last_processing_time(entity)).to be_nil }
     it { expect(mailing.next_processing_time(entity).to_i).to eq((entity.created_at).to_i) }
 
-    pending "should deliver mailings periodically" do
+    it "should deliver mailings periodically" do
       Timecop.freeze entity.created_at
       ret = mailing.run
       expect(ret).to be_a(Array)
@@ -109,7 +109,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(mailing.next_processing_time(entity).to_i).to eq((entity.created_at + 7.days).to_i)
     end
 
-    pending "should deliver mailings after period" do
+    it "should deliver mailings after period" do
       Timecop.freeze entity.created_at
 
       expect(mailing.conditions_met?(entity)).to be_truthy
@@ -142,7 +142,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.processed.count).to eq(1)
 
-      Timecop.freeze @entity.created_at + mailing.period + mailing.period/3
+      Timecop.freeze entity.created_at + mailing.period + mailing.period/3
 
       expect(mailing.logs.scheduled.count).to eq(1)
 
@@ -168,7 +168,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(mailing.next_processing_time(entity).to_i).to eq(entity.created_at.to_i)
     end
 
-    pending "should handle processing with start date evaluated to the past date" do
+    it "should handle processing with start date evaluated to the past date" do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.processed.count).to eq(0)
 
@@ -229,7 +229,7 @@ describe MailyHerald::PeriodicalMailing do
 
       it { expect(MailyHerald::Log.scheduled.count).to eq(1) }
 
-      pending "should go through with subscription override" do
+      it "should go through with subscription override" do
         mailing.run
         expect(MailyHerald::Subscription.count).to eq(0)
         expect(MailyHerald::Log.delivered.count).to eq(1)
@@ -245,7 +245,7 @@ describe MailyHerald::PeriodicalMailing do
     it { expect(MailyHerald::Subscription.count).to eq(1) }
     it { expect(MailyHerald::Log.delivered.count).to eq(0) }
 
-    pending "should check mailing conditions" do
+    it "should check mailing conditions" do
       Timecop.freeze entity.created_at
 
       mailing.run

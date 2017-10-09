@@ -38,19 +38,19 @@ describe MailyHerald::OneTimeMailing do
 
           it { expect(ret).to be_kind_of(Array) }
           it { expect(ret.first).to be_kind_of(MailyHerald::Log) }
-          pending { expect(ret.first).to be_delivered }
-          pending { expect(ret.first.mail).to be_kind_of(Mail::Message) }
+          it { expect(ret.first).to be_delivered }
+          it { expect(ret.first.mail).to be_kind_of(Mail::Message) }
 
           context "after run" do
             before { ret; mailing.set_schedules }
 
             it { expect(MailyHerald::Subscription.count).to eq(1) }
-            pending { expect(MailyHerald::Log.delivered.count).to eq(1) }
+            it { expect(MailyHerald::Log.delivered.count).to eq(1) }
 
             it { expect(mailing.logs.processed.for_entity(entity).count).to eq(1) }
             it { expect(mailing.schedules.for_entity(entity).count).to eq(0) }
 
-            pending "log should have proper values" do
+            it "log should have proper values" do
               log = MailyHerald::Log.delivered.first
               expect(log.entity).to eq(entity)
               expect(log.mailing).to eq(mailing)
@@ -79,7 +79,7 @@ describe MailyHerald::OneTimeMailing do
           schedule.reload
         end
 
-        pending { expect(schedule).to be_error }
+        it { expect(schedule).to be_error }
       end
     end
 
@@ -90,7 +90,7 @@ describe MailyHerald::OneTimeMailing do
       before { schedule.update_attribute(:processing_at, Time.now + 1.day) }
 
       it { expect(MailyHerald::Log.delivered.count).to eq(0) }
-      pending { expect{ CustomOneTimeMailer.one_time_mail(entity).deliver }.not_to change{ActionMailer::Base.deliveries.count} }
+      it { expect{ CustomOneTimeMailer.one_time_mail(entity).deliver }.not_to change{ActionMailer::Base.deliveries.count} }
     end
 
     context "with entity outside the scope" do
@@ -109,7 +109,7 @@ describe MailyHerald::OneTimeMailing do
         it { expect(list).to be_subscribed(entity) }
         it { expect(mailing).not_to be_processable(entity) }
 
-        pending "should not process mailings, postpone them and finally skip them" do
+        it "should not process mailings, postpone them and finally skip them" do
           schedule = mailing.schedule_for(entity)
           processing_at = schedule.processing_at
           expect(schedule).not_to be_nil
@@ -162,7 +162,7 @@ describe MailyHerald::OneTimeMailing do
     it { expect(mailing.processable?(entity)).to be_truthy }
     it { expect(mailing.override_subscription?).to be_truthy }
     it { expect(mailing.enabled?).to be_truthy }
-    pending { mailing.run; expect(MailyHerald::Log.delivered.count).to eq(1) }
+    it { mailing.run; expect(MailyHerald::Log.delivered.count).to eq(1) }
   end
 
   context "with block start_at" do
@@ -211,7 +211,7 @@ describe MailyHerald::OneTimeMailing do
       it { expect(entity.weekly_notifications).to be_truthy }
       it { expect(mailing.conditions_met?(entity)).to be_truthy }
 
-      pending "should be delivered" do
+      it "should be delivered" do
         schedule = mailing.schedules.for_entity(entity).last
         mailing.run
         schedule.reload
@@ -232,7 +232,7 @@ describe MailyHerald::OneTimeMailing do
       it { expect(entity.weekly_notifications).to be_falsey }
       it { expect(mailing.conditions_met?(entity)).to be_falsey }
 
-      pending "should be skipped" do
+      it "should be skipped" do
         schedule = mailing.schedules.for_entity(entity).last
         mailing.run
         schedule.reload
