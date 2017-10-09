@@ -68,6 +68,12 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
+  config.around(:each, :raise_delivery_errors => false) do |example|
+    MailyHerald.raise_delivery_errors = false
+    example.run
+    MailyHerald.raise_delivery_errors = true
+  end
+
   # RSpec Rails can automatically mix in different behaviours to your tests
   # based on their file location, for example enabling you to call `get` and
   # `post` in specs under `spec/controllers`.

@@ -66,6 +66,7 @@ module MailyHerald
   autoload :Logging,            'maily_herald/logging'
 
   @@token_redirect = nil
+  @@raise_delivery_errors = false
 
   class << self
     # Returns config options read from config file.
@@ -358,6 +359,14 @@ module MailyHerald
       else
         @@token_redirect
       end
+    end
+
+    def raise_delivery_errors= value
+      @@raise_delivery_errors = value
+    end
+
+    def raise_delivery_errors?
+      !!@@raise_delivery_errors
     end
 
     def run_sequence seq_name

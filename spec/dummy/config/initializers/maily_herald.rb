@@ -1,5 +1,6 @@
 MailyHerald.setup do |config|
   config.token_redirect {|subscription| "/" }
+  config.raise_delivery_errors = true
 
   config.context :all_users do |context|
     context.scope {User.active}

@@ -14,7 +14,7 @@ module MailyHerald
       opts[:from] = @maily_herald_mailing.from if @maily_herald_mailing.from.present?
 
       mail(opts) do |format|
-        format.text { render text: content }
+        format.text { render plain: content }
       end
     end
 
