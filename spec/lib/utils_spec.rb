@@ -5,7 +5,7 @@ describe MailyHerald::Utils do
   describe MailyHerald::Utils::MarkupEvaluator do
 
     let!(:entity) { create :user }
-    let!(:mailing) { create :test_mailing }
+    let!(:mailing) { create :generic_one_time_mailing }
     let(:list) { mailing.list }
     let(:subscription) { mailing.subscription_for entity }
     let(:evaluator) { described_class.new(list.context.drop_for(entity, subscription)) }

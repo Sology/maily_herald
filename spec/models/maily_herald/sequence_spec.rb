@@ -274,7 +274,7 @@ describe MailyHerald::Sequence do
       expect(MailyHerald::Log.error.count).to eq(0)
     end
 
-    it "should skip mailings with errors and create logs for them" do
+    pending "should skip mailings with errors and create logs for them" do
       sequence.mailings[1].update_attributes(template: "foo {{error =! here bar")
 
       expect(sequence.pending_mailings(entity).first).to eq(sequence.mailings.first)
@@ -323,7 +323,7 @@ describe MailyHerald::Sequence do
       it { expect(sequence.logs.count).to eq(0) }
       it { expect(sequence.last_processing_time(entity)).to be_nil }
 
-      it "should be able to override subscription" do
+      pending "should be able to override subscription" do
         Timecop.freeze next_processing
 
         sequence.run

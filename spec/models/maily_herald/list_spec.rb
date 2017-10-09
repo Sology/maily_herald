@@ -39,7 +39,7 @@ describe MailyHerald::List do
   end
 
   context "list logs" do
-    let!(:mailing) { create :test_mailing }
+    let!(:mailing) { create :generic_one_time_mailing }
 
     it "should fetch all logs for list" do
       list.subscribe!(entity)

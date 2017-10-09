@@ -3,7 +3,7 @@ require 'rails_helper'
 describe MailyHerald::Context do
 
   let!(:entity) { create :user }
-  let!(:mailing) { create :test_mailing }
+  let!(:mailing) { create :generic_one_time_mailing }
   let!(:list) { mailing.list }
   let!(:context) { list.context }
 

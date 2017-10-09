@@ -10,7 +10,7 @@ describe MailyHerald do
   it { expect(entity.maily_herald_subscriptions.length).to eq(0) }
 
   context "creating mailings" do
-    let(:mailing) { create :test_mailing }
+    let(:mailing) { create :generic_one_time_mailing }
 
     it { expect(mailing).to be_kind_of(MailyHerald::Mailing) }
     it { expect(mailing).not_to be_a_new_record }
