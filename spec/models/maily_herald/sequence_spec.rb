@@ -274,37 +274,6 @@ describe MailyHerald::Sequence do
       expect(MailyHerald::Log.error.count).to eq(0)
     end
 
-    pending "should skip mailings with errors and create logs for them" do
-      sequence.mailings[1].update_attributes(template: "foo {{error =! here bar")
-
-      expect(sequence.pending_mailings(entity).first).to eq(sequence.mailings.first)
-      expect(sequence.processable?(entity)).to be_truthy
-      Timecop.freeze entity.created_at + sequence.pending_mailings(entity).first.absolute_delay
-
-      sequence.run
-      expect(MailyHerald::Log.processed.count).to eq(1)
-      expect(MailyHerald::Log.delivered.count).to eq(1)
-      expect(MailyHerald::Log.skipped.count).to eq(0)
-      expect(MailyHerald::Log.error.count).to eq(0)
-
-      expect(sequence.pending_mailings(entity).first).to eq(sequence.mailings[1])
-      Timecop.freeze entity.created_at + sequence.pending_mailings(entity).first.absolute_delay
-
-      sequence.run
-      expect(MailyHerald::Log.processed.count).to eq(2)
-      expect(MailyHerald::Log.delivered.count).to eq(1)
-      expect(MailyHerald::Log.skipped.count).to eq(0)
-      expect(MailyHerald::Log.error.count).to eq(1)
-
-      expect(sequence.pending_mailings(entity).first).to eq(sequence.mailings[2])
-      Timecop.freeze entity.created_at + sequence.pending_mailings(entity).first.absolute_delay
-
-      sequence.run
-      expect(MailyHerald::Log.processed.count).to eq(3)
-      expect(MailyHerald::Log.delivered.count).to eq(2)
-      expect(MailyHerald::Log.skipped.count).to eq(0)
-      expect(MailyHerald::Log.error.count).to eq(1)
-    end
   end
 
   context "subscription override" do

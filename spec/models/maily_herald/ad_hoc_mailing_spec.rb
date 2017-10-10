@@ -104,6 +104,8 @@ describe MailyHerald::AdHocMailing do
     end
   end
 
+  pending "with runtime template errors should create error log"
+
   context "with subscription override" do
     before { mailing.update_attributes!(override_subscription: true) }
     after  { mailing.update_attributes!(override_subscription: false) }
