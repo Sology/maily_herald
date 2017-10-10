@@ -74,7 +74,7 @@ module MailyHerald
         m.set_schedule_for self.entity
       end
       PeriodicalMailing.where(list_id: self.list).each do |m|
-        m.set_schedule_for self.entity
+        m.scheduler_for(entity).set_schedule
       end
       Sequence.where(list_id: self.list).each do |s|
         s.set_schedule_for self.entity

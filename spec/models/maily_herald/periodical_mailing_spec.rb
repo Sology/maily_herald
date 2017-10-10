@@ -70,9 +70,9 @@ describe MailyHerald::PeriodicalMailing do
     after { mailing.update_attributes!(start_at: start_at) }
 
     context "parsing start_at" do
-      it { expect(mailing.start_processing_time(entity)).to be_kind_of(Time) }
-      it { expect(mailing.next_processing_time(entity)).to be_kind_of(Time) }
-      it { expect(mailing.next_processing_time(entity).to_i).to eq(entity.created_at.to_i) }
+      it { expect(mailing.scheduler_for(entity).start_processing_time).to be_kind_of(Time) }
+      it { expect(mailing.scheduler_for(entity).next_processing_time).to be_kind_of(Time) }
+      it { expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq(entity.created_at.to_i) }
     end
 
     context "using absolute start date if possible" do
@@ -80,9 +80,9 @@ describe MailyHerald::PeriodicalMailing do
 
       before { mailing.update_attributes!(start_at: time.to_s) }
 
-      it { expect(mailing.start_processing_time(entity)).to be_a(Time) }
-      it { expect(mailing.next_processing_time(entity)).to be_kind_of(Time) }
-      it { expect(mailing.next_processing_time(entity)).to eq(time) }
+      it { expect(mailing.scheduler_for(entity).start_processing_time).to be_a(Time) }
+      it { expect(mailing.scheduler_for(entity).next_processing_time).to be_kind_of(Time) }
+      it { expect(mailing.scheduler_for(entity).next_processing_time).to eq(time) }
     end
   end
 
@@ -94,8 +94,8 @@ describe MailyHerald::PeriodicalMailing do
     it { expect(MailyHerald::Subscription.count).to eq(1) }
     it { expect(MailyHerald::Log.processed.count).to eq(0) }
     it { expect(mailing.period).to eq 7.days }
-    it { expect(mailing.last_processing_time(entity)).to be_nil }
-    it { expect(mailing.next_processing_time(entity).to_i).to eq((entity.created_at).to_i) }
+    it { expect(mailing.scheduler_for(entity).last_processing_time).to be_nil }
+    it { expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq((entity.created_at).to_i) }
 
     it "should deliver mailings periodically" do
       Timecop.freeze entity.created_at
@@ -105,8 +105,8 @@ describe MailyHerald::PeriodicalMailing do
       expect(ret.first.mail).to be_kind_of(Mail::Message)
       expect(ret.first).to be_delivered
 
-      expect(mailing.last_processing_time(entity).to_i).to eq entity.created_at.to_i
-      expect(mailing.next_processing_time(entity).to_i).to eq((entity.created_at + 7.days).to_i)
+      expect(mailing.scheduler_for(entity).last_processing_time.to_i).to eq entity.created_at.to_i
+      expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq((entity.created_at + 7.days).to_i)
     end
 
     it "should deliver mailings after period" do
@@ -114,7 +114,7 @@ describe MailyHerald::PeriodicalMailing do
 
       expect(mailing.conditions_met?(entity)).to be_truthy
       expect(mailing.processable?(entity)).to be_truthy
-      expect(mailing.next_processing_time(entity)).to be <= entity.created_at
+      expect(mailing.scheduler_for(entity).next_processing_time).to be <= entity.created_at
 
       expect(mailing.logs.scheduled.count).to eq(1)
       schedule = mailing.logs.scheduled.first
@@ -133,7 +133,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(log.mailing).to eq(mailing)
 
       expect(mailing.logs.processed.last).to eq(log)
-      expect(mailing.last_processing_time(entity).to_i).to eq(entity.created_at.to_i)
+      expect(mailing.scheduler_for(entity).last_processing_time.to_i).to eq(entity.created_at.to_i)
 
       expect(mailing.logs.scheduled.count).to eq(1)
 
@@ -162,17 +162,17 @@ describe MailyHerald::PeriodicalMailing do
     it "should calculate valid next delivery date" do
       period = mailing.period
 
-      expect(mailing.last_processing_time(entity)).to be_nil
-      expect(mailing.start_processing_time(entity)).to be_kind_of(Time)
-      expect(mailing.start_processing_time(entity)).to eq(entity.created_at)
-      expect(mailing.next_processing_time(entity).to_i).to eq(entity.created_at.to_i)
+      expect(mailing.scheduler_for(entity).last_processing_time).to be_nil
+      expect(mailing.scheduler_for(entity).start_processing_time).to be_kind_of(Time)
+      expect(mailing.scheduler_for(entity).start_processing_time).to eq(entity.created_at)
+      expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq(entity.created_at.to_i)
     end
 
     it "should handle processing with start date evaluated to the past date" do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.processed.count).to eq(0)
 
-      expect(mailing.next_processing_time(entity).to_i).to eq(entity.created_at.to_i)
+      expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq(entity.created_at.to_i)
       start_at = entity.created_at + 1.year
 
       Timecop.freeze start_at
@@ -184,7 +184,7 @@ describe MailyHerald::PeriodicalMailing do
 
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.processed.count).to eq(1)
-      expect(mailing.last_processing_time(entity).to_i).to eq(start_at.to_i)
+      expect(mailing.scheduler_for(entity).last_processing_time.to_i).to eq(start_at.to_i)
 
       Timecop.freeze start_at +1
       mailing.run
@@ -192,7 +192,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.delivered.count).to eq(1)
 
-      expect(mailing.next_processing_time(entity).to_i).to eq((start_at + mailing.period).to_i)
+      expect(mailing.scheduler_for(entity).next_processing_time.to_i).to eq((start_at + mailing.period).to_i)
       Timecop.freeze start_at + mailing.period
 
       mailing.run
@@ -252,7 +252,7 @@ describe MailyHerald::PeriodicalMailing do
 
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.delivered.count).to eq(1)
-      expect(mailing.schedule_for(entity)).not_to be_nil
+      expect(mailing.scheduler_for(entity).schedule).not_to be_nil
 
       entity.update_attribute(:weekly_notifications, false)
       entity.save
@@ -264,7 +264,7 @@ describe MailyHerald::PeriodicalMailing do
       expect(MailyHerald::Subscription.count).to eq(1)
       expect(MailyHerald::Log.delivered.count).to eq(1)
       expect(MailyHerald::Log.skipped.count).to eq(1)
-      expect(mailing.schedule_for(entity)).not_to be_nil
+      expect(mailing.scheduler_for(entity).schedule).not_to be_nil
 
       entity.update_attribute(:weekly_notifications, true)
 
@@ -294,7 +294,7 @@ describe MailyHerald::PeriodicalMailing do
 
     context "creating schedules" do
       before do
-        expect(mailing.schedule_for(entity)).to be_nil
+        expect(mailing.scheduler_for(entity).schedule).to be_nil
         mailing.start_at = time
         mailing.save!
       end
@@ -304,8 +304,8 @@ describe MailyHerald::PeriodicalMailing do
 
         before { list.subscribe! entity }
 
-        it { expect(mailing.schedule_for(entity).processing_at.to_i).not_to eq(time.to_i) }
-        it { expect(mailing.schedule_for(entity).processing_at.to_i).to eq((time + mailing.period).to_i) }
+        it { expect(mailing.scheduler_for(entity).schedule.processing_at.to_i).not_to eq(time.to_i) }
+        it { expect(mailing.scheduler_for(entity).schedule.processing_at.to_i).to eq((time + mailing.period).to_i) }
       end
 
       context "for the first period" do
@@ -313,8 +313,8 @@ describe MailyHerald::PeriodicalMailing do
 
         before { list.subscribe! entity }
 
-        it { expect(mailing.schedule_for(entity).processing_at.to_i).to eq(time.to_i) }
-        it { expect(mailing.schedule_for(entity).processing_at.to_i).not_to eq((time + mailing.period).to_i) }
+        it { expect(mailing.scheduler_for(entity).schedule.processing_at.to_i).to eq(time.to_i) }
+        it { expect(mailing.scheduler_for(entity).schedule.processing_at.to_i).not_to eq((time + mailing.period).to_i) }
       end
     end
   end
@@ -327,8 +327,8 @@ describe MailyHerald::PeriodicalMailing do
       mailing.update_attribute(:start_at, "wrong")
     end
 
-    it { expect(mailing.last_processing_time(entity)).to be_nil }
-    it { expect(mailing.next_processing_time(entity)).to be_nil }
+    it { expect(mailing.scheduler_for(entity).last_processing_time).to be_nil }
+    it { expect(mailing.scheduler_for(entity).next_processing_time).to be_nil }
 
     context "after running" do
       before do
@@ -336,8 +336,8 @@ describe MailyHerald::PeriodicalMailing do
         mailing.run
       end
 
-      it { expect(mailing.last_processing_time(entity)).to be_nil }
-      it { expect(mailing.next_processing_time(entity)).to be_nil }    
+      it { expect(mailing.scheduler_for(entity).last_processing_time).to be_nil }
+      it { expect(mailing.scheduler_for(entity).next_processing_time).to be_nil }    
     end
   end
 
