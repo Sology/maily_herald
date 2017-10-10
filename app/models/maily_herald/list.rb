@@ -11,10 +11,6 @@ module MailyHerald
   class List < ApplicationRecord
     include MailyHerald::Autonaming
 
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :context_name
-    end
-
     has_many :dispatches, class_name: "MailyHerald::Dispatch"
     has_many :subscriptions, class_name: "MailyHerald::Subscription"
 

@@ -1,9 +1,5 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :period, :period_in_days
-    end
-
     validates   :list,          presence: true
     validates   :start_at,      presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}

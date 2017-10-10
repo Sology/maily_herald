@@ -3,11 +3,6 @@ module MailyHerald
     include MailyHerald::TemplateRenderer
     include MailyHerald::Autonaming
 
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :subject, :context_name, :override_subscription,
-                      :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
-    end
-
     has_many    :logs,          class_name: "MailyHerald::Log"
     
     validates   :subject,       presence: true, if: :generic_mailer?

@@ -1,9 +1,5 @@
 module MailyHerald
   class SequenceMailing < Mailing
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :absolute_delay_in_days
-    end
-
     attr_accessor :skip_updating_schedules
 
     belongs_to  :sequence,      class_name: "MailyHerald::Sequence"

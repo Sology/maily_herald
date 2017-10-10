@@ -2,19 +2,9 @@ module MailyHerald
   MailyHerald::Subscription #TODO fix this autoload for dev
 
   class Sequence < Dispatch
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :override_subscription,
-                      :conditions, :start_at, :period
-    end
-
     include MailyHerald::Autonaming
 
-    if Rails::VERSION::MAJOR == 3
-      has_many    :mailings,          class_name: "MailyHerald::SequenceMailing", order: "absolute_delay ASC", dependent: :destroy
-    else
-      has_many    :mailings,          -> { order("absolute_delay ASC") }, class_name: "MailyHerald::SequenceMailing", dependent: :destroy
-    end
-
+    has_many    :mailings,            -> { order("absolute_delay ASC") }, class_name: "MailyHerald::SequenceMailing", dependent: :destroy
     has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
 
     validates   :list,                presence: true

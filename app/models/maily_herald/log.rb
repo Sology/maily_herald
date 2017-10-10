@@ -48,10 +48,6 @@ module MailyHerald
     # `Mailing.run` method.
     attr_accessor :mail
 
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :status, :data
-    end
-
     # Creates Log object for given {Dispatch} and entity.
     #
     # @param mailing [Dispatch]
