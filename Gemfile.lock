@@ -4,7 +4,7 @@ PATH
     maily_herald (1.0.0)
       liquid (~> 3.0.6)
       rails (>= 4.2.0)
-      sidekiq
+      sidekiq (< 5)
 
 GEM
   remote: https://rubygems.org/
@@ -145,7 +145,7 @@ GEM
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
     redcarpet (3.4.0)
-    redis (4.0.1)
+    redis (3.3.5)
     rspec (3.6.0)
       rspec-core (~> 3.6.0)
       rspec-expectations (~> 3.6.0)
@@ -169,11 +169,11 @@ GEM
     rspec-support (3.6.0)
     ruby_dep (1.5.0)
     shellany (0.0.1)
-    sidekiq (5.0.5)
+    sidekiq (4.2.10)
       concurrent-ruby (~> 1.0)
       connection_pool (~> 2.2, >= 2.2.0)
       rack-protection (>= 1.5.0)
-      redis (>= 3.3.4, < 5)
+      redis (~> 3.2, >= 3.2.1)
     simplecov (0.15.1)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)

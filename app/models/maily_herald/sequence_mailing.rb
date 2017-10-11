@@ -17,7 +17,7 @@ module MailyHerald
       self.list_id = self.sequence.list_id
     end
 
-    after_save :update_schedules_callback, if: Proc.new{|m| !m.skip_updating_schedules && (m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:absolute_delay))} 
+    after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attributes(m)} 
 
     def absolute_delay_in_days
       "%.2f" % (self.absolute_delay.to_f / 1.day.seconds)
@@ -70,6 +70,14 @@ module MailyHerald
           end
         end
       end if schedule
+    end
+
+    def check_changed_attributes m
+      if Rails::VERSION::MAJOR == 5
+        !m.skip_updating_schedules && (m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:absolute_delay))
+      else
+        !m.skip_updating_schedules && (m.state_changed? || m.absolute_delay_changed?)
+      end
     end
 
   end

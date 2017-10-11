@@ -4,7 +4,7 @@ module MailyHerald
     validates   :start_at,      presence: true
     validate    :validate_start_at
 
-    after_save :update_schedules_callback, if: Proc.new{|m| m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:start_at) || m.override_subscription?}
+    after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attributes(m)}
 
     # Sends mailing to all subscribed entities.
     #
@@ -127,5 +127,12 @@ module MailyHerald
       Rails.env.test? ? set_schedules : MailyHerald::ScheduleUpdater.perform_in(10.seconds, self.id)
     end
 
+    def check_changed_attributes m
+      if Rails::VERSION::MAJOR == 5
+        m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:start_at) || m.override_subscription?
+      else
+        m.state_changed? || m.start_at_changed? || m.override_subscription?
+      end
+    end
   end
 end

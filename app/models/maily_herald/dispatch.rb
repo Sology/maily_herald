@@ -93,6 +93,14 @@ module MailyHerald
       !!(@start_at_proc || MailyHerald.start_at_procs[self.id])
     end
 
+    def start_at_changed?
+      if has_start_at_proc?
+        @start_at_proc != MailyHerald.start_at_procs[self.id]
+      else
+        super
+      end
+    end
+
     def saved_change_to_attribute?(attr_name, **options)
       if attr_name == :start_at && has_start_at_proc?
         @start_at_proc != MailyHerald.start_at_procs[self.id]
