@@ -13,7 +13,8 @@ Gem::Specification.new do |s|
   s.license     = "LGPL-3.0"
   s.description = s.summary = "Email processing solution for Ruby on Rails applications"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
+  s.files = Dir["{app,config,db,lib,bin}/**/*", "LICENSE", "Rakefile", "README.md"]
+  s.executables = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
 
   s.add_dependency "rails", ">= 4.2.0"
   s.add_dependency "liquid", "~> 3.0.6"
