@@ -1,4 +1,4 @@
-class CreateMailyHeraldTables < ActiveRecord::Migration[5.1]
+class CreateMailyHeraldTables < ActiveRecord::Migration
   def change
     create_table :maily_herald_dispatches do |t|
       t.string            :type,                                        null: false
