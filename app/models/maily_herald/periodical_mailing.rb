@@ -1,14 +1,10 @@
 module MailyHerald
   class PeriodicalMailing < Mailing
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :period, :period_in_days
-    end
-
     validates   :list,          presence: true
     validates   :start_at,      presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}
 
-    after_save :update_schedules_callback, if: Proc.new{|m| m.state_changed? || m.period_changed? || m.start_at_changed? || m.override_subscription?}
+    after_save :update_schedules_callback, if: Proc.new{|m| m.saved_change_to_attribute?(:state) || m.saved_change_to_attribute?(:period) || m.saved_change_to_attribute?(:start_at) || m.override_subscription?}
 
     def period_in_days
       "%.2f" % (self.period.to_f / 1.day.seconds)
@@ -38,72 +34,13 @@ module MailyHerald
       end
     end
 
-    # Returns collection of processed {Log}s for given entity.
-    def processed_logs entity
-      Log.ordered.for_entity(entity).for_mailing(self).processed
-    end
-
-    # Returns processing time for given entity.
-    #
-    # This is the time when next mailing should be sent.
-    # Calculation is done mased on last processed mailing for this entity or
-    # {#start_at} mailing attribute.
-    def start_processing_time entity
-      if processed_logs(entity).first
-        processed_logs(entity).first.processing_at
-      else
-        subscription = self.list.subscription_for(entity)
-
-        if has_start_at_proc?
-          start_at.call(entity, subscription)
-        else
-          evaluator = Utils::MarkupEvaluator.new(self.list.context.drop_for(entity, subscription))
-
-          evaluator.evaluate_start_at(self.start_at)
-        end
-      end
-    end
-
-    # Gets the timestamp of last processed email for given entity.
-    def last_processing_time entity
-      processed_logs(entity).last.try(:processing_at)
-    end
-
-    # Sets the delivery schedule for given entity
-    #
-    # New schedule will be created or existing one updated.
-    #
-    # Schedule is {Log} object of type "schedule".
-    def set_schedule_for entity, last_log = nil
-      subscribed = self.list.subscribed?(entity)
-      log = schedule_for(entity)
-      last_log ||= processed_logs(entity).last
-      processing_at = calculate_processing_time(entity, last_log)
-
-      if !self.period || !self.start_at || !enabled? || !processing_at || !(self.override_subscription? || subscribed)
-        log = schedule_for(entity)
-        log.try(:destroy)
-        return
-      end
-
-      log ||= Log.new
-      log.with_lock do
-        log.set_attributes_for(self, entity, {
-          status: :scheduled,
-          processing_at: processing_at,
-        })
-        log.save!
-      end
-      log
-    end
-
     # Sets delivery schedules of all entities in mailing scope.
     #
     # New schedules will be created or existing ones updated.
     def set_schedules
       self.list.context.scope_with_subscription(self.list, :outer).each do |entity|
         MailyHerald.logger.debug "Updating schedule of #{self} periodical for entity ##{entity.id} #{entity}"
-        set_schedule_for entity
+        scheduler_for(entity).set_schedule
       end
     end
 
@@ -111,45 +48,17 @@ module MailyHerald
       Rails.env.test? ? set_schedules : MailyHerald::ScheduleUpdater.perform_in(10.seconds, self.id)
     end
 
-    # Returns {Log} object which is the delivery schedule for given entity.
-    def schedule_for entity
-      schedules.for_entity(entity).first
-    end
-
     # Returns collection of all delivery schedules ({Log} collection).
     def schedules
       Log.ordered.scheduled.for_mailing(self)
     end
 
-    # Calculates processing time for given entity.
-    def calculate_processing_time entity, last_log = nil
-      last_log ||= processed_logs(entity).last
-
-      spt = start_processing_time(entity)
-
-      if last_log && last_log.processing_at
-        last_log.processing_at + self.period
-      elsif individual_scheduling? && spt
-        spt
-      elsif general_scheduling?
-        if spt >= Time.now
-          spt
-        else
-          diff = (Time.now - spt).to_f
-          spt ? spt + ((diff/self.period).ceil * self.period) : nil
-        end
-      else
-        nil
-      end
-    end
-
-    # Get next email processing time for given entity.
-    def next_processing_time entity
-      schedule_for(entity).processing_at
-    end
-
     def to_s
       "<PeriodicalMailing: #{self.title || self.name}>"
+    end
+
+    def scheduler_for entity
+      PeriodicalMailing::Scheduler.new self, entity
     end
 
     private
@@ -165,7 +74,7 @@ module MailyHerald
             schedule.processing_at = current_time if schedule.processed?
             schedule.save!
 
-            set_schedule_for schedule.entity, schedule
+            scheduler_for(schedule.entity).set_schedule schedule
           end
         end
       end if schedule

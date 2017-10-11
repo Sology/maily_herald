@@ -30,7 +30,7 @@ module MailyHerald
   #                                   Valid only for {PeriodicalMailing}.
   # @attr [String]    override_subscription Defines whether email should be sent regardless of 
   #                                   entity subscription state.
-  class Dispatch < ActiveRecord::Base
+  class Dispatch < ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
 
     validates   :list,          presence: true
@@ -40,8 +40,12 @@ module MailyHerald
     end
     before_destroy do |dispatch|
       if dispatch.locked?
-        dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.") 
-        false
+        dispatch.errors.add(:base, "Can't destroy this dispatch because it is locked.")
+        if Rails::VERSION::MAJOR == 5
+          throw :abort
+        else
+          false
+        end
       end
     end
 
@@ -89,11 +93,11 @@ module MailyHerald
       !!(@start_at_proc || MailyHerald.start_at_procs[self.id])
     end
 
-    def start_at_changed?
-      if has_start_at_proc?
+    def saved_change_to_attribute?(attr_name, **options)
+      if attr_name == :start_at && has_start_at_proc?
         @start_at_proc != MailyHerald.start_at_procs[self.id]
       else
-        super
+        super(attr_name, **options)
       end
     end
 
@@ -145,7 +149,7 @@ module MailyHerald
     end
 
     def in_scope? entity
-      self.list.context.scope.exists?(entity)
+      self.list.context.scope.include?(entity)
     end
 
     # Checks if dispatch can be sent to given entity.

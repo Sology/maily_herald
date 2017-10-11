@@ -62,10 +62,11 @@ module MailyHerald
   autoload :ModelExtensions,    'maily_herald/model_extensions'
   autoload :Context,            'maily_herald/context'
   autoload :Manager,            'maily_herald/manager'
-	autoload :Autonaming,					'maily_herald/autonaming'
-	autoload :Logging,					  'maily_herald/logging'
+  autoload :Autonaming,         'maily_herald/autonaming'
+  autoload :Logging,            'maily_herald/logging'
 
   @@token_redirect = nil
+  @@raise_delivery_errors = false
 
   class << self
     # Returns config options read from config file.
@@ -358,6 +359,14 @@ module MailyHerald
       else
         @@token_redirect
       end
+    end
+
+    def raise_delivery_errors= value
+      @@raise_delivery_errors = value
+    end
+
+    def raise_delivery_errors?
+      !!@@raise_delivery_errors
     end
 
     def run_sequence seq_name

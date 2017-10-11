@@ -1,169 +1,139 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::AdHocMailing do
-  before(:each) do
-    @entity = FactoryGirl.create :user
 
-    @list = MailyHerald.list(:generic_list)
-    expect(@list.context).to be_a(MailyHerald::Context)
-  end
+  let!(:entity) { create :user }
+  let!(:mailing) { create :ad_hoc_mailing }
+  let!(:list) { mailing.list }
 
-  describe "with subscription" do
-    before(:each) do
-      @list.subscribe!(@entity)
-    end
+  it { expect(list.context).to be_a(MailyHerald::Context) }
 
-    describe "run all delivery" do
-      before(:each) do
-        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-        expect(@mailing).to be_kind_of(MailyHerald::AdHocMailing)
-        expect(@mailing).not_to be_a_new_record
-      end
+  context "with subscription" do
+    before { list.subscribe!(entity) }
 
-      it "should not be delivered without explicit scheduling" do
-        expect(MailyHerald::Subscription.count).to eq(1)
-        expect(@mailing.conditions_met?(@entity)).to be_truthy
-        expect(@mailing.processable?(@entity)).to be_truthy
+    it { expect(list.context.scope).to include(entity) }
+    it { expect(mailing).to be_processable(entity) }
+    it { expect(mailing).to be_enabled }
 
-        expect(@mailing.logs.scheduled.count).to eq(0)
-        expect(@mailing.logs.processed.count).to eq(0)
+    context "run all delivery" do
+      it { expect(mailing).to be_kind_of(MailyHerald::AdHocMailing) }
+      it { expect(mailing).not_to be_a_new_record }
 
-        @mailing.run
+      it { expect(MailyHerald::Subscription.count).to eq(1) }
+      it { expect(mailing.conditions_met?(entity)).to be_truthy }
+      it { expect(mailing.processable?(entity)).to be_truthy }
 
-        expect(@mailing.logs.scheduled.count).to eq(0)
-        expect(@mailing.logs.processed.count).to eq(0)
-      end
-
-      it "should be delivered" do
-        subscription = @mailing.subscription_for(@entity)
-
-        expect(MailyHerald::Subscription.count).to eq(1)
-        expect(MailyHerald::Log.delivered.count).to eq(0)
-
-        expect(subscription).to be_kind_of(MailyHerald::Subscription)
-
-        expect(@mailing.conditions_met?(@entity)).to be_truthy
-        expect(@mailing.processable?(@entity)).to be_truthy
-
-        @mailing.schedule_delivery_to_all Time.now - 5
-
-        ret = @mailing.run
-        expect(ret).to be_kind_of(Array)
-        expect(ret.first).to be_kind_of(MailyHerald::Log)
-        expect(ret.first).to be_delivered
-        expect(ret.first.mail).to be_kind_of(Mail::Message)
-
-        expect(MailyHerald::Subscription.count).to eq(1)
-        expect(MailyHerald::Log.delivered.count).to eq(1)
-
-        log = MailyHerald::Log.delivered.first
-        expect(log.entity).to eq(@entity)
-        expect(log.mailing).to eq(@mailing)
-        expect(log.entity_email).to eq(@entity.email)
-      end
-    end
-
-    describe "single entity delivery" do
-      before(:each) do
-        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-        expect(@mailing).to be_kind_of(MailyHerald::AdHocMailing)
-        expect(@mailing).not_to be_a_new_record
-      end
+      it { expect(mailing.logs.scheduled.count).to eq(0) }
+      it { expect(mailing.logs.processed.count).to eq(0) }
 
       context "without explicit scheduling" do
-        it "should be delivered using Mailer deliver method" do
-          MailyHerald::Log.delivered.count.should eq(0)
-          msg = AdHocMailer.ad_hoc_mail(@entity).deliver
-          msg.should be_a(Mail::Message)
-          MailyHerald::Log.delivered.count.should eq(1)
-          expect(MailyHerald::Log.delivered.first.entity).to eq(@entity)
+        it "should NOT be delivered " do
+          mailing.run
+          expect(mailing.logs.scheduled.count).to eq(0)
+          expect(mailing.logs.processed.count).to eq(0)
         end
+      end
+
+      context "with scheduling" do
+        let!(:subscription) { mailing.subscription_for(entity) }
+
+        before { mailing.schedule_delivery_to_all Time.now - 5 }
+
+        it { expect(MailyHerald::Subscription.count).to eq(1) }
+        it { expect(MailyHerald::Log.delivered.count).to eq(0) }
+        it { expect(subscription).to be_kind_of(MailyHerald::Subscription) }
+        it { expect(mailing.conditions_met?(entity)).to be_truthy }
+        it { expect(mailing.processable?(entity)).to be_truthy }
+
+        context "after running" do
+          let(:ret) { mailing.run }
+
+          it { expect(ret).to be_kind_of(Array) }
+          it { expect(ret.first).to be_kind_of(MailyHerald::Log) }
+          it { expect(ret.first).to be_delivered }
+          it { expect(ret.first.mail).to be_kind_of(Mail::Message) }
+          it { ret; expect(MailyHerald::Subscription.count).to eq(1) }
+          it { ret; expect(MailyHerald::Log.delivered.count).to eq(1) }
+
+          it "log should have proper values" do
+            ret
+            log = MailyHerald::Log.delivered.first
+            expect(log.entity).to eq(entity)
+            expect(log.mailing).to eq(mailing)
+            expect(log.entity_email).to eq(entity.email)
+          end
+        end
+      end
+    end
+
+    context "single entity delivery" do
+      let(:msg) { AdHocMailer.ad_hoc_mail(entity).deliver }
+
+      it { expect(mailing).to be_kind_of(MailyHerald::AdHocMailing) }
+      it { expect(mailing).not_to be_a_new_record }
+      it { expect(MailyHerald::Log.delivered.count).to eq(0) }
+
+      context "without explicit scheduling" do
+        it { expect(msg).to be_kind_of(Mail::Message) }
+        it { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
+        it { msg; expect(MailyHerald::Log.delivered.first.entity).to eq(entity) }
       end
 
       context "with explicit scheduling" do
-        it "should be delivered" do
-          MailyHerald::Log.delivered.count.should eq(0)
+        before { mailing.schedule_delivery_to entity, Time.now - 5 }
 
-          @mailing.schedule_delivery_to @entity, Time.now - 5
-
-          msg = AdHocMailer.ad_hoc_mail(@entity).deliver
-
-          expect(msg).to be_kind_of(Mail::Message)
-          MailyHerald::Log.delivered.count.should eq(1)
+        context "subscription active" do
+          it { expect(msg).to be_kind_of(Mail::Message) }
+          it { msg; expect(MailyHerald::Log.delivered.count).to eq(1) }
         end
 
-        it "should not be delivered if subscription inactive" do
-          @mailing.schedule_delivery_to @entity, Time.now - 5
+        context "subscription inactive" do
+          before { list.unsubscribe!(entity) }
 
-          @list.unsubscribe!(@entity)
-
-          expect(MailyHerald::Log.delivered.count).to eq(0)
-
-          AdHocMailer.ad_hoc_mail(@entity).deliver
-
-          expect(MailyHerald::Log.delivered.count).to eq(0)
+          it { msg; expect(MailyHerald::Log.delivered.count).to eq(0)}
         end
       end
     end
 
-    describe "with entity outside the scope" do
-      before(:each) do
-        @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-      end
+    context "with entity outside the scope" do
+      before { entity.update_attributes!(active: false) }
 
-      it "should not process mailings" do
-        expect(@list.context.scope).to include(@entity)
-        expect(@mailing).to be_processable(@entity)
-        expect(@mailing).to be_enabled
-
-        @entity.update_attribute(:active, false)
-
-        expect(@list.context.scope).not_to include(@entity)
-        expect(@list).to be_subscribed(@entity)
-
-        expect(@mailing).not_to be_processable(@entity)
-      end
+      it { expect(list.context.scope).not_to include(entity) }
+      it { expect(list).to be_subscribed(entity) }
+      it { expect(mailing).not_to be_processable(entity) }
     end
   end
 
-  describe "with subscription override" do
-    before(:each) do
-      @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-      @mailing.update_attribute(:override_subscription, true)
-    end
+  pending "with runtime template errors should create error log"
 
-    after(:each) do
-      @mailing.update_attribute(:override_subscription, false)
-    end
+  context "with subscription override" do
+    before { mailing.update_attributes!(override_subscription: true) }
+    after  { mailing.update_attributes!(override_subscription: false) }
 
-    it "single mail should be delivered" do
-      MailyHerald::Log.delivered.count.should eq(0)
-      @mailing.processable?(@entity).should be_truthy
-      @mailing.override_subscription?.should be_truthy
-      @mailing.enabled?.should be_truthy
+    it { expect(MailyHerald::Log.delivered.count).to eq(0) }
+    it { expect(mailing.override_subscription?).to be_truthy }
+    it { expect(mailing.enabled?).to be_truthy }
 
-      @mailing.schedule_delivery_to @entity, Time.now - 5
+    context "single mail should be delivered" do
+      let(:msg) { AdHocMailer.ad_hoc_mail(entity).deliver }
 
-      msg = AdHocMailer.ad_hoc_mail(@entity).deliver
-      msg.should be_a(Mail::Message)
+      before { mailing.schedule_delivery_to entity, Time.now - 5 }
 
-      MailyHerald::Log.delivered.count.should eq(1)
+      it { expect(msg).to be_kind_of(Mail::Message) }
+      it { msg; expect(MailyHerald::Log.delivered.count).to eq(1)}
     end
   end
 
-  describe "preview" do
-    before(:each) do
-      @mailing = MailyHerald.ad_hoc_mailing(:ad_hoc_mail)
-      @list.subscribe!(@entity)
-    end
+  context "preview" do
+    before { list.subscribe!(entity) }
+
+    it { expect(mailing.logs).to be_empty }
 
     it "should not deliver" do
-      expect(@mailing.logs).to be_empty
-
-      mail = @mailing.build_mail @entity
-      @mailing.reload
-
-      expect(@mailing.logs).to be_empty
+      mail = mailing.build_mail entity
+      mailing.reload
+      expect(mailing.logs).to be_empty
     end
   end
+
 end

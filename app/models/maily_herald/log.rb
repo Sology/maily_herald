@@ -16,7 +16,7 @@ module MailyHerald
   # @attr [Hash]      data           Custom log data.
   # @attr [DateTime]  processing_at  Timestamp of {Dispatch} processing.
   #                                  Can be either future (when in +scheduled+ state) or past.
-  class Log < ActiveRecord::Base
+  class Log < ApplicationRecord
     AVAILABLE_STATUSES = [:scheduled, :delivered, :skipped, :error]
 
     belongs_to  :entity,        polymorphic: true
@@ -29,7 +29,7 @@ module MailyHerald
     validates   :processing_at, presence: true, if: :scheduled?
 
     scope       :ordered,       lambda { order("processing_at asc") }
-    scope       :for_entity,    lambda {|entity| where(entity_id: entity.id, entity_type: entity.class.base_class) }
+    scope       :for_entity,    lambda {|entity| where(entity_id: entity.id, entity_type: entity.class.base_class.name) }
     scope       :for_mailing,   lambda {|mailing| where(mailing_id: mailing.id) }
     scope       :for_mailings,  lambda {|mailings| where("mailing_id in (?)", mailings) }
     scope       :delivered,     lambda { where(status: :delivered) }
@@ -47,10 +47,6 @@ module MailyHerald
     # Present only in logs of state `delivered` and obtained via
     # `Mailing.run` method.
     attr_accessor :mail
-
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :status, :data
-    end
 
     # Creates Log object for given {Dispatch} and entity.
     #

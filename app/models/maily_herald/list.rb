@@ -8,12 +8,8 @@ module MailyHerald
   # @attr [String]    name
   # @attr [String]    title
   # @attr [String]    context_name    Name of the {Context} used by List.
-  class List < ActiveRecord::Base
+  class List < ApplicationRecord
     include MailyHerald::Autonaming
-
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :context_name
-    end
 
     has_many :dispatches, class_name: "MailyHerald::Dispatch"
     has_many :subscriptions, class_name: "MailyHerald::Subscription"
@@ -25,8 +21,12 @@ module MailyHerald
     end
     before_destroy do |list|
       if list.locked?
-        list.errors.add(:base, "Can't destroy this list because it is locked.") 
-        false
+        list.errors.add(:base, "Can't destroy this list because it is locked.")
+        if Rails::VERSION::MAJOR == 5
+          throw :abort
+        else
+          false
+        end
       end
     end
 
@@ -55,15 +55,15 @@ module MailyHerald
 
     # Checks whether entity is subscribed to List.
     def subscribed? entity
-      s = MailyHerald::Subscription.get_from(entity) || subscription_for(entity)
-      !!s.try(:active?)
+      s = Subscription.get_from(entity) || subscription_for(entity)
+      s.try(:active?)
     end
 
     # Checks whether entity is not subscribed to List.
     #
     # True if user has inactive subscription or never been subscribed.
     def unsubscribed? entity
-      s = MailyHerald::Subscription.get_from(entity) || subscription_for(entity)
+      s = Subscription.get_from(entity) || subscription_for(entity)
       s ? !s.active? : true
     end
 

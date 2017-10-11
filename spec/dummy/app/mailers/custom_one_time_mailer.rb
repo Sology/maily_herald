@@ -1,6 +1,4 @@
-class CustomOneTimeMailer < MailyHerald::Mailer
-  default from: "no-reply@mailyherald.org"
-
+class CustomOneTimeMailer < ApplicationMailer
   def one_time_mail user
     mail to: user.email, subject: "Test"
   end

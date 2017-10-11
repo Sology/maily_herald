@@ -14,7 +14,7 @@ module MailyHerald
       opts[:from] = @maily_herald_mailing.from if @maily_herald_mailing.from.present?
 
       mail(opts) do |format|
-        format.text { render text: content }
+        format.text { render plain: content }
       end
     end
 
@@ -38,7 +38,7 @@ module MailyHerald
         if schedule
           mailing.send(:deliver_with_mailer, schedule) do
             ActiveSupport::Notifications.instrument("deliver.action_mailer") do |payload|
-              self.set_payload_for_mail(payload, mail)
+              set_payload_for_mail(payload, mail)
               yield # Let Mail do the delivery actions
             end
             mail
@@ -61,8 +61,6 @@ module MailyHerald
 
       super
     end
-
-    protected
 
     def process(*args) #:nodoc:
       class << @_message
@@ -95,7 +93,12 @@ module MailyHerald
         }
       end
 
-      lookup_context.skip_default_locale!
+      if Rails::VERSION::MAJOR == 5
+        lookup_context.locale = nil
+      else
+        lookup_context.skip_default_locale!
+      end
+
       super(args[0], @maily_herald_entity)
 
       if @maily_herald_mailing

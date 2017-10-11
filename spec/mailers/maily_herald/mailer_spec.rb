@@ -1,45 +1,30 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::Mailer do
-  before(:each) do
-    @entity = FactoryGirl.create :user
-    @mailing = MailyHerald.dispatch(:ad_hoc_mail)
-    @list = @mailing.list
-  end
+
+  let!(:entity) { create :user }
+  let!(:mailing) { create :ad_hoc_mailing }
+  let!(:list) { mailing.list }
+  
+  it { expect(MailyHerald::Log.delivered.count).to eq(0) }
 
   context "without subscription" do
-    it "should not deliver" do
-      expect(MailyHerald::Log.delivered.count).to eq(0)
+    before { AdHocMailer.ad_hoc_mail(entity).deliver }
 
-      AdHocMailer.ad_hoc_mail(@entity).deliver
-
-      expect(MailyHerald::Log.delivered.count).to eq(0)
-    end
+    it { expect(MailyHerald::Log.delivered.count).to eq(0) }
   end
 
   context "with subscription" do
-    before(:each) do
-      @list.subscribe! @entity
+    before do
+      list.subscribe! entity
+      AdHocMailer.ad_hoc_mail(entity).deliver
     end
 
-    it "should deliver" do
-      expect(MailyHerald::Log.delivered.count).to eq(0)
-
-      AdHocMailer.ad_hoc_mail(@entity).deliver
-
-      expect(MailyHerald::Log.delivered.count).to eq(1)
-    end
+    it { expect(MailyHerald::Log.delivered.count).to eq(1) }
   end
 
   context "without defined mailing" do
-    it "should not deliver" do
-      expect do
-        expect(MailyHerald::Log.delivered.count).to eq(0)
-
-        AdHocMailer.missing_mailing_mail(@entity).deliver
-
-        expect(MailyHerald::Log.delivered.count).to eq(0)
-      end.not_to change { ActionMailer::Base.deliveries.count }
-    end
+    it { expect { AdHocMailer.missing_mailing_mail(entity).deliver }.not_to change { ActionMailer::Base.deliveries.count } }
   end
+
 end

@@ -1,49 +1,48 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::Subscription do
-  before(:each) do
-    @entity = FactoryGirl.create :user
-    @mailing = MailyHerald.one_time_mailing :test_mailing
-    @list = @mailing.list
 
-    @subscription = @list.subscribe! @entity
+  let(:entity) { create :user }
+  let(:mailing) { create :generic_one_time_mailing }
+  let(:list) { mailing.list }
+  let!(:subscription) { list.subscribe! entity }
+
+  context "associations" do
+    it { expect(subscription.entity).to eq(entity) }
+    it { expect(subscription.list).to eq(list) }
+    it { expect(subscription).to be_valid }
+    it { expect(subscription).not_to be_a_new_record }
   end
 
-  describe "Associations" do
-    it "should have valid associations" do
-      expect(@subscription.entity).to eq(@entity)
-      expect(@subscription.list).to eq(@list)
-      expect(@subscription).to be_valid
-      expect(@subscription).not_to be_a_new_record
+  context "template rendering" do
+    context "valid template" do
+      before { expect(mailing).to receive(:template).and_return("test {{user.name}}") }
+      it { expect(mailing.render_template(entity)).to eq("test #{entity.name}") }
+    end
+
+    context "invalid template" do
+      before { expect(mailing).to receive(:template).and_return("{% if 1 =! 2 %}ok{% endif %}") }
+      it { expect{mailing.render_template(entity)}.to raise_error(Liquid::ArgumentError) }
     end
   end
 
-  describe "Template rendering" do
-    it "should produce output" do
-      @mailing.stub(:template).and_return("test {{user.name}}")
-      expect(@mailing.render_template(@entity)).to eq("test #{@entity.name}")
-    end
+  context "instantiation subscription object from joined attributes" do
+    let!(:list) {MailyHerald.list :generic_list }
 
-    it "should validate syntax" do
-      @mailing.stub(:template).and_return("{% if 1 =! 2 %}ok{% endif %}")
-      expect {@mailing.render_template(@entity)}.to raise_error
+    before { list.subscribe!(entity) }
+    subject { list.subscribers.first }
+
+    it { expect(subject).to be_a(User) }
+    it { expect(subject).to have_attribute(:maily_subscription_id) }
+    it { expect(subject.maily_subscription_active).to be_truthy }
+
+    it "should be readonly and active" do
+      subscription = MailyHerald::Subscription.get_from(subject)
+
+      expect(subscription).to be_a(MailyHerald::Subscription)
+      expect(subscription).to be_readonly
+      expect(subscription).to be_active
     end
   end
 
-  it "should instantiate subscription object from joined attributes" do
-    list = MailyHerald.list(:generic_list)
-    list.subscribe!(@entity)
-
-    entity = list.subscribers.first
-
-    expect(entity).to be_a(User)
-    expect(entity).to have_attribute(:maily_subscription_id)
-    expect(entity.maily_subscription_active).to be_truthy
-
-    subscription = MailyHerald::Subscription.get_from(entity)
-
-    expect(subscription).to be_a(MailyHerald::Subscription)
-    expect(subscription).to be_readonly
-    expect(subscription).to be_active
-  end
 end

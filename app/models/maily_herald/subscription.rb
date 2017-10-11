@@ -1,5 +1,5 @@
 module MailyHerald
-  class Subscription < ActiveRecord::Base
+  class Subscription < ApplicationRecord
     belongs_to  :entity,        polymorphic: true
     belongs_to  :list,          class_name: "MailyHerald::List"
 
@@ -23,7 +23,7 @@ module MailyHerald
       end
     end
 
-    after_save :update_schedules, if: Proc.new{|s| s.active_changed?}
+    after_save :update_schedules, if: Proc.new { |s| s.saved_change_to_attribute?(:active) }
 
     def self.get_from(entity)
       if entity.has_attribute?(:maily_subscription_id) && entity.maily_subscription_id
@@ -31,7 +31,7 @@ module MailyHerald
 
         entity.attributes.each do |k, v|
           if match = k.match(/^maily_subscription_(\w+)$/)
-            subscription.send("#{match[1]}=", %w{data settings}.include?(match[1]) && v ? YAML.load(v) : v)
+            subscription.send("#{match[1]}=", v)
           end
         end
 
@@ -74,7 +74,7 @@ module MailyHerald
         m.set_schedule_for self.entity
       end
       PeriodicalMailing.where(list_id: self.list).each do |m|
-        m.set_schedule_for self.entity
+        m.scheduler_for(entity).set_schedule
       end
       Sequence.where(list_id: self.list).each do |s|
         s.set_schedule_for self.entity

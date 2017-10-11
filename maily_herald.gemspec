@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
@@ -15,11 +13,9 @@ Gem::Specification.new do |s|
   s.license     = "LGPL-3.0"
   s.description = s.summary = "Email processing solution for Ruby on Rails applications"
 
-  s.files       = `git ls-files`.split("\n")
-  s.executables = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  s.test_files  = `git ls-files -- {spec,features}/**/`.split("\n")
+  s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
 
-  s.add_dependency "rails", "> 3.2"
+  s.add_dependency "rails", ">= 4.2.0"
   s.add_dependency "liquid", "~> 3.0.6"
   s.add_dependency "sidekiq"
 
@@ -29,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "database_cleaner"
   s.add_development_dependency "guard"
   s.add_development_dependency "guard-rspec"
+  s.add_development_dependency "guard-shell"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "timecop"
   s.add_development_dependency "spring-commands-rspec"

@@ -1,36 +1,51 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe MailyHerald::Log do
-  before(:each) do
-    @mailing = MailyHerald.periodical_mailing(:weekly_summary)
-    @entity = FactoryGirl.create :user
+
+  let!(:entity) { create :user }
+  let!(:mailing) { create :weekly_summary }
+
+  context "associations" do
+    let!(:log) { MailyHerald::Log.create_for mailing, entity, {status: :delivered} }
+
+    it { expect(log).to be_valid }
+    it { expect(log.entity).to eq(entity) }
+    it { expect(log.mailing).to eq(mailing) }
+
+    it { expect(MailyHerald::Log.for_entity(entity)).to include(log) }
+    it { expect(MailyHerald::Log.for_mailing(mailing)).to include(log) }
+
+    it { expect(MailyHerald::Log.for_entity(entity).for_mailing(mailing).last).to eq(log) }
   end
 
-  describe "Associations" do
-    it "should have proper scopes" do
-      log = MailyHerald::Log.create_for @mailing, @entity, {status: :delivered}
-      expect(log).to be_valid
-      expect(log.entity).to eq(@entity)
-      expect(log.mailing).to eq(@mailing)
+  context "scopes" do
+    let!(:entity2) { create :user }
+    let!(:log1) { MailyHerald::Log.create_for mailing, entity, {status: :delivered} }
+    let!(:log2) { MailyHerald::Log.create_for mailing, entity2, {status: :delivered} }
 
-      expect(MailyHerald::Log.for_entity(@entity)).to include(log)
-      expect(MailyHerald::Log.for_mailing(@mailing)).to include(log)
+    it { expect(MailyHerald::Log.count).to eq(2) }
 
-      expect(MailyHerald::Log.for_entity(@entity).for_mailing(@mailing).last).to eq(log)
+    context "#skipped" do
+      before { log1.update_attributes!(status: :skipped) }
+
+      it { expect(MailyHerald::Log.skipped.count).to eq(1) }
+    end
+
+    context "#error" do
+      before { log1.update_attributes!(status: :error) }
+
+      it { expect(MailyHerald::Log.error.count).to eq(1) }
+    end
+
+    context "#for_entity" do
+      it { expect(MailyHerald::Log.for_entity(entity).count).to eq(1) }
+      it { expect(MailyHerald::Log.for_entity(entity2).count).to eq(1) }
+    end
+
+    context "#like_email" do
+      it { expect(MailyHerald::Log.like_email(entity.email[0..2]).count).to eq(1) }
+      it { expect(MailyHerald::Log.like_email(entity2.email[0..2]).count).to eq(1) }
     end
   end
 
-  it "should have proper scopes" do
-    log1 = MailyHerald::Log.create_for @mailing, @entity, {status: :delivered}
-    log2 = MailyHerald::Log.create_for @mailing, @entity, {status: :delivered}
-    expect(MailyHerald::Log.count).to eq(2)
-
-    log1.update_attribute(:status, :skipped)
-    expect(MailyHerald::Log.count).to eq(2)
-    expect(MailyHerald::Log.skipped.count).to eq(1)
-
-    log1.update_attribute(:status, :error)
-    expect(MailyHerald::Log.count).to eq(2)
-    expect(MailyHerald::Log.error.count).to eq(1)
-  end
 end

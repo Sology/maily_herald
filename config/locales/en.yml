@@ -6,3 +6,7 @@ en:
           attributes:
             entity:
               wrong_type: is different type than defined in context
+  maily_herald:
+    subscription:
+      deactivated: Subscription has beed deleted.
+      undefined_token: Provided token was invalid.

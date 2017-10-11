@@ -1,5 +1,6 @@
 MailyHerald.setup do |config|
   config.token_redirect {|subscription| "/" }
+  config.raise_delivery_errors = true
 
   config.context :all_users do |context|
     context.scope {User.active}
@@ -28,8 +29,8 @@ MailyHerald.setup do |config|
 
   config.one_time_mailing :locked_mailing do |mailing|
     mailing.enable
-    mailing.title = "Test mailing"
-    mailing.subject = "Test mailing"
+    mailing.title = "Locked mailing"
+    mailing.subject = "Locked mailing"
     mailing.list = :generic_list
     mailing.start_at = "user.created_at"
     mailing.template = "User name: {{user.name}}."

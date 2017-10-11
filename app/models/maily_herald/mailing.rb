@@ -3,11 +3,6 @@ module MailyHerald
     include MailyHerald::TemplateRenderer
     include MailyHerald::Autonaming
 
-    if Rails::VERSION::MAJOR == 3
-      attr_accessible :name, :title, :subject, :context_name, :override_subscription,
-                      :sequence, :conditions, :mailer_name, :title, :from, :relative_delay, :template, :start_at, :period
-    end
-
     has_many    :logs,          class_name: "MailyHerald::Log"
     
     validates   :subject,       presence: true, if: :generic_mailer?
@@ -120,7 +115,7 @@ module MailyHerald
     #
     # @raise [ArgumentError] if the conditions do not evaluate to boolean.
     def conditions_met? entity
-      subscription = MailyHerald::Subscription.get_from(entity) || self.list.subscription_for(entity)
+      subscription = Subscription.get_from(entity) || self.list.subscription_for(entity)
 
       if has_conditions_proc?
         !!conditions.call(entity, subscription)
@@ -194,8 +189,10 @@ module MailyHerald
       build_mail(schedule).deliver
     rescue StandardError => e
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
-      schedule.update_attributes(status: :error, data: {msg: "#{e.to_s}\n\n#{e.backtrace.join("\n")}"})
-      return nil
+      schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
+      schedule.save
+
+      MailyHerald.raise_delivery_errors? ? raise : (return nil)
     end
 
     # Called from Mailer, block required
@@ -227,7 +224,7 @@ module MailyHerald
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
 
-      return schedule
+      MailyHerald.raise_delivery_errors? ? raise : (return schedule)
     end
 
     private
