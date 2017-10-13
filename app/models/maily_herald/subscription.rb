@@ -23,7 +23,7 @@ module MailyHerald
       end
     end
 
-    after_save :update_schedules, if: Proc.new { |s| Rails::VERSION::MAJOR == 5 ? s.saved_change_to_attribute?(:active) : s.active_changed? }
+    after_save :update_schedules, if: Proc.new {|s| check_changed_attribute(s, :active)}
 
     def self.get_from(entity)
       if entity.has_attribute?(:maily_subscription_id) && entity.maily_subscription_id

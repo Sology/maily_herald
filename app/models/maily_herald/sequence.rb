@@ -18,7 +18,7 @@ module MailyHerald
         self.override_subscription = false
       end
     end
-    after_save :update_schedules_callback, if: Proc.new{|s| check_changed_attributes(s)}
+    after_save :update_schedules_callback, if: Proc.new{|s| check_changed_attribute(s, :state) || check_changed_attribute(s, :start_at)}
 
     # Fetches or defines an {SequenceMailing}.
     #
@@ -197,16 +197,6 @@ module MailyHerald
 
     def to_s
       "<Sequence: #{self.title || self.name}>"
-    end
-
-    private
-
-    def check_changed_attributes s
-      if Rails::VERSION::MAJOR == 5
-        s.saved_change_to_attribute?(:state) || s.saved_change_to_attribute?(:start_at)
-      else
-        s.state_changed? || s.start_at_changed?
-      end
     end
   end
 end
