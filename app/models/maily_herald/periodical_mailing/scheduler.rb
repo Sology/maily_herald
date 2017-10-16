@@ -17,7 +17,9 @@ module MailyHerald
       spt = start_processing_time
 
       if last_log && last_log.processing_at
-        last_log.processing_at + mailing.period
+        planned = last_log.processing_at + mailing.period
+        diff = (planned - spt).to_f
+        spt + (diff/mailing.period).round * mailing.period
       elsif mailing.individual_scheduling? && spt
         spt
       elsif mailing.general_scheduling?

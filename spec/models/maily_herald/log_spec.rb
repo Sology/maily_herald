@@ -48,4 +48,15 @@ describe MailyHerald::Log do
     end
   end
 
+  describe "#data" do
+    let(:log) { MailyHerald::Log.create_for mailing, entity, {status: :delivered} }
+
+    before do
+      log.data = {foo: "bar"}
+      log.save!
+      log.reload
+    end
+
+    it { expect(log.data).to eq({foo: "bar"}) }
+  end
 end
