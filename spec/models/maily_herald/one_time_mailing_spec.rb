@@ -196,7 +196,8 @@ describe MailyHerald::OneTimeMailing do
   end
 
   context "with block conditions" do
-    let!(:mailing) { create :custom_one_time_mailing, conditions: Proc.new {|user| user.weekly_notifications} }
+    # FIXME: Set the id manually so it doesn't interfere with other mailings that may have the same id during tests but no 'start_at' proc.
+    let!(:mailing) { create :custom_one_time_mailing, id: 100, conditions: Proc.new {|user| user.weekly_notifications} }
 
     it { expect(mailing.has_conditions_proc?).to be_truthy }
 

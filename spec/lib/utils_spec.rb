@@ -73,9 +73,10 @@ describe MailyHerald::Utils do
     context "start_at" do
       context "validate syntax" do
         before { mailing.start_at = "- foo bar | ddd" }
-          it { expect(described_class.test_start_at(mailing.start_at)).to be_falsy }
-          it { expect(mailing).not_to be_valid }
-          it { mailing.valid?; expect(mailing.errors).to include(:start_at) }
+
+        it { expect(described_class.test_start_at(mailing.start_at)).to be_falsy }
+        it { expect(mailing).not_to be_valid }
+        it { mailing.valid?; expect(mailing.errors).to include(:start_at) }
       end
 
       context "evaluate without filters" do

@@ -39,13 +39,13 @@ module MailyHerald
         return true if !markup || markup.empty?
 
         drop = Class.new(Liquid::Drop) do
-          def has_key?(name); true; end
+          def key?(name); true; end
           def invoke_drop(name)
             t = Time.now
             t.define_singleton_method(:[]) do |v|
               Time.now
             end
-            t.define_singleton_method(:has_key?) do |v|
+            t.define_singleton_method(:key?) do |v|
               true
             end
             t
@@ -92,7 +92,11 @@ module MailyHerald
           @drop.context = liquid_context if @drop.is_a?(Liquid::Drop)
           #liquid_context[markup]
 
-          variable = Liquid::Variable.new markup
+          parse_context = Class.new do
+            def line_number; 1; end
+            def error_mode; :lax; end
+          end.new
+          variable = Liquid::Variable.new markup, parse_context
           variable.render(liquid_context)
         end
       end
@@ -100,17 +104,19 @@ module MailyHerald
       private
 
       def self.create_liquid_condition markup
-        expressions = markup.scan(Liquid::If::ExpressionsAndOperators).reverse
-        raise(Liquid::SyntaxError, Liquid::SyntaxHelp) unless expressions.shift =~ Liquid::If::Syntax
+        expressions = markup.scan(Liquid::If::ExpressionsAndOperators)
+        raise(Liquid::SyntaxError.new(options[:locale].t("errors.syntax.if".freeze))) unless expressions.pop =~ Liquid::If::Syntax
 
-        condition = Liquid::Condition.new($1, $2, $3)
-        while not expressions.empty?
-          operator = (expressions.shift).to_s.strip
+        condition = Liquid::Condition.new(Liquid::Expression.parse($1), $2, Liquid::Expression.parse($3))
 
-          raise(Liquid::SyntaxError, Liquid::SyntaxHelp) unless expressions.shift.to_s =~ Liquid::If::Syntax
+        until expressions.empty?
+          operator = expressions.pop.to_s.strip
 
-          new_condition = Liquid::Condition.new($1, $2, $3)
-          new_condition.send(operator.to_sym, condition)
+          raise(Liquid::SyntaxError.new(options[:locale].t("errors.syntax.if".freeze))) unless expressions.pop.to_s =~ Liquid::If::Syntax
+
+          new_condition = Liquid::Condition.new(Liquid::Expression.parse($1), $2, Liquid::Expression.parse($3))
+          raise(Liquid::SyntaxError.new(options[:locale].t("errors.syntax.if".freeze))) unless Liquid::If::BOOLEAN_OPERATORS.include?(operator)
+          new_condition.send(operator, condition)
           condition = new_condition
         end
 
