@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.description = s.summary = "Email processing solution for Ruby on Rails applications"
 
   s.files = Dir["{app,config,db,lib,bin}/**/*", "LICENSE", "Rakefile", "README.md"]
-  s.executables = s.files.grep(%r{^bin/}) { |f| "bin/#{File.basename(f)}" }
+  s.executables = ['maily_herald']
 
   s.add_dependency "rails", ">= 4.2.0"
   s.add_dependency "liquid", "~> 4.0.0"
