@@ -32,4 +32,34 @@ describe MailyHerald::PeriodicalMailing::Scheduler do
       it { expect(subject.calculate_processing_time).to eq(third_processing_time) }
     end
   end
+
+  describe "initial processing time calculation" do
+    let(:mailing) { create :weekly_summary, start_at: start_at }
+    let(:calculated_start_time) { subject.calculate_processing_time }
+
+    context "with general scheduling" do
+      context "in the past" do
+        let(:start_at_time) { Time.now.round - 2.weeks - 1.day }
+        let(:start_at) { start_at_time.to_s }
+
+        it("should skip missed periods and start from next closest period") { expect(calculated_start_time).to eq(start_at_time + 3.weeks) }
+      end
+
+      context "in the future" do
+        let(:start_at_time) { Time.now.round - 5.days }
+        let(:start_at) { start_at_time.to_s }
+
+        it("should start from the next closest period after start time") { expect(calculated_start_time).to eq(start_at_time + 1.week) }
+      end
+    end
+
+    context "with individual scheduling" do
+      context "in the past" do
+        let(:start_at) { "user.created_at" }
+        let(:entity) { create :user, created_at: Time.now.round - 2.weeks - 2.days }
+
+        it("should start immediately") { expect(calculated_start_time).to eq(entity.created_at) }
+      end
+    end
+  end
 end
