@@ -32,8 +32,3 @@ guard :rspec, cmd: "bundle exec rspec", failed_mode: :focus do
   watch(rails.app_controller)  { "#{rspec.spec_dir}/controllers" }
 end
 
-guard :shell do
-  watch('doc/api/ui/v1/api.yaml') do |m|
-    `bundle exec rake doc:api`
-  end
-end
