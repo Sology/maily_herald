@@ -90,9 +90,19 @@ module MailyHerald
       context.scope_with_subscription(self).where("#{Subscription.table_name}.active = (?)", true).where("#{Subscription.table_name}.list_id = (?)", self.id)
     end
 
+    # Returns number of inactive List subscriptions.
+    def active_opt_outs_count
+      opt_outs.count(:id)
+    end
+
     # Returns entities within the context's scope with inactive subscription.
     def opt_outs
       context.scope_with_subscription(self).where("#{Subscription.table_name}.active = (?)", false).where("#{Subscription.table_name}.list_id = (?)", self.id)
+    end
+
+    # Returns number of potential List subscribers.
+    def active_potential_subscribers_count
+      potential_subscribers.count(:id)
     end
 
     # Returns entities within the context's scope without subscription.
