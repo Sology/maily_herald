@@ -106,24 +106,6 @@ describe MailyHerald::AdHocMailing do
 
   pending "with runtime template errors should create error log"
 
-  context "with subscription override" do
-    before { mailing.update_attributes!(override_subscription: true) }
-    after  { mailing.update_attributes!(override_subscription: false) }
-
-    it { expect(MailyHerald::Log.delivered.count).to eq(0) }
-    it { expect(mailing.override_subscription?).to be_truthy }
-    it { expect(mailing.enabled?).to be_truthy }
-
-    context "single mail should be delivered" do
-      let(:msg) { AdHocMailer.ad_hoc_mail(entity).deliver }
-
-      before { mailing.schedule_delivery_to entity, Time.now - 5 }
-
-      it { expect(msg).to be_kind_of(Mail::Message) }
-      it { msg; expect(MailyHerald::Log.delivered.count).to eq(1)}
-    end
-  end
-
   context "preview" do
     before { list.subscribe!(entity) }
 

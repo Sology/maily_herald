@@ -28,8 +28,6 @@ module MailyHerald
   #                                   Valid only for {SequenceMailing}.
   # @attr [String]    period          Email delivery period.
   #                                   Valid only for {PeriodicalMailing}.
-  # @attr [String]    override_subscription Defines whether email should be sent regardless of 
-  #                                   entity subscription state.
   class Dispatch < ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
 
@@ -153,7 +151,7 @@ module MailyHerald
     end
 
     def subscription_valid? entity
-      self.override_subscription? || self.list.subscribed?(entity)
+      self.list.subscribed?(entity)
     end
 
     def in_scope? entity
@@ -164,7 +162,6 @@ module MailyHerald
     #
     # Following checks are performed:
     # - dispatch is enabled,
-    # - subscription is overriden or user is subscribed to dispatch list,
     # - entity belongs to list {Context} scope.
     #
     # @param entity [ActiveRecord::Base] Recipient

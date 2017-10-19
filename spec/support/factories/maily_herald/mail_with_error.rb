@@ -10,6 +10,5 @@ FactoryGirl.define do
     title "Mail with error"
     list :generic_list
     state "enabled"
-    override_subscription false
   end
 end

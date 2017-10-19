@@ -153,19 +153,6 @@ describe MailyHerald::OneTimeMailing do
     end
   end
 
-  context "with subscription override" do
-    let!(:mailing)  { create :custom_one_time_mailing }
-
-    before { mailing.update_attributes!(override_subscription: true) }
-    after  { mailing.update_attributes!(override_subscription: false) }
-
-    it { expect(MailyHerald::Log.delivered.count).to eq(0) }
-    it { expect(mailing.processable?(entity)).to be_truthy }
-    it { expect(mailing.override_subscription?).to be_truthy }
-    it { expect(mailing.enabled?).to be_truthy }
-    it { mailing.run; expect(MailyHerald::Log.delivered.count).to eq(1) }
-  end
-
   context "with block start_at" do
     # FIXME: Set the id manually so it doesn't interfere with other mailings that may have the same id during tests but no 'start_at' proc.
     let!(:mailing) { create :custom_one_time_mailing, id: 99, start_at: Proc.new{|user| user.created_at + 1.hour} }

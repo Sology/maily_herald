@@ -72,7 +72,7 @@ module MailyHerald
       last_log ||= processed_logs.last
       processing_at = calculate_processing_time(last_log)
 
-      if !mailing.period || !mailing.start_at || !mailing.enabled? || !processing_at || !(mailing.override_subscription? || subscribed?)
+      if !mailing.period || !mailing.start_at || !mailing.enabled? || !processing_at || !subscribed?
         log.try(:destroy)
         return
       end

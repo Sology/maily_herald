@@ -4,7 +4,7 @@ module MailyHerald
     validates   :start_at,      presence: true
     validate    :validate_start_at
 
-    after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attribute(m, :state) || check_changed_attribute(m, :start_at) || m.override_subscription?}
+    after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attribute(m, :state) || check_changed_attribute(m, :start_at)}
 
     # Sends mailing to all subscribed entities.
     #
@@ -47,7 +47,7 @@ module MailyHerald
       subscribed = self.list.subscribed?(entity)
       start_time = start_processing_time(entity)
 
-      if !self.start_at || !enabled? || !start_time || !(self.override_subscription? || subscribed)
+      if !self.start_at || !enabled? || !start_time || !subscribed
         log = schedule_for(entity)
         log.try(:destroy)
         return

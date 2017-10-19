@@ -10,7 +10,6 @@ FactoryGirl.define do
     template "User name: {{user.name}}."
     list :generic_list
     state "enabled"
-    override_subscription false
     period 604800
   end
 end

@@ -223,18 +223,6 @@ describe MailyHerald::PeriodicalMailing do
         expect(MailyHerald::Log.count).to eq(0)
       end
     end
-
-    context "delivering" do
-      before { mailing.update_attributes!(override_subscription: true) }
-
-      it { expect(MailyHerald::Log.scheduled.count).to eq(1) }
-
-      it "should go through with subscription override" do
-        mailing.run
-        expect(MailyHerald::Subscription.count).to eq(0)
-        expect(MailyHerald::Log.delivered.count).to eq(1)
-      end
-    end
   end
 
   context "conditions" do

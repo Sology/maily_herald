@@ -6,6 +6,5 @@ FactoryGirl.define do
     title "Ad hoc mailing"
     state "enabled"
     list :generic_list
-    override_subscription false
   end
 end

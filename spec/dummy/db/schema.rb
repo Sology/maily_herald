@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150205120443) do
+ActiveRecord::Schema.define(version: 20171019105242) do
 
   create_table "maily_herald_dispatches", force: :cascade do |t|
     t.string "type", null: false
@@ -27,7 +27,6 @@ ActiveRecord::Schema.define(version: 20150205120443) do
     t.text "template"
     t.integer "absolute_delay"
     t.integer "period"
-    t.boolean "override_subscription"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_maily_herald_dispatches_on_name", unique: true

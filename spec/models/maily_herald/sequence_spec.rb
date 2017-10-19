@@ -276,39 +276,6 @@ describe MailyHerald::Sequence do
 
   end
 
-  context "subscription override" do
-    let!(:entity) { create :user }
-    let(:subscription) { sequence.subscription_for entity }
-    let(:next_processing) { sequence.next_processing_time entity }
-
-    before { list.subscribe! entity }
-
-    it { expect(subscription).to be_active }
-
-    context "deactivate!" do
-      before { subscription.deactivate! }
-
-      it { expect(subscription).not_to be_active }
-      it { expect(sequence.logs.count).to eq(0) }
-      it { expect(sequence.last_processing_time(entity)).to be_nil }
-
-      pending "should be able to override subscription" do
-        Timecop.freeze next_processing
-
-        sequence.run
-
-        expect(sequence.logs.count).to eq(0)
-        expect(sequence.last_processing_time(entity)).to be_nil
-
-        sequence.update_attributes!(override_subscription: true)
-        sequence.run
-
-        expect(sequence.logs.count).to eq(1)
-        expect(sequence.last_processing_time(entity).to_i).to eq(next_processing.to_i)
-      end
-    end
-  end
-
   context "error handling" do
     let!(:entity) { create :user }
 

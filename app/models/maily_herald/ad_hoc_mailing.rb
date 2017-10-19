@@ -23,7 +23,7 @@ module MailyHerald
     def schedule_delivery_to entity, time = Time.now
       subscribed = self.list.subscribed?(entity)
 
-      if !enabled? || !(self.override_subscription? || subscribed)
+      if !enabled? || !subscribed
         return
       end
 
@@ -67,7 +67,7 @@ module MailyHerald
     def set_schedule_for entity
       subscribed = self.list.subscribed?(entity)
 
-      if !enabled? || !(self.override_subscription? || subscribed)
+      if !enabled? || !subscribed
         log = schedule_for(entity)
         log.try(:destroy)
         return

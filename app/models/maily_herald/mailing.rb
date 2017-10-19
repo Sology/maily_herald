@@ -19,7 +19,6 @@ module MailyHerald
 
     after_initialize do
       if self.new_record?
-        self.override_subscription = false
         self.mailer_name = :generic
       end
 

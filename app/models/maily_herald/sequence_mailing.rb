@@ -40,10 +40,6 @@ module MailyHerald
       self.sequence.schedules
     end
 
-    def override_subscription?
-      self.sequence.override_subscription? || super
-    end
-
     def processable? entity
       self.sequence.enabled? && super
     end

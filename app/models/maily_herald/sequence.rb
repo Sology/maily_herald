@@ -13,11 +13,6 @@ module MailyHerald
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
     end
 
-    after_initialize do
-      if self.new_record?
-        self.override_subscription = false
-      end
-    end
     after_save :update_schedules_callback, if: Proc.new{|s| check_changed_attribute(s, :state) || check_changed_attribute(s, :start_at)}
 
     # Fetches or defines an {SequenceMailing}.
@@ -120,8 +115,6 @@ module MailyHerald
     #
     # Schedule is {Log} object of type "schedule".
     def set_schedule_for entity
-      # TODO handle override subscription?
-
       subscribed = self.list.subscribed?(entity)
       mailing = next_mailing(entity)
       start_time = calculate_processing_time_for(entity, mailing) if mailing
