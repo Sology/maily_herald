@@ -91,7 +91,7 @@ module MailyHerald
     end
 
     # Returns number of inactive List subscriptions.
-    def active_opt_outs_count
+    def opt_outs_count
       opt_outs.count(:id)
     end
 
@@ -101,7 +101,7 @@ module MailyHerald
     end
 
     # Returns number of potential List subscribers.
-    def active_potential_subscribers_count
+    def potential_subscribers_count
       potential_subscribers.count(:id)
     end
 
