@@ -1,3 +1,4 @@
 ---
 :verbose: true
 :logfile: "log/maily_herald.log"
+:pidfile: "tmp/maily_herald.pid"
