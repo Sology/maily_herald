@@ -17,6 +17,19 @@ describe MailyHerald::List do
 
   after { list2.destroy }
 
+  context "scope" do
+    context "search_by" do
+      it { expect(described_class.count).to eq(3) }
+
+      context "when query is 'her'" do
+        let(:scoped) { described_class.search_by("her") }
+
+        it { expect(scoped.count).to eq(1) }
+        it { expect(scoped.first.name).to eq("another_list") }
+      end
+    end
+  end
+
   context "subscripions" do
     context "subscribing" do
       it { expect(list.subscribed?(entity)).to be_falsy }

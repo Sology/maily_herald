@@ -30,6 +30,8 @@ module MailyHerald
       end
     end
 
+    scope :search_by, ->(query) { where("name like '%#{query}%' or title like '%#{query}%'") }
+
     # Returns {Context} object associated with List.
     def context
       @context ||= MailyHerald.context self.context_name
