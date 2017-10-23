@@ -2,6 +2,21 @@ require 'rails_helper'
 
 describe MailyHerald::Mailing do
 
+  context "scope" do
+    context "search_by" do
+      let!(:mailing) { create :ad_hoc_mailing }
+
+      it { expect(described_class.count).to eq(2) }
+
+      context "when query is 'her'" do
+        let(:scoped) { described_class.search_by("hoc") }
+
+        it { expect(scoped.count).to eq(1) }
+        it { expect(scoped.first.name).to eq("ad_hoc_mail") }
+      end
+    end
+  end
+
   context "validations" do
     let!(:mailing) { create :generic_one_time_mailing }
 

@@ -59,6 +59,8 @@ module MailyHerald
     scope       :periodical_mailing, lambda { where(type: PeriodicalMailing) }
     scope       :sequence,      lambda { where(type: Sequence) }
 
+    scope       :search_by,     ->(query) { where("name like '%#{query}%' or title like '%#{query}%'") }
+
     before_validation do
       if @start_at_proc
         self.start_at = "proc"
