@@ -3,6 +3,7 @@ module MailyHerald
     validates   :list,          presence: true
     validates   :start_at,      presence: true
     validates   :period,        presence: true, numericality: {greater_than: 0}
+    validate    :validate_start_at
 
     after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attribute(m, :state) || check_changed_attribute(m, :period) || check_changed_attribute(m, :start_at)}
 
