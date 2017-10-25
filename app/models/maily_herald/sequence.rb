@@ -8,6 +8,8 @@ module MailyHerald
     has_many    :logs,                class_name: "MailyHerald::Log", through: :mailings
 
     validates   :list,                presence: true
+    validates   :start_at,            presence: true
+    validate    :validate_start_at
 
     before_validation do
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)

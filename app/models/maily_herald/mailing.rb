@@ -246,16 +246,6 @@ module MailyHerald
       errors.add(:conditions, e.to_s) 
     end
 
-    def validate_start_at
-      return true if has_start_at_proc?
-
-      result = Utils::MarkupEvaluator.test_start_at(self.start_at)
-
-      errors.add(:start_at, "is not a time value") unless result
-    rescue StandardError => e
-      errors.add(:start_at, e.to_s) 
-    end
-
     def mailer_validity
       !!mailer unless generic_mailer?
     rescue

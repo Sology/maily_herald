@@ -176,5 +176,18 @@ module MailyHerald
     def locked?
       MailyHerald.dispatch_locked?(self.name)
     end
+
+    private
+
+    def validate_start_at
+      return true if has_start_at_proc?
+
+      result = Utils::MarkupEvaluator.test_start_at(self.start_at)
+
+      errors.add(:start_at, "is not a time value") unless result
+    rescue StandardError => e
+      errors.add(:start_at, e.to_s)
+    end
+
   end
 end
