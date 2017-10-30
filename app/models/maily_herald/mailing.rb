@@ -8,7 +8,8 @@ module MailyHerald
     has_many    :logs,            class_name: "MailyHerald::Log"
     
     validates   :subject,         presence: true, if: :generic_mailer?
-    validates   :template_plain,  presence: true, if: :generic_mailer?
+    validates   :template_plain,  presence: { if: -> { template_html.blank? && generic_mailer? } }
+    validates   :template_html,   presence: { if: -> { template_plain.blank? && generic_mailer? } }
     validate    :mailer_validity
     validate    :template_syntax
     validate    :validate_conditions
