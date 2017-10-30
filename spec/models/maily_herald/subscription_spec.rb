@@ -15,13 +15,13 @@ describe MailyHerald::Subscription do
   end
 
   context "template rendering" do
-    context "valid template" do
-      before { expect(mailing).to receive(:template).and_return("test {{user.name}}") }
+    context "valid template_plain" do
+      before { expect(mailing).to receive(:template_plain).and_return("test {{user.name}}") }
       it { expect(mailing.render_template(entity)).to eq("test #{entity.name}") }
     end
 
-    context "invalid template" do
-      before { expect(mailing).to receive(:template).and_return("{% if 1 =! 2 %}ok{% endif %}") }
+    context "invalid template_plain" do
+      before { expect(mailing).to receive(:template_plain).and_return("{% if 1 =! 2 %}ok{% endif %}") }
       it { expect{mailing.render_template(entity)}.to raise_error(Liquid::ArgumentError) }
     end
   end

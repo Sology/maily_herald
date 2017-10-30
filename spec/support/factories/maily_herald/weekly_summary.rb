@@ -7,7 +7,7 @@ FactoryGirl.define do
     name "weekly_summary"
     title "Test periodical mailing"
     subject "Weekly summary"
-    template "User name: {{user.name}}."
+    template_plain "User name: {{user.name}}."
     list :generic_list
     state "enabled"
     period 604800

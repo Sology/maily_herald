@@ -22,11 +22,11 @@ describe MailyHerald::Mailing do
 
     it { expect(mailing).to be_valid }
 
-    it "should validate template syntax" do
-      mailing.template = "foo {{ bar"
+    it "should validate template_plain syntax" do
+      mailing.template_plain = "foo {{ bar"
       expect(mailing).not_to be_valid
-      expect(mailing.errors.messages.keys).to include(:template)
-      expect(mailing.errors.messages[:template]).not_to be_empty
+      expect(mailing.errors.messages.keys).to include(:template_plain)
+      expect(mailing.errors.messages[:template_plain]).not_to be_empty
     end
 
     it "should validate conditions syntax" do

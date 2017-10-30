@@ -3,10 +3,12 @@ module MailyHerald
     include MailyHerald::TemplateRenderer
     include MailyHerald::Autonaming
 
-    has_many    :logs,          class_name: "MailyHerald::Log"
+    enum kind: [:both, :plain, :html]
+
+    has_many    :logs,            class_name: "MailyHerald::Log"
     
-    validates   :subject,       presence: true, if: :generic_mailer?
-    validates   :template,      presence: true, if: :generic_mailer?
+    validates   :subject,         presence: true, if: :generic_mailer?
+    validates   :template_plain,  presence: true, if: :generic_mailer?
     validate    :mailer_validity
     validate    :template_syntax
     validate    :validate_conditions
@@ -143,14 +145,14 @@ module MailyHerald
 
     # Renders email body for given entity.
     #
-    # Reads {#template} attribute and renders it using Liquid within the context
+    # Reads {#template_plain} attribute and renders it using Liquid within the context
     # for provided entity.
     def render_template entity
       subscription = self.list.subscription_for(entity)
       return unless subscription
 
       drop = self.list.context.drop_for entity, subscription
-      perform_template_rendering drop, self.template
+      perform_template_rendering drop, self.template_plain
     end
 
     # Renders email subject line for given entity.
@@ -230,9 +232,9 @@ module MailyHerald
 
     def template_syntax
       begin
-        template = Liquid::Template.parse(self.template)
+        template = Liquid::Template.parse(self.template_plain)
       rescue StandardError => e
-        errors.add(:template, e.to_s)
+        errors.add(:template_plain, e.to_s)
       end
     end
 

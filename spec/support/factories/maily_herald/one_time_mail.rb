@@ -17,7 +17,7 @@ FactoryGirl.define do
     name                    "test_mailing"
     title                   "Test mailing"
     subject                 "Test mailing"
-    template                "User name: {{user.name}}."
+    template_plain                "User name: {{user.name}}."
     list                    :generic_list
     state                   "enabled"
     from                    "foo@bar.com"

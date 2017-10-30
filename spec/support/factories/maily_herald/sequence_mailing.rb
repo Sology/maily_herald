@@ -5,7 +5,7 @@ FactoryGirl.define do
     name "initial_mail"
     title "Test mailing #1"
     subject "Test mailing #1"
-    template "User name: {{user.name}}."
+    template_plain "User name: {{user.name}}."
     absolute_delay 1.hour
     state "enabled"
   end
@@ -16,7 +16,7 @@ FactoryGirl.define do
     name "second_mail"
     title "Test mailing #2"
     subject "Test mailing #2"
-    template "User name: {{user.name}}."
+    template_plain "User name: {{user.name}}."
     absolute_delay 3.hour
     state "enabled"
   end
@@ -27,7 +27,7 @@ FactoryGirl.define do
     name "third_mail"
     title "Test mailing #3"
     subject "Test mailing #3"
-    template "User name: {{user.name}}."
+    template_plain "User name: {{user.name}}."
     absolute_delay 6.hour
     state "enabled"
   end

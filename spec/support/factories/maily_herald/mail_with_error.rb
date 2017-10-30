@@ -5,7 +5,7 @@ FactoryGirl.define do
     mailer_name "CustomOneTimeMailer"
     name "mail_with_error"
     from nil
-    template nil
+    template_plain nil
     subject nil
     title "Mail with error"
     list :generic_list

@@ -95,7 +95,7 @@ describe MailyHerald::Sequence do
 
   context "scheduled processing" do
     let!(:entity) { create :user }
-    let!(:template_tmp) { sequence.mailings[1].template }
+    let!(:template_tmp) { sequence.mailings[1].template_plain }
     let(:subscription) { list.subscription_for(entity) }
 
     before { list.subscribe! entity }

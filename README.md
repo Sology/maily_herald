@@ -257,7 +257,7 @@ end
 config.ad_hoc_mailing :hello do |mailing|
   mailing.list = :all_users
   mailing.subject = "Hello {{user.name}}!"
-  mailing.template = "What's up?"
+  mailing.template_plain = "What's up?"
   mailing.enable
 end
 ```

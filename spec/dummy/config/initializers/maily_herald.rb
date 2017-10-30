@@ -33,6 +33,6 @@ MailyHerald.setup do |config|
     mailing.subject = "Locked mailing"
     mailing.list = :generic_list
     mailing.start_at = "user.created_at"
-    mailing.template = "User name: {{user.name}}."
+    mailing.template_plain = "User name: {{user.name}}."
   end
 end
