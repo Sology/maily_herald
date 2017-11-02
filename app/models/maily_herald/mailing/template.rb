@@ -31,8 +31,9 @@ module MailyHerald
         temp = template_html
                  .strip
                  .gsub(/<\/[b-z]{1,}>/, "\n")
+                 .gsub(/\s{3,}/, "\n")
 
-        ActionController::Base.helpers.strip_tags temp
+        ActionController::Base.helpers.strip_tags(temp).gsub(/\n{2,}/, "\n")
       end
     end
   end
