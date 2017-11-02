@@ -144,6 +144,11 @@ module MailyHerald
       self.list.context.destination_for(entity)
     end
 
+    # Returns initialized 'MailyHerald::Mailing::Template' object with self.
+    def template
+      @template ||= MailyHerald::Mailing::Template.new(self)
+    end
+
     # Renders email body for given entity.
     #
     # Reads {#template_plain} attribute and renders it using Liquid within the context
