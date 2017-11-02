@@ -18,6 +18,8 @@ module MailyHerald
       write_attribute(:name, self.title.downcase.gsub(/\W/, "_")) if self.title && (!self.name || self.name.empty?)
       write_attribute(:conditions, nil) if !self.has_conditions_proc? && self.conditions.try(:empty?)
       write_attribute(:from, nil) if self.from.try(:empty?)
+      write_attribute(:template_plain, nil) if self.html?
+      write_attribute(:template_html, nil) if self.plain?
     end
 
     after_initialize do
