@@ -25,6 +25,8 @@ module MailyHerald
           .strip
           .gsub(/\n/, "<br/>")
           .gsub(/https?:\/\/[\S]+/) { |match| "<a href=#{match}>#{match}</a>" }
+      rescue
+        nil
       end
 
       def generate_plain
@@ -34,6 +36,8 @@ module MailyHerald
                  .gsub(/\s{3,}/, "\n")
 
         ActionController::Base.helpers.strip_tags(temp).gsub(/\n{2,}/, "\n")
+      rescue
+        nil
       end
     end
   end
