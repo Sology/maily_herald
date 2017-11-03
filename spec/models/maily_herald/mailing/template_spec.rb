@@ -18,7 +18,7 @@ describe MailyHerald::Mailing::Template do
                       template_plain:  nil,
                       template_html:   "<h1>Subtitle<h1>\n<p>One Time mailing's body</p><a href=http://www.sology.eu>http://www.sology.eu</a>") }
 
-    it { expect(subject.plain).to eq("Subtitle\nOne Time mailing's body\nhttp://www.sology.eu") }
+    it { expect(subject.plain).to eq("Subtitle\nOne Time mailing's body<a href=\"http://www.sology.eu\">http://www.sology.eu</a>") }
     it { expect(subject.html).to eq(mailing.template_html) }
   end
 

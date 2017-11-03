@@ -153,14 +153,16 @@ module MailyHerald
 
     # Renders email body for given entity.
     #
-    # Reads {#template_plain} attribute and renders it using Liquid within the context
+    # Reads {#template} attribute and renders it using Liquid within the context
     # for provided entity.
-    def render_template entity
+    def render_template entity, style = "html"
       subscription = self.list.subscription_for(entity)
       return unless subscription
 
+      style = Mailing.kinds.keys.include?(style) && style != "both" ? style : "html"
+
       drop = self.list.context.drop_for entity, subscription
-      perform_template_rendering drop, self.template_plain
+      perform_template_rendering drop, template.send(style)
     end
 
     # Renders email subject line for given entity.

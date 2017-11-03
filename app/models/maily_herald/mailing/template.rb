@@ -1,6 +1,7 @@
 module MailyHerald
   class Mailing
     class Template
+      include ActionView::Helpers::SanitizeHelper
       attr_reader :template_plain, :template_html
 
       def initialize mailing
@@ -30,12 +31,7 @@ module MailyHerald
       end
 
       def generate_plain
-        temp = template_html
-                 .strip
-                 .gsub(/<\/[b-z]{1,}>/, "\n")
-                 .gsub(/\s{3,}/, "\n")
-
-        ActionController::Base.helpers.strip_tags(temp).gsub(/\n{2,}/, "\n")
+        sanitize(template_html, tags: %w(a), attributes: %w(href mailto)).gsub(/\r\n/, "\n").gsub(/\n{2,}/, "\n")
       rescue
         nil
       end
