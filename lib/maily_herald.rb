@@ -54,6 +54,8 @@ module MailyHerald
       else
         @klass.send m, *args, &block
       end
+    rescue
+      raise StandardError.new("There is an issue with your initializer file. Please adjust it and run your command once more.\n\n")
     end
   end
 
