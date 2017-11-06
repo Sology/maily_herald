@@ -160,8 +160,22 @@ module MailyHerald
     # Performs Maily setup.
     #
     # To be used in initializer file.
+    MIGRATION_NAME_REGEX = /[^0-9][a-zA-Z_]{1,}/
     def setup
       logger.warn("Maily migrations seems to be pending. Skipping setup...") && return unless schema_loaded?
+
+      if defined?(Rails) && !Rails.env.test?
+        maily_migrations  = Dir.entries(MailyHerald::Engine.root.join("db/migrate"))
+                              .select {|f| !File.directory? f}
+                              .each_with_object([]) {|n,arr| arr << n.match(MIGRATION_NAME_REGEX).to_s }
+        target_migrations = Dir.entries(Rails.root.join("db/migrate"))
+                              .select {|f| !File.directory? f}
+                              .each_with_object([]) {|n,arr| arr << n.match(MIGRATION_NAME_REGEX).to_s }
+
+        maily_migrations.each do |name|
+          raise ActiveRecord::PendingMigrationError.new("Migrations from MailyHerald are pending. To resolve this issue, run:\n\n   rake maily_herald:install:migrations\n\n   rake db:migrate RAILS_ENV=#{::Rails.env}") unless target_migrations.include? name
+        end
+      end
 
       yield Initializer.new(self)
     end
