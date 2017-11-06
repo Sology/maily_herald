@@ -179,7 +179,7 @@ module MailyHerald
         end
       end
 
-      yield Initializer.new(self)
+      yield Initializer.new(self) unless ( File.basename($0) == 'rake')
     end
 
     # Checks if Maily tables are present.
