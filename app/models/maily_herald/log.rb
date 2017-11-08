@@ -42,6 +42,8 @@ module MailyHerald
 
     serialize   :data,          Hash
 
+    after_create :update_log_callback
+
     # Contains `Mail::Message` object that was delivered.
     #
     # Present only in logs of state `delivered` and obtained via
@@ -126,10 +128,10 @@ module MailyHerald
     end
 
     # Set attributes of a schedule so it has 'delivered' status.
-    # @param content Body of delivered email.
-    def deliver content
+    # @param options Various options like 'content', 'opened_at' or 'ip_addresses'.
+    def deliver options = {}
       self.status = :delivered
-      self.data[:content] = content
+      options.each {|k,v| self.data[k] = v }
     end
 
     # Set attributes of a schedule so it has 'error' status.
@@ -137,6 +139,13 @@ module MailyHerald
     def error msg
       self.status = :error
       self.data[:msg] = msg
+    end
+
+    private
+
+    def update_log_callback
+      self.token = SecureRandom.urlsafe_base64(32).gsub(/[\-_]/, "").first(32)
+      self.save
     end
   end
 end

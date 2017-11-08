@@ -228,7 +228,11 @@ module MailyHerald
       mail = yield # Let mailer do his job
 
       MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
-      schedule.deliver(mail.to_s)
+      schedule.deliver({
+        content: mail.to_s,
+        opened_at: [],
+        ip_addresses: []
+      })
 
       return schedule
     rescue StandardError => e

@@ -66,6 +66,7 @@ module MailyHerald
   autoload :Manager,            'maily_herald/manager'
   autoload :Autonaming,         'maily_herald/autonaming'
   autoload :Logging,            'maily_herald/logging'
+  autoload :Tracking,           'maily_herald/tracking'
 
   @@token_redirect = nil
   @@raise_delivery_errors = false

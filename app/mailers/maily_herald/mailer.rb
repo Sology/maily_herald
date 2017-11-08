@@ -5,7 +5,8 @@ module MailyHerald
     def generic entity
       destination = @maily_herald_mailing.destination(entity)
       subject = @maily_herald_mailing.render_subject(entity)
-      content = @maily_herald_mailing.render_template(entity)
+      content_html = @maily_herald_mailing.render_template(entity)
+      content_plain = @maily_herald_mailing.render_template(entity, "plain")
 
       opts = {
         to: destination, 
@@ -14,7 +15,8 @@ module MailyHerald
       opts[:from] = @maily_herald_mailing.from if @maily_herald_mailing.from.present?
 
       mail(opts) do |format|
-        format.text { render plain: content }
+        format.text { render plain: content_plain }
+        format.html { content_html }
       end
     end
 
@@ -59,7 +61,9 @@ module MailyHerald
         @maily_mailing = @_message.maily_herald_data[:mailing]
       end
 
-      super
+      msg = super
+      MailyHerald::Tracking::Processor.new(msg, @maily_herald_schedule).process
+      msg
     end
 
     def process(*args) #:nodoc:
