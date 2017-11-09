@@ -31,7 +31,7 @@ module MailyHerald
       end
 
       def generate_plain
-        sanitize(template_html, tags: %w(a), attributes: %w(href mailto)).gsub(/\r\n/, "\n").gsub(/\n{2,}/, "\n")
+        sanitize(template_html, tags: %w(a), attributes: %w(href mailto)).gsub(/\r\n/, "\n").gsub(/\n{2,}/, "\n").gsub(/\n\s{2,}/, "\n")
       rescue
         nil
       end
