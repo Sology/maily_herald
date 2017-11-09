@@ -1,9 +1,9 @@
 module MailyHerald
   class TokensController < MailyHerald::ApplicationController
-    before_action :load_subscription, only: :get
+    before_action :load_subscription, only: :unsubscribe
     before_action :load_log, only: :open
 
-    def get
+    def unsubscribe
       @subscription.try(:deactivate!)
 
       redirect_to MailyHerald.token_redirect.try(:call, self, @subscription) || "/", notice: redirection_notice

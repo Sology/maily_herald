@@ -12,9 +12,9 @@ describe MailyHerald::TokensController do
 
   it { expect(subscription.active?).to be_truthy }
 
-  describe "GET #get" do
+  describe "GET #unsubscribe" do
     context "with valid token" do
-      before { get :get, params: {token: subscription.token} }
+      before { get :unsubscribe, params: {token: subscription.token} }
 
       it { subscription.reload; expect(subscription.active?).to be_falsy }
       it { expect(response).to redirect_to('/') }
@@ -22,7 +22,7 @@ describe MailyHerald::TokensController do
     end
 
     context "with invalid token" do
-      before { get :get, params: {token: "invalid_token"} }
+      before { get :unsubscribe, params: {token: "invalid_token"} }
 
       it { subscription.reload; expect(subscription.active?).to be_truthy }
       it { expect(response).to redirect_to('/') }
