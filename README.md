@@ -20,7 +20,7 @@ Core Maily features are accessible for Rails programmers via the API. Apart from
 
 ## Requirements
 
-Both Ruby on Rails 3.2 and 4 are supported. 
+Ruby on Rails 4.2 and 5.1 are supported.
 
 ## Installation
 
@@ -258,6 +258,7 @@ config.ad_hoc_mailing :hello do |mailing|
   mailing.list = :all_users
   mailing.subject = "Hello {{user.name}}!"
   mailing.template_plain = "What's up?"
+  mailing.template_html = "<h1>What's up?</h1>"
   mailing.enable
 end
 ```
@@ -295,7 +296,7 @@ To process user opt-out requests, you need to mount Maily into your app:
 ```ruby
 # config/routes.rb
 
-mount MailyHerald::Engine => "/unsubscribe", :as => "maily_herald_engine"
+mount MailyHerald::Engine => "/maily_herald", :as => "maily_herald_engine"
 ```
 
 Maily provides you with a URL helper that generates opt-out URLs (i.e. in your ActionMailer views):
@@ -389,7 +390,7 @@ config.token_redirect do |controller, subscription|
 end
 ```
 
-In case you need more customization, you can always overwrite `MailyHerald::TokensController` and its `get` method:
+In case you need more customization, you can always overwrite `MailyHerald::TokensController` and its `unsubscribe` method:
 
 ```ruby
 # app/controllers/maily_herald/tokens_controller.rb
@@ -397,7 +398,7 @@ module MailyHerald
   class TokensController < ::ApplicationController
     before_action :find_subscription
 
-    def get
+    def unsubscribe
       if @subscription && @subscription.active?
         @subscription.deactivate!
         # now render some custom view
