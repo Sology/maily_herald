@@ -23,7 +23,7 @@ module MailyHerald
       def add_pixel
         raw_source = (message.html_part || message).body.raw_source
         regex = /<\/body>/i
-        pixel = ActionController::Base.helpers.image_tag url_for_open, size: "1x1", alt: ""
+        pixel = ActionController::Base.helpers.image_tag url_for_open, size: "1x1", alt: "", id: "tracking-pixel"
 
         if raw_source.match(regex)
           raw_source.gsub!(regex, "#{pixel}\\0")
