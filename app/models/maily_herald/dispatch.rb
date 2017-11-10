@@ -22,7 +22,9 @@ module MailyHerald
   # @attr [String]    state
   # @attr [String]    subject         Email subject as Liquid template.
   #                                   Valid only for {Mailing}.
-  # @attr [String]    template_plain  Email body template as Liquid template.
+  # @attr [String]    template_plain  Email body template in plain text as Liquid template.
+  #                                   Valid only for {Mailing}.
+  # @attr [String]    template_html   Email body template with HTML structure as Liquid template.
   #                                   Valid only for {Mailing}.
   # @attr [String]    absolute_delay  Email delivery delay from beginning of sequence.
   #                                   Valid only for {SequenceMailing}.
