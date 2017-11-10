@@ -9,16 +9,10 @@ module MailyHerald
       end
 
       def process
-        track_open
+        add_pixel if log && log.mailing.track && message.html_part
       end
 
       private
-
-      def track_open
-        if log && log.mailing.track
-          add_pixel if message.html_part
-        end
-      end
 
       def add_pixel
         raw_source = (message.html_part || message).body.raw_source
