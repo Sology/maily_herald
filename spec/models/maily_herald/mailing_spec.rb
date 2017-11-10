@@ -29,6 +29,13 @@ describe MailyHerald::Mailing do
       expect(mailing.errors.messages[:template_plain]).not_to be_empty
     end
 
+    it "should validate template_html syntax" do
+      mailing.template_html = "<h1>foo {{ bar</h1><a href=\"https://www.google.pl\">https://www.google.pl</a>"
+      expect(mailing).not_to be_valid
+      expect(mailing.errors.messages.keys).to include(:template_html)
+      expect(mailing.errors.messages[:template_html]).not_to be_empty
+    end
+
     it "should validate conditions syntax" do
       mailing.conditions = "foo {{ bar"
       expect(mailing).not_to be_valid

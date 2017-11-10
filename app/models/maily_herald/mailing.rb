@@ -245,11 +245,14 @@ module MailyHerald
     private
 
     def template_syntax
-      begin
-        template = Liquid::Template.parse(self.template_plain)
-      rescue StandardError => e
-        errors.add(:template_plain, e.to_s)
-      end
+      validate_template :template_plain if self.mixed? || self.plain?
+      validate_template :template_html  if self.mixed? || self.html?
+    end
+
+    def validate_template template_kind
+      Liquid::Template.parse(self.send(template_kind))
+    rescue StandardError => e
+      errors.add(template_kind, e.to_s)
     end
 
     def validate_conditions
