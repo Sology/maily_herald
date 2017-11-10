@@ -42,7 +42,7 @@ module MailyHerald
 
     serialize   :data,          Hash
 
-    after_create :update_log_callback
+    before_create :set_token
 
     # Contains `Mail::Message` object that was delivered.
     #
@@ -143,9 +143,8 @@ module MailyHerald
 
     private
 
-    def update_log_callback
+    def set_token
       self.token = SecureRandom.urlsafe_base64(32).gsub(/[\-_]/, "").first(32)
-      self.save
     end
   end
 end
