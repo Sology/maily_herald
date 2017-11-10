@@ -390,27 +390,43 @@ config.token_redirect do |controller, subscription|
 end
 ```
 
-In case you need more customization, you can always overwrite `MailyHerald::TokensController` and its `unsubscribe` method:
+In case you need more customization, you can always overwrite `MailyHerald::TokensController` and its methods:
 
 ```ruby
 # app/controllers/maily_herald/tokens_controller.rb
 module MailyHerald
-  class TokensController < ::ApplicationController
-    before_action :find_subscription
+  class TokensController < MailyHerald::ApplicationController
+    before_action :load_subscription, only: :unsubscribe
+    before_action :load_log, only: :open
 
     def unsubscribe
-      if @subscription && @subscription.active?
-        @subscription.deactivate!
-        # now render some custom view
-      else
-        redirect_to(main_app.root_url)
+      @subscription.try(:deactivate!)
+
+      redirect_to MailyHerald.token_redirect.try(:call, self, @subscription) || "/", notice: redirection_notice
+    end
+
+    def open
+      if @log
+        @log.data[:opened_at] << Time.now
+        @log.data[:ip_addresses] << request.remote_ip
+        @log.save
       end
+
+      send_data Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="), type: "image/gif", disposition: "inline"
     end
 
     private
 
-    def find_subscription
-      @subscription ||= MailyHerald::Subscription.find_by_token(params[:token])
+    def load_subscription
+      @subscription = MailyHerald::Subscription.find_by_token(params[:token])
+    end
+
+    def load_log
+      @log = MailyHerald::Log.find_by_token(params[:token])
+    end
+
+    def redirection_notice
+      @subscription ? t('maily_herald.subscription.deactivated') : t('maily_herald.subscription.undefined_token')
     end
   end
 end
