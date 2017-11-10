@@ -3,7 +3,7 @@ module MailyHerald
     include MailyHerald::TemplateRenderer
     include MailyHerald::Autonaming
 
-    enum kind: [:both, :plain, :html]
+    enum kind: [:mixed, :plain, :html]
 
     has_many    :logs,            class_name: "MailyHerald::Log"
     
@@ -159,7 +159,7 @@ module MailyHerald
       subscription = self.list.subscription_for(entity)
       return unless subscription
 
-      style = Mailing.kinds.keys.include?(style) && style != "both" ? style : "html"
+      style = Mailing.kinds.keys.include?(style) && style != "mixed" ? style : "html"
 
       drop = self.list.context.drop_for entity, subscription
       perform_template_rendering drop, template_wrapper.send(style)

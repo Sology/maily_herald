@@ -8,28 +8,30 @@ module MailyHerald
   # - +disabled+
   # - +archived+
   #
-  # @attr [String]    type            Polymorphic type.
-  # @attr [Fixnum]    sequence_id     {Sequence} association id.
-  # @attr [Fixnum]    list_id         {List} association id.
-  # @attr [String]    conditions      Delivery conditions as Liquid expression.
-  # @attr [String]    mailer_name     {Mailer} class name. 
-  #                                   This refers to {Mailer} used by Dispatch while sending emails.
-  # @attr [String]    name            Dispatch name.
-  # @attr [String]    title           Dispatch title.
-  # @attr [String]    from            Sender email address. 
-  #                                   If not provided, action_mailer.default_options[:from} is used.
-  #                                   Valid only for {Mailing}.
-  # @attr [String]    state
-  # @attr [String]    subject         Email subject as Liquid template.
-  #                                   Valid only for {Mailing}.
-  # @attr [String]    template_plain  Email body template in plain text as Liquid template.
-  #                                   Valid only for {Mailing}.
-  # @attr [String]    template_html   Email body template with HTML structure as Liquid template.
-  #                                   Valid only for {Mailing}.
-  # @attr [String]    absolute_delay  Email delivery delay from beginning of sequence.
-  #                                   Valid only for {SequenceMailing}.
-  # @attr [String]    period          Email delivery period.
-  #                                   Valid only for {PeriodicalMailing}.
+  # @attr [String]             type            Polymorphic type.
+  # @attr [Fixnum]             sequence_id     {Sequence} association id.
+  # @attr [Fixnum]             list_id         {List} association id.
+  # @attr [String]             conditions      Delivery conditions as Liquid expression.
+  # @attr [String]             mailer_name     {Mailer} class name.
+  #                                            This refers to {Mailer} used by Dispatch while sending emails.
+  # @attr [String]             name            Dispatch name.
+  # @attr [String]             title           Dispatch title.
+  # @attr [String]             from            Sender email address.
+  #                                            If not provided, action_mailer.default_options[:from} is used.
+  #                                            Valid only for {Mailing}.
+  # @attr [String]             state
+  # @attr [Enumerable<Symbol>] kind            Valid only for {Mailing}.
+  #                                            @return [:mixed, :plain, :html]
+  # @attr [String]             subject         Email subject as Liquid template.
+  #                                            Valid only for {Mailing}.
+  # @attr [String]             template_plain  Email body template in plain text as Liquid template.
+  #                                            Valid only for {Mailing}.
+  # @attr [String]             template_html   Email body template with HTML structure as Liquid template.
+  #                                            Valid only for {Mailing}.
+  # @attr [String]             absolute_delay  Email delivery delay from beginning of sequence.
+  #                                            Valid only for {SequenceMailing}.
+  # @attr [String]             period          Email delivery period.
+  #                                            Valid only for {PeriodicalMailing}.
   class Dispatch < ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
 

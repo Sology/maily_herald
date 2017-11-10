@@ -22,7 +22,7 @@ describe MailyHerald::Mailing::Template do
     it { expect(subject.html).to eq(mailing.template_html) }
   end
 
-  context "combined" do
+  context "mixed" do
     let(:mailing) { double(MailyHerald::OneTimeMailing,
                       template_plain:  "Hello there!\nUser name: {{user.name}}.\nhttp://www.sology.eu",
                       template_html:   "<h1>Subtitle<h1>\n<p>One Time mailing's body</p><a href=http://www.sology.eu>http://www.sology.eu</a>") }
