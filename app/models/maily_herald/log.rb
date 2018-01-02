@@ -65,6 +65,21 @@ module MailyHerald
       log
     end
 
+    def self.get_from(entity)
+      if entity.has_attribute?(:maily_log_id) && entity.maily_log_id
+        log = MailyHerald::Log.new
+
+        entity.attributes.each do |k, v|
+          if match = k.match(/^maily_log_(\w+)$/)
+            log.send("#{match[1]}=", v)
+          end
+        end
+
+        log.readonly!
+        log
+      end
+    end
+
     # Sets Log instance attributes.
     #
     # @param mailing [Dispatch]

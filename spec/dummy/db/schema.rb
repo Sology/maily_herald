@@ -27,8 +27,8 @@ ActiveRecord::Schema.define(version: 20171108120504) do
     t.text "template_plain"
     t.integer "absolute_delay"
     t.integer "period"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "kind", default: 0, null: false
     t.text "template_html"
     t.boolean "track", default: true
@@ -61,8 +61,8 @@ ActiveRecord::Schema.define(version: 20171108120504) do
     t.text "data"
     t.boolean "active", default: false, null: false
     t.datetime "delivered_at"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "products", force: :cascade do |t|

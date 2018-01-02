@@ -81,6 +81,66 @@ module MailyHerald
       end
     end
 
+    class JoinedScope
+      attr_reader :scope, :options, :model
+
+      delegate :all, to: :scope
+
+      def initialize scope, options = {}
+        @model = scope.klass
+        @scope = scope.select("#{model.table_name}.*")
+        @options = options
+      end
+
+      def list
+        @list ||= options[:list] || MailyHerald::List.find_by(id: options[:list_id]) || mailing.try(:list)
+      end
+
+      def list_id
+        @list_id ||= options[:list_id] || list.try(:id)
+      end
+
+      def mailing
+        @mailing ||= options[:mailing] || MailyHerald::Mailing.find_by(id: options[:mailing_id])
+      end
+
+      def mailing_id
+        @mailing_id ||= options[:mailing_id] || mailing.try(:id)
+      end
+
+      def join_mode_str
+        @join_mode_str ||= case options[:join_mode]
+                           when :outer
+                             "LEFT OUTER JOIN"
+                           else
+                             "INNER JOIN"
+                           end
+      end
+
+      def subscription_fields_select
+        @subscription_fields_select ||= MailyHerald::Subscription.columns.collect{|c| "#{MailyHerald::Subscription.table_name}.#{c.name} AS maily_subscription_#{c.name}"}.join(", ")
+      end
+
+      def with_subscriptions
+        @scope = @scope.select(subscription_fields_select).joins(
+          "#{join_mode_str} #{MailyHerald::Subscription.table_name} ON #{MailyHerald::Subscription.table_name}.entity_id = #{model.table_name}.id AND #{MailyHerald::Subscription.table_name}.entity_type = '#{model.base_class.to_s}' AND #{MailyHerald::Subscription.table_name}.list_id = '#{list_id}'"
+        )
+        self
+      end
+
+      def log_fields_select
+        @log_fields_select ||= MailyHerald::Log.columns.collect{|c| "#{MailyHerald::Log.table_name}.#{c.name} AS maily_log_#{c.name}"}.join(", ")
+      end
+
+      def with_logs options = {}
+        @scope = @scope.select(log_fields_select).joins(
+          "#{join_mode_str} #{MailyHerald::Log.table_name} ON #{MailyHerald::Log.table_name}.mailing_id = #{mailing_id} AND #{MailyHerald::Log.table_name}.entity_id = #{model.table_name}.id AND #{MailyHerald::Log.table_name}.entity_type = '#{model.base_class.to_s}'"
+        )
+        @scope = @scope.where("#{MailyHerald::Log.table_name}.status" => options[:log_status]) if options[:log_status]
+        self
+      end
+    end
+
     # Friendly name of the {Context}.
     #
     # Displayed ie. in the Web UI.
@@ -112,6 +172,10 @@ module MailyHerald
       else
         @scope.call
       end
+    end
+
+    def joined_scope options = {}
+      JoinedScope.new(scope, options)
     end
 
     # Fetches the Entity model class based on scope.
@@ -165,29 +229,15 @@ module MailyHerald
     # @param list [List, Fixnum, String] {MailyHerald::List} reference
     # @param mode [:inner, :outer] SQL JOIN mode
     def scope_with_subscription list, mode = :inner
-      list_id = case list
-                when List
-                  list.id
-                when Fixnum
-                  list
-                when String
-                  list.to_i
-                else
-                  raise ArgumentError
-                end
+      joined_scope(join_mode: mode, list: list).with_subscriptions.all
+    end
 
-      join_mode = case mode
-                  when :outer
-                    "LEFT OUTER JOIN"
-                  else
-                    "INNER JOIN"
-                  end
-
-      subscription_fields_select = Subscription.columns.collect{|c| "#{Subscription.table_name}.#{c.name} AS maily_subscription_#{c.name}"}.join(", ")
-
-      scope.select("#{model.table_name}.*, #{subscription_fields_select}").joins(
-        "#{join_mode} #{Subscription.table_name} ON #{Subscription.table_name}.entity_id = #{model.table_name}.id AND #{Subscription.table_name}.entity_type = '#{model.base_class.to_s}' AND #{Subscription.table_name}.list_id = '#{list_id}'"
-      )
+    # Returns Entity collection scope with joined {MailyHerald::Log} for given mailing.
+    #
+    # @param mailing [Mailing, Fixnum, String] {MailyHerald::Mailing} reference
+    # @param mode [:inner, :outer] SQL JOIN mode
+    def scope_with_log mailing, mode = :inner, options = {}
+      joined_scope(join_mode: mode, mailing: mailing).with_subscriptions.with_logs(options).all
     end
 
     # Sepcify or return {Context} attributes.

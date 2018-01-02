@@ -9,6 +9,48 @@ describe MailyHerald::OneTimeMailing do
 
   it { expect(list.context).to be_a(MailyHerald::Context) }
 
+  describe "#set_schedule_for" do
+    describe "should not create schedules when start_at is nil" do
+      let!(:mailing) { create(:generic_one_time_mailing, id: 101, start_at: Proc.new{|entity, subscription| entity.created_at unless entity.name == "skipme"}) }
+      let!(:entity) { create :user, name: "skipme" }
+
+      subject { mailing.set_schedule_for(entity) }
+
+      it { expect(subject).to be_nil }
+    end
+  end
+
+  describe "#run" do
+    let!(:mailing) { create :generic_one_time_mailing }
+    let!(:other_entity) { create :user }
+
+    before { list.subscribe!(entity) }
+    before { list.subscribe!(other_entity) }
+    before { mailing.logs.where(entity: entity).delete_all }
+    before { expect(mailing.logs.length).to eq(1) }
+
+    subject! { mailing.run }
+
+    describe "missing schedules" do
+      context "start_at non nil" do
+        it("should create schedules and deliver them") do
+          expect(subject.length).to eq(2)
+          expect(mailing.logs.delivered.length).to eq(2)
+        end
+      end
+
+      context "start_at nil" do
+        let!(:mailing) { create(:generic_one_time_mailing, id: 101, start_at: Proc.new{|entity, subscription| entity.created_at unless entity.name == "skipme"}) }
+        let!(:entity) { create :user, name: "skipme" }
+
+        it("should not create schedules and skip them") do
+          expect(subject.compact.length).to eq(1)
+          expect(mailing.logs.delivered.length).to eq(1)
+        end
+      end
+    end
+  end
+
   context "with subscription" do
     before { list.subscribe!(entity) }
 
@@ -94,7 +136,7 @@ describe MailyHerald::OneTimeMailing do
       it { expect{ mailer.one_time_mail(entity).deliver }.not_to change{ActionMailer::Base.deliveries.count} }
     end
 
-    context "with entity outside the scope" do
+    pending "with entity outside the scope - this shouldn't happen now as we're iterating over the scope" do
       let!(:mailing) { create :generic_one_time_mailing }
 
       context "check setup - active" do
