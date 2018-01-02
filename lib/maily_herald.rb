@@ -176,10 +176,8 @@ module MailyHerald
       migrator = ActiveRecord::Migrator
       migrator.migrations_paths = ::Rails.root.join("db/migrate")
       mlv = migrator.last_migration.version
-      mlv = lv.to_i if Rails.application.class == Dummy::Application
+      mlv = lv.to_i if Rails.application.class.name == "Dummy::Application"
       lv.to_i == mlv && !([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
-    rescue
-      false
     end
 
     # Checks if Maily migrations are present.
