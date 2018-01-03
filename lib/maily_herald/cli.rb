@@ -74,10 +74,10 @@ module MailyHerald
             end
           end
 
-          while readable_io = IO.select([self_read])
-            signal = readable_io.first[0].gets.strip
-            handle_signal(signal)
-          end
+          #while readable_io = IO.select([self_read])
+            #signal = readable_io.first[0].gets.strip
+            #handle_signal(signal)
+          #end
         rescue Interrupt
           worker.exit
           reset_pid
