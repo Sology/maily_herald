@@ -74,10 +74,10 @@ module MailyHerald
             end
           end
 
-          #while readable_io = IO.select([self_read])
-            #signal = readable_io.first[0].gets.strip
-            #handle_signal(signal)
-          #end
+          while readable_io = IO.select([self_read])
+            signal = readable_io.first[0].gets.strip
+            handle_signal(signal)
+          end
         rescue Interrupt
           worker.exit
           reset_pid
@@ -182,7 +182,9 @@ module MailyHerald
         files_to_reopen << file unless file.closed?
       end
 
-      Process.daemon(true, true)
+      unless Process.daemon(true, true)
+        puts "Problem daemonizing."
+      end
 
       files_to_reopen.each do |file|
         begin
