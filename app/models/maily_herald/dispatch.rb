@@ -32,7 +32,7 @@ module MailyHerald
   #                                            Valid only for {SequenceMailing}.
   # @attr [String]             period          Email delivery period.
   #                                            Valid only for {PeriodicalMailing}.
-  class Dispatch < ApplicationRecord
+  class Dispatch < MailyHerald::ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
 
     validates   :list,          presence: true

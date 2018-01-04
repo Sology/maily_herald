@@ -1,5 +1,5 @@
 module MailyHerald
-  class Mailing < Dispatch
+  class Mailing < MailyHerald::Dispatch
     include MailyHerald::TemplateRenderer
     include MailyHerald::Autonaming
 

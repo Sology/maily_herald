@@ -1,10 +1,10 @@
 module MailyHerald
-  class OneTimeMailing < Mailing
+  class OneTimeMailing < MailyHerald::Mailing
     validates   :list,          presence: true
     validates   :start_at,      presence: true
     validate    :validate_start_at
 
-    after_save :update_schedules_callback, if: Proc.new{|m| check_changed_attribute(m, :state) || check_changed_attribute(m, :start_at)}
+    after_save :update_schedules_callback, if: Proc.new{|m| m.check_changed_attribute(m, :state) || m.check_changed_attribute(m, :start_at)}
 
     # Sends mailing to all subscribed entities.
     #
