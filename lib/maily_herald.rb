@@ -173,7 +173,11 @@ module MailyHerald
     # Checks if Maily tables are present and all additional migrations are processed.
     def schema_loaded?
       return false unless ActiveRecord::SchemaMigration.table_exists?
-      lv = ActiveRecord::SchemaMigration.all_versions.last
+      lv =  if ::Rails::VERSION::MAJOR == 5
+              ActiveRecord::SchemaMigration.all_versions.last
+            else
+              ActiveRecord::SchemaMigration.all.to_a.last.version
+            end
       migrator = ActiveRecord::Migrator
       migrator.migrations_paths = ::Rails.root.join("db/migrate")
       mlv = migrator.last_migration.version
