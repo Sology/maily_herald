@@ -13,7 +13,7 @@ module MailyHerald
     # Returns array of {MailyHerald::Log} with actual `Mail::Message` objects stored
     # in {MailyHerald::Log.mail} attributes.
     def run
-      list.context.scope_with_log(self, :outer, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now).collect do |entity|
+      list.context.scope_with_log(self, :outer, subscription_active: true, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now).collect do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
 

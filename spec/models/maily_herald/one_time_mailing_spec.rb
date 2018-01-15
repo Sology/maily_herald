@@ -24,28 +24,38 @@ describe MailyHerald::OneTimeMailing do
     let!(:mailing) { create :generic_one_time_mailing }
     let!(:other_entity) { create :user }
 
-    before { list.subscribe!(entity) }
-    before { list.subscribe!(other_entity) }
-    before { mailing.logs.where(entity: entity).delete_all }
-    before { expect(mailing.logs.length).to eq(1) }
-
-    subject! { mailing.run }
+    subject { mailing.run }
 
     describe "missing schedules" do
-      context "start_at non nil" do
-        it("should create schedules and deliver them") do
-          expect(subject.length).to eq(2)
-          expect(mailing.logs.delivered.length).to eq(2)
+      context "with no subscription" do
+        it("should not create schedules and skip them") do
+          expect(subject.length).to eq(0)
+          expect(mailing.logs.delivered.length).to eq(0)
         end
       end
 
-      context "start_at nil" do
-        let!(:mailing) { create(:generic_one_time_mailing, id: 101, start_at: Proc.new{|entity, subscription| entity.created_at unless entity.name == "skipme"}) }
-        let!(:entity) { create :user, name: "skipme" }
+      context "with subscription" do
+        before { list.subscribe!(entity) }
+        before { list.subscribe!(other_entity) }
+        before { mailing.logs.where(entity: entity).delete_all }
+        before { expect(mailing.logs.length).to eq(1) }
 
-        it("should not create schedules and skip them") do
-          expect(subject.compact.length).to eq(1)
-          expect(mailing.logs.delivered.length).to eq(1)
+        context "start_at non nil" do
+          it("should create schedules and deliver them") do
+            expect(subject.length).to eq(2)
+            expect(mailing.logs.delivered.length).to eq(2)
+          end
+        end
+
+        context "start_at nil" do
+          let!(:mailing) { create(:generic_one_time_mailing, id: 101, start_at: Proc.new{|entity, subscription| entity.created_at unless entity.name == "skipme"}) }
+          let!(:entity) { create :user, name: "skipme" }
+
+          it("should not create schedules and skip them") do
+            expect(subject.length).to eq(2)
+            expect(subject.compact.length).to eq(1)
+            expect(mailing.logs.delivered.length).to eq(1)
+          end
         end
       end
     end

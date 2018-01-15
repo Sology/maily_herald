@@ -121,10 +121,11 @@ module MailyHerald
         @subscription_fields_select ||= MailyHerald::Subscription.columns.collect{|c| "#{MailyHerald::Subscription.table_name}.#{c.name} AS maily_subscription_#{c.name}"}.join(", ")
       end
 
-      def with_subscriptions
+      def with_subscriptions options = {}
         @scope = @scope.select(subscription_fields_select).joins(
           "#{join_mode_str} #{MailyHerald::Subscription.table_name} ON #{MailyHerald::Subscription.table_name}.entity_id = #{model.table_name}.id AND #{MailyHerald::Subscription.table_name}.entity_type = '#{model.base_class.to_s}' AND #{MailyHerald::Subscription.table_name}.list_id = '#{list_id}'"
         )
+        @scope = @scope.where("#{MailyHerald::Subscription.table_name}.active" => options[:subscription_active]) if options[:subscription_active]
         self
       end
 
@@ -237,7 +238,7 @@ module MailyHerald
     # @param mailing [Mailing, Fixnum, String] {MailyHerald::Mailing} reference
     # @param mode [:inner, :outer] SQL JOIN mode
     def scope_with_log mailing, mode = :inner, options = {}
-      joined_scope(join_mode: mode, mailing: mailing).with_subscriptions.with_logs(options).all
+      joined_scope(join_mode: mode, mailing: mailing).with_subscriptions(options).with_logs(options).all
     end
 
     # Sepcify or return {Context} attributes.
