@@ -13,17 +13,13 @@ module MailyHerald
 
     def parse(args=ARGV)
       setup_options(args)
+      initialize_logger
     end
 
     def paperboy
       if options[:action] == :stop
         kill_daemon || exit(0)
       elsif options[:action] == :ping
-        unless options[:pidfile]
-          puts "No pidfile specified"
-          exit(1)
-        end
-
         if daemon_running?
           puts "PONG"
           exit(0)
@@ -62,12 +58,20 @@ module MailyHerald
         Sidekiq.redis = {url: options[:redis_url], namespace: options[:redis_namespace]}
 
         redis = MailyHerald.redis
+        MailyHerald.logger.info "MailyHerald running in #{RUBY_DESCRIPTION}"
+
+        if !options[:daemon]
+          MailyHerald.logger.info 'Starting processing, hit Ctrl-C to stop'
+        end
 
         begin
           worker = Thread.new do
             while true
               unless MailyHerald::Manager.job_enqueued?
                 MailyHerald.run_all 
+              else
+                # TODO: this is not logged
+                #MailyHerald.logger.error 'Unable to queue job'
               end
 
               sleep 20
@@ -79,6 +83,7 @@ module MailyHerald
             handle_signal(signal)
           end
         rescue Interrupt
+          MailyHerald.logger.info 'Shutting down'
           worker.exit
           reset_pid
           exit(0)
@@ -92,6 +97,17 @@ module MailyHerald
       set_environment cli[:environment]
 
       MailyHerald.options = MailyHerald.read_options(cli[:config_file] || "config/maily_herald.yml").merge(cli)
+    end
+
+    def initialize_logger
+      opts = {
+        level: options[:verbose] ? Logger::DEBUG : Logger::INFO,
+        progname: "cli",
+      }
+      opts[:target] = options[:logfile] if options[:logfile]
+
+      MailyHerald::Logging.initialize(opts)
+      MailyHerald.logger.info "Started with options: #{options}"
     end
 
     def parse_options(argv)
@@ -119,6 +135,10 @@ module MailyHerald
         o.on "--ping", "Check if Paperboy daemon is running" do |arg|
           opts[:action] = :ping
           opts[:daemon] = true
+        end
+
+        o.on '-L', '--logfile PATH', "path to writable logfile" do |arg|
+          opts[:logfile] = arg
         end
 
         o.on '-P', '--pidfile PATH', "path to pidfile" do |arg|
@@ -177,6 +197,7 @@ module MailyHerald
     def daemonize
       return unless options[:daemon]
 
+      raise ArgumentError, "You really should set a logfile if you're going to daemonize" unless options[:logfile]
       files_to_reopen = []
       ObjectSpace.each_object(File) do |file|
         files_to_reopen << file unless file.closed?
@@ -195,9 +216,14 @@ module MailyHerald
       end
 
       [$stdout, $stderr].each do |io|
+        File.open(options[:logfile], 'ab') do |f|
+          io.reopen(f)
+        end
         io.sync = true
       end
       $stdin.reopen('/dev/null')
+
+      initialize_logger
     end
 
     def write_pid
@@ -246,6 +272,7 @@ module MailyHerald
     end
 
     def handle_signal(sig)
+      MailyHerald.logger.debug "Got #{sig} signal"
       case sig
       when 'INT'
         # Handle Ctrl-C in JRuby like MRI
@@ -255,6 +282,12 @@ module MailyHerald
         # Heroku sends TERM and then waits 10 seconds for process to exit.
         raise Interrupt
       when 'USR1'
+        MailyHerald.logger.info "Received USR1, doing nothing..."
+      when 'USR2'
+        if MailyHerald.options[:logfile]
+          MailyHerald.logger.info "Received USR2, reopening log file"
+          MailyHerald::Logging.initialize_logger(target: MailyHerald.options[:logfile])
+        end
       end
     end
 
