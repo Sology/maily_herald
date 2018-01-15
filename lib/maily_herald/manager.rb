@@ -32,6 +32,9 @@ module MailyHerald
       Sidekiq::Queue.new.detect{|j| j.klass == "MailyHerald::Async" } || 
         Sidekiq::Workers.new.detect{|w, msg| msg["payload"]["class"] == "MailyHerald::Async" } ||
         Sidekiq::RetrySet.new.detect{|j| j.klass == "MailyHerald::Async" }
+    rescue StandardError => e
+      $stderr.puts "Got unexpected error from Sidekiq: #{e}\n#{e.backtrace.join("\n")}"
+      true
     end
   end
 end
