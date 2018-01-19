@@ -156,6 +156,10 @@ module MailyHerald
       self.data[:msg] = msg
     end
 
+    def preview
+      @preview ||= MailyHerald::Log::Preview.new self
+    end
+
     private
 
     def set_token
