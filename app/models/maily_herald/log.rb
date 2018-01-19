@@ -142,6 +142,14 @@ module MailyHerald
       end
     end
 
+    def postponed_delivery_attempts
+      if self.data[:delivery_attempts] && self.data[:delivery_attempts].any?
+        self.data[:delivery_attempts].select { |da| da[:action] == :postpone }
+      else
+        []
+      end
+    end
+
     # Set attributes of a schedule so it has 'delivered' status.
     # @param options Various options like 'content', 'opened_at' or 'ip_addresses'.
     def deliver options = {}
@@ -158,6 +166,18 @@ module MailyHerald
 
     def preview
       @preview ||= MailyHerald::Log::Preview.new self
+    end
+
+    # Retry sending email - changing 'status' to 'scheduled.
+    def retry
+      if self.error?
+        self.data[:delivery_attempts] ||= []
+        self.data[:delivery_attempts].push(date_at: Time.now, action: :retry, reason: :error, msg: self.data[:msg])
+        self.data[:msg] = nil
+        self.data[:content] = nil
+        self.status = :scheduled
+        self.save!
+      end
     end
 
     private

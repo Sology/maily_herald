@@ -60,6 +60,7 @@ describe MailyHerald::Log do
     it { expect(log.data).to eq({foo: "bar"}) }
   end
 
+
   describe ".get_from" do
     let(:entity) { create :user }
     let(:mailing) { create :generic_one_time_mailing }
@@ -73,5 +74,95 @@ describe MailyHerald::Log do
     it { expect(scope.first.maily_log_id).to eq(log.id) }
     it { expect(described_class.get_from(scope.first).id).to eq(log.id) }
     it { expect(described_class.get_from(scope.first).data).to eq(log.data) }
+  end
+
+  describe "#retry" do
+    context "when log does not have error status" do
+      let!(:log) { MailyHerald::Log.create_for mailing, entity, {status: :delivered} }
+
+      before do
+        log.retry
+        log.reload
+      end
+
+      it { expect(log.delivered?).to be_truthy }
+      it { expect(log.data[:delivery_attempts]).to be_nil }
+    end
+
+    context "when log has error status" do
+      let!(:log) { MailyHerald::Log.create_for mailing, entity, {status: :error} }
+
+      context "with empty data[:delivery_attempts]" do
+        before do
+          log.data[:msg] = "testing_error"
+          log.save
+          log.reload
+        end
+
+        it { expect(log.error?).to be_truthy }
+        it { expect(log.data[:delivery_attempts]).to be_nil }
+        it { expect(log.data[:content]).to be_nil }
+        it { expect(log.data[:msg]).to eq("testing_error") }
+
+        context "after running retry" do
+          before do
+            log.retry
+            log.reload
+          end
+
+          it { expect(log.error?).to be_falsy }
+          it { expect(log.scheduled?).to be_truthy }
+          it { expect(log.data[:content]).to be_nil }
+          it { expect(log.data[:msg]).to be_nil }
+          it { expect(log.data[:delivery_attempts]).to be_kind_of(Array) }
+          it { expect(log.data[:delivery_attempts].count).to eq(1) }
+          it { expect(log.data[:delivery_attempts].first[:date_at]).to be_kind_of(Time) }
+          it { expect(log.data[:delivery_attempts].first[:action]).to eq(:retry) }
+          it { expect(log.data[:delivery_attempts].first[:reason]).to eq(:error) }
+          it { expect(log.data[:delivery_attempts].first[:msg]).to eq("testing_error") }
+        end
+      end
+
+      context "with some data[:delivery_attempts]" do
+        let!(:first_error_time) { Time.now - 1.minute }
+
+        before do
+          log.data[:msg] = "testing_error2"
+          log.data[:delivery_attempts] = [
+            {
+              date_at: first_error_time,
+              action: :retry,
+              reason: :error,
+              msg: "testing_error"
+            }
+          ]
+          log.save
+          log.reload
+        end
+
+        it { expect(log.error?).to be_truthy }
+        it { expect(log.data[:delivery_attempts]).to eq([{date_at: first_error_time, action: :retry, reason: :error, msg: "testing_error"}]) }
+        it { expect(log.data[:content]).to be_nil }
+        it { expect(log.data[:msg]).to eq("testing_error2") }
+
+        context "after running retry" do
+          before do
+            log.retry
+            log.reload
+          end
+
+          it { expect(log.error?).to be_falsy }
+          it { expect(log.scheduled?).to be_truthy }
+          it { expect(log.data[:content]).to be_nil }
+          it { expect(log.data[:msg]).to be_nil }
+          it { expect(log.data[:delivery_attempts]).to be_kind_of(Array) }
+          it { expect(log.data[:delivery_attempts].count).to eq(2) }
+          it { expect(log.data[:delivery_attempts].last[:date_at]).to be_kind_of(Time) }
+          it { expect(log.data[:delivery_attempts].last[:action]).to eq(:retry) }
+          it { expect(log.data[:delivery_attempts].last[:reason]).to eq(:error) }
+          it { expect(log.data[:delivery_attempts].last[:msg]).to eq("testing_error2") }
+        end
+      end
+    end
   end
 end
