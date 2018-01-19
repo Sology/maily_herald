@@ -228,6 +228,7 @@ module MailyHerald
       mail = yield # Let mailer do his job
 
       MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
+      schedule.entity_email = mail.to.first # store current delivery email in case it changed since the schedule was created
       schedule.deliver({
         content: mail.to_s,
         opened_at: [],

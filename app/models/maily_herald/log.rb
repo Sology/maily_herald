@@ -71,7 +71,7 @@ module MailyHerald
 
         entity.attributes.each do |k, v|
           if match = k.match(/^maily_log_(\w+)$/)
-            log.send("#{match[1]}=", v)
+            log.instance_variable_get(:@attributes).write_from_database(match[1], v)
           end
         end
 

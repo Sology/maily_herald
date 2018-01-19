@@ -31,7 +31,7 @@ module MailyHerald
 
         entity.attributes.each do |k, v|
           if match = k.match(/^maily_subscription_(\w+)$/)
-            subscription.send("#{match[1]}=", v)
+            subscription.instance_variable_get(:@attributes).write_from_database(match[1], v)
           end
         end
 

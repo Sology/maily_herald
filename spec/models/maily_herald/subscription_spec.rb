@@ -26,7 +26,7 @@ describe MailyHerald::Subscription do
     end
   end
 
-  context "instantiation subscription object from joined attributes" do
+  describe ".get_from" do
     let!(:list) {MailyHerald.list :generic_list }
 
     before { list.subscribe!(entity) }

@@ -59,4 +59,19 @@ describe MailyHerald::Log do
 
     it { expect(log.data).to eq({foo: "bar"}) }
   end
+
+  describe ".get_from" do
+    let(:entity) { create :user }
+    let(:mailing) { create :generic_one_time_mailing }
+    let(:list) { mailing.list }
+    let(:context) { list.context }
+    let(:scope) { context.scope_with_log(mailing, :outer) }
+
+    before { list.subscribe! entity }
+    let!(:log) { create(:log, entity: entity, mailing: mailing, status: "scheduled", data: {foo: 'bar'}) }
+
+    it { expect(scope.first.maily_log_id).to eq(log.id) }
+    it { expect(described_class.get_from(scope.first).id).to eq(log.id) }
+    it { expect(described_class.get_from(scope.first).data).to eq(log.data) }
+  end
 end
