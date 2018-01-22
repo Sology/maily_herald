@@ -33,7 +33,7 @@ module MailyHerald
       end
 
       def plain
-        mail.parts.any? ? mail.text_part.body.raw_source : mail.body.raw_source.html_safe
+        mail.parts.any? ? mail.text_part.decoded : mail.body.decoded
       end
     end
   end
