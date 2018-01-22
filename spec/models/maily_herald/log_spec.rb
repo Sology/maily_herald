@@ -165,4 +165,11 @@ describe MailyHerald::Log do
       end
     end
   end
+
+  describe "#delivery_attempts" do
+    let!(:log) { MailyHerald::Log.create_for mailing, entity, {status: :scheduled} }
+
+    it { expect(log.delivery_attempts).to be_kind_of(MailyHerald::Log::DeliveryAttempts) }
+    it { expect(log.delivery_attempts.data).to eq(log.data) }
+  end
 end

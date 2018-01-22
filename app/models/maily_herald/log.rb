@@ -174,6 +174,10 @@ module MailyHerald
       @preview ||= MailyHerald::Mailing::Preview.new mail
     end
 
+    def delivery_attempts
+      @delivery_attempts = MailyHerald::Log::DeliveryAttempts.new self.data
+    end
+
     # Retry sending email - changing 'status' to 'scheduled.
     def retry
       if self.error?
