@@ -165,7 +165,13 @@ module MailyHerald
     end
 
     def preview
-      @preview ||= MailyHerald::Log::Preview.new self
+      mail =  if self.delivered?
+                ::Mail.new(self.data[:content])
+              else
+                self.mailing.build_mail self
+              end
+
+      @preview ||= MailyHerald::Mailing::Preview.new mail
     end
 
     # Retry sending email - changing 'status' to 'scheduled.

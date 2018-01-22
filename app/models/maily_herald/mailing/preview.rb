@@ -1,19 +1,10 @@
 module MailyHerald
-  class Log
+  class Mailing
     class Preview
-      attr_reader :log
+      attr_reader :mail
 
-      def initialize log
-        @log = log
-      end
-
-      # Build Mail object based on condition if delivery was processed successfully.
-      def mail
-        @mail ||= if log.delivered?
-                    ::Mail.new(log.data[:content])
-                  else
-                    log.mailing.build_mail log
-                  end
+      def initialize mail
+        @mail = mail
       end
 
       def html?
