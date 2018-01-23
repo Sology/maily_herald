@@ -308,7 +308,7 @@ maily_herald_engine.maily_unsubscribe_url(@maily_subscription)
 When you use Liquid for email templating, your context will always include the special attribute `subscription` that allows you to easily output unique opt-out URLs. Use the following syntax:
 
 ```
-{{subscription.token_url}}
+{{subscription.unsubscribe_url}}
 ```
 
 Visiting an opt-out URL disables the subscription and by default redirects to "/".

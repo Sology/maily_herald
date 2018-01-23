@@ -56,13 +56,13 @@ module MailyHerald
       active? ? deactivate! : activate!
     end
 
-    def token_url
+    def unsubscribe_url
       MailyHerald::Engine.routes.url_helpers.maily_unsubscribe_url(self)
     end
 
     def to_liquid
       {
-        "token_url" => token_url
+        "unsubscribe_url" => unsubscribe_url
       }
     end
 
