@@ -51,9 +51,10 @@ module MailyHerald
         @block = block
       end
 
-      def setup entity = nil, subscription = nil
+      def setup entity = nil, subscription = nil, log = nil
         if entity
           @attrs["subscription"] = Proc.new{ subscription } if subscription
+          @attrs["log"] = Proc.new{ log } if log
           instance_exec entity, &@block
         else
           instance_eval &@block
@@ -269,11 +270,11 @@ module MailyHerald
     end
 
     # Returns Liquid drop created from Context attributes.
-    def drop_for entity, subscription
+    def drop_for entity, subscription, log = nil
       return {} unless @attributes
 
       attributes = @attributes.dup
-      attributes.setup entity, subscription
+      attributes.setup entity, subscription, log
       Drop.new(attributes.for_drop)
     end
   end

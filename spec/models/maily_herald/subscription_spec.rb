@@ -6,6 +6,7 @@ describe MailyHerald::Subscription do
   let(:mailing) { create :generic_one_time_mailing }
   let(:list) { mailing.list }
   let!(:subscription) { list.subscribe! entity }
+  let(:schedule) { mailing.schedule_for entity }
 
   context "associations" do
     it { expect(subscription.entity).to eq(entity) }
@@ -17,12 +18,12 @@ describe MailyHerald::Subscription do
   context "template rendering" do
     context "valid template_plain" do
       before { expect(mailing).to receive(:template_plain).and_return("test {{user.name}}") }
-      it { expect(mailing.render_template(entity)).to eq("test #{entity.name}") }
+      it { expect(mailing.render(schedule).plain).to eq("test #{entity.name}") }
     end
 
     context "invalid template_plain" do
       before { expect(mailing).to receive(:template_plain).and_return("{% if 1 =! 2 %}ok{% endif %}") }
-      it { expect{mailing.render_template(entity)}.to raise_error(Liquid::ArgumentError) }
+      it { expect{mailing.render(schedule).plain}.to raise_error(Liquid::ArgumentError) }
     end
   end
 

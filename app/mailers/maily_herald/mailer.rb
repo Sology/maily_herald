@@ -3,20 +3,23 @@ module MailyHerald
     attr_reader :entity
 
     def generic entity
-      destination = @maily_herald_mailing.destination(entity)
-      subject = @maily_herald_mailing.render_subject(entity)
-      content_html = @maily_herald_mailing.render_template(entity)
-      content_plain = @maily_herald_mailing.render_template(entity, "plain")
+      mailing = @_message.maily_herald_data.mailing
+      schedule = @_message.maily_herald_data.schedule
+
+      destination = mailing.destination(entity)
+      subject = mailing.render(schedule).subject
+      content_html = mailing.render(schedule).html if mailing.mixed? || mailing.html?
+      content_plain = mailing.render(schedule).plain if mailing.mixed? || mailing.plain?
 
       opts = {
         to: destination, 
         subject: subject
       }
-      opts[:from] = @maily_herald_mailing.from if @maily_herald_mailing.from.present?
+      opts[:from] = mailing.from if mailing.from.present?
 
       mail(opts) do |format|
-        format.text { render plain: content_plain }
-        format.html { content_html }
+        format.text { render plain: content_plain } if content_plain
+        format.html { content_html } if content_html
       end
     end
 
@@ -28,13 +31,13 @@ module MailyHerald
           return
         end
 
-        mailing = mail.maily_herald_data[:mailing]
-        entity = mail.maily_herald_data[:entity]
-        schedule = mail.maily_herald_data[:schedule]
+        mailing = mail.maily_herald_data.mailing
+        entity = mail.maily_herald_data.entity
+        schedule = mail.maily_herald_data.schedule
 
         if !schedule && mailing.respond_to?(:schedule_delivery_to)
           # Implicitly create schedule for ad hoc delivery when called using Mailer.foo(entity).deliver syntax
-          schedule = mail.maily_herald_data[:schedule] = mailing.schedule_delivery_to(entity)
+          schedule = mail.maily_herald_data.schedule = mailing.schedule_delivery_to(entity)
         end
 
         if schedule
@@ -56,14 +59,12 @@ module MailyHerald
 
       # Assign instance variables availabe for template
       if @_message.maily_herald_data
-        @maily_subscription = @_message.maily_herald_data[:subscription]
-        @maily_entity = @_message.maily_herald_data[:entity]
-        @maily_mailing = @_message.maily_herald_data[:mailing]
+        @maily = @_message.maily_herald_data
       end
 
-      msg = super
-      MailyHerald::Tracking::Processor.new(msg, @maily_herald_schedule).process
-      msg
+      super(headers).tap do |msg|
+        MailyHerald::Tracking::Processor.new(msg, @_message.maily_herald_data.schedule).process if @_message.maily_herald_data
+      end
     end
 
     def process(*args) #:nodoc:
@@ -80,21 +81,22 @@ module MailyHerald
       end
 
       if args[1].is_a?(MailyHerald::Log)
-        @maily_herald_schedule = args[1]
-        @maily_herald_mailing = @maily_herald_schedule.mailing
-        @maily_herald_entity = @maily_herald_schedule.entity
+        schedule = args[1]
+        mailing = schedule.mailing
+        entity = schedule.entity
       else
-        @maily_herald_mailing = args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0])
-        @maily_herald_entity = args[1]
+        # Here we are in case of implicit AdHocMailing scheduling
+        mailing = args[0].to_s == "generic" ? args[2] : MailyHerald.dispatch(args[0])
+        entity = args[1]
       end
 
-      if @maily_herald_mailing
-        @_message.maily_herald_data = {
-          schedule: @maily_herald_schedule,
-          mailing: @maily_herald_mailing,
-          entity: @maily_herald_entity,
-          subscription: @maily_herald_mailing.subscription_for(@maily_herald_entity),
-        }
+      if mailing
+        @_message.maily_herald_data = Struct.new(:schedule, :mailing, :entity, :subscription).new(
+          schedule,
+          mailing,
+          entity,
+          mailing.subscription_for(entity)
+        )
       end
 
       if Rails::VERSION::MAJOR == 5
@@ -103,11 +105,11 @@ module MailyHerald
         lookup_context.skip_default_locale!
       end
 
-      super(args[0], @maily_herald_entity)
+      super(args[0], entity)
 
-      if @maily_herald_mailing
-        @_message.to = @maily_herald_mailing.destination(@maily_herald_entity) unless @_message.to
-        @_message.from = @maily_herald_mailing.from unless @_message.from
+      if mailing
+        @_message.to = mailing.destination(entity) unless @_message.to
+        @_message.from = mailing.from unless @_message.from
       end
 
       @_message

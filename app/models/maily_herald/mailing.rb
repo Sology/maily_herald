@@ -146,35 +146,14 @@ module MailyHerald
       self.list.context.destination_for(entity)
     end
 
-    # Returns initialized 'MailyHerald::Mailing::Template' object with self.
-    def template_wrapper
-      @template_wrapper ||= MailyHerald::Mailing::Template.new(self)
+    # Returns corresponding 'MailyHerald::Mailing::Template' object.
+    def template
+      @template ||= MailyHerald::Mailing::Template.new(self)
     end
 
-    # Renders email body for given entity.
-    #
-    # Reads MailyHerald::Mailing::Template#plain or #html and renders it using Liquid within the context
-    # for provided entity.
-    def render_template entity, style = "html"
-      subscription = self.list.subscription_for(entity)
-      return unless subscription
-
-      style = Mailing.kinds.keys.include?(style) && style != "mixed" ? style : "html"
-
-      drop = self.list.context.drop_for entity, subscription
-      perform_template_rendering drop, template_wrapper.send(style)
-    end
-
-    # Renders email subject line for given entity.
-    #
-    # Reads {#subject} attribute and renders it using Liquid within the context
-    # for provided entity.
-    def render_subject entity
-      subscription = self.list.subscription_for(entity)
-      return unless subscription
-
-      drop = self.list.context.drop_for entity, subscription
-      perform_template_rendering drop, self.subject
+    # Returns corresponding 'MailyHerald::Mailing::Renderer' object.
+    def render log
+      MailyHerald::Mailing::Renderer.new(self, log)
     end
 
     # Builds `Mail::Message` object for given entity.

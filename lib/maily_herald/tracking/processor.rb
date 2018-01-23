@@ -9,7 +9,7 @@ module MailyHerald
       end
 
       def process
-        add_pixel if log && log.mailing.track && message.html_part
+        add_pixel if log && log.mailing.track && (message.content_type.include?("text/html") || message.html_part)
       end
 
       private
