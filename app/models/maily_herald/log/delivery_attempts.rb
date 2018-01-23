@@ -11,6 +11,10 @@ module MailyHerald
         @list ||= data[:delivery_attempts] || []
       end
 
+      def list_by action
+        list.select {|a| a[:action] == action}
+      end
+
       def add action, reason, msg = nil
         list << {
           action:   action,

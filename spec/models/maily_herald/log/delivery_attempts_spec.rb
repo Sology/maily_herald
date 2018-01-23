@@ -34,6 +34,37 @@ describe MailyHerald::Log::DeliveryAttempts do
     end
   end
 
+  describe "#list_by" do
+    context "with empty list" do
+      it { expect(da.list_by(:postpone)).to be_empty }
+    end
+
+    context "with some data" do
+      before do
+        log.data = {
+          delivery_attempts: [
+            {
+              action:   :postpone,
+              reason:   :not_processable,
+              date_at:  Time.now
+            },
+            {
+              action:   :retry,
+              reason:   :error,
+              date_at:  Time.now,
+              msg:      "test_error"
+            }
+          ]
+        }
+        log.save!
+        log.reload
+      end
+
+      it { expect(da.list_by(:postpone)).not_to be_empty }
+      it { expect(da.list_by(:postpone).count).to eq(1) }
+    end
+  end
+
   describe "#add" do
     context "with empty list" do
       it "should add new hash to list" do

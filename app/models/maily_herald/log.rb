@@ -133,21 +133,10 @@ module MailyHerald
 
     # Set attributes of a schedule so it is postponed.
     def postpone_delivery
-      if !self.data[:delivery_attempts] || self.data[:delivery_attempts].length < 3
-        self.data[:original_processing_at] ||= self.processing_at
-        self.data[:delivery_attempts] ||= []
-        self.data[:delivery_attempts].push(date_at: Time.now, action: :postpone, reason: :not_processable)
-        self.processing_at = Time.now + 1.day
-        true
-      end
-    end
-
-    def postponed_delivery_attempts
-      if self.data[:delivery_attempts] && self.data[:delivery_attempts].any?
-        self.data[:delivery_attempts].select { |da| da[:action] == :postpone }
-      else
-        []
-      end
+      self.data[:delivery_attempts] = delivery_attempts.add(:postpone, :not_processable)
+      self.data[:original_processing_at] ||= self.processing_at
+      self.processing_at = Time.now + 1.day
+      self.save!
     end
 
     # Set attributes of a schedule so it has 'delivered' status.
@@ -181,8 +170,7 @@ module MailyHerald
     # Retry sending email - changing 'status' to 'scheduled.
     def retry
       if self.error?
-        self.data[:delivery_attempts] ||= []
-        self.data[:delivery_attempts].push(date_at: Time.now, action: :retry, reason: :error, msg: self.data[:msg])
+        self.data[:delivery_attempts] = delivery_attempts.add(:retry, :error, self.data[:msg])
         self.data[:msg] = nil
         self.data[:content] = nil
         self.status = :scheduled
