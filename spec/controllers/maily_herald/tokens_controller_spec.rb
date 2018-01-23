@@ -36,10 +36,8 @@ describe MailyHerald::TokensController do
     before { mailing.run && mailing.reload }
 
     it { expect(MailyHerald::Log.delivered.count).to eq(1) }
-    it { expect(log.data[:opened_at]).to be_kind_of(Array) }
-    it { expect(log.data[:opened_at]).to be_empty }
-    it { expect(log.data[:ip_addresses]).to be_kind_of(Array) }
-    it { expect(log.data[:ip_addresses]).to be_empty }
+    it { expect(log.opens.list).to be_kind_of(Array) }
+    it { expect(log.opens.list).to be_empty }
 
     context "with invalid token" do
       before do
@@ -49,10 +47,8 @@ describe MailyHerald::TokensController do
 
       it { expect(response.status).to eq(200) }
       it { expect(response.header['Content-Type']).to eq("image/gif") }
-      it { expect(log.data[:opened_at]).to be_kind_of(Array) }
-      it { expect(log.data[:opened_at]).to be_empty }
-      it { expect(log.data[:ip_addresses]).to be_kind_of(Array) }
-      it { expect(log.data[:ip_addresses]).to be_empty }
+      it { expect(log.opens.list).to be_kind_of(Array) }
+      it { expect(log.opens.list).to be_empty }
     end
 
     context "with valid token" do
@@ -63,12 +59,11 @@ describe MailyHerald::TokensController do
 
       it { expect(response.status).to eq(200) }
       it { expect(response.header['Content-Type']).to eq("image/gif") }
-      it { expect(log.data[:opened_at]).not_to be_empty }
-      it { expect(log.data[:opened_at].count).to eq(1) }
-      it { expect(log.data[:opened_at].first).to be_kind_of(Time) }
-      it { expect(log.data[:ip_addresses]).not_to be_empty }
-      it { expect(log.data[:ip_addresses].count).to eq(1) }
-      it { expect(log.data[:ip_addresses].first).to be_kind_of(String) }
+      it { expect(log.opens.list).not_to be_empty }
+      it { expect(log.opens.list.count).to eq(1) }
+      it { expect(log.opens.list.first[:ip_address]).to be_kind_of(String) }
+      it { expect(log.opens.list.first[:user_agent]).to be_kind_of(String) }
+      it { expect(log.opens.list.first[:opened_at]).to be_kind_of(Time) }
 
       context "open for the second time" do
         before do
@@ -78,12 +73,10 @@ describe MailyHerald::TokensController do
 
         it { expect(response.status).to eq(200) }
         it { expect(response.header['Content-Type']).to eq("image/gif") }
-        it { expect(log.data[:opened_at]).not_to be_empty }
-        it { expect(log.data[:opened_at].count).to eq(2) }
-        it { expect(log.data[:opened_at].last).to be_kind_of(Time) }
-        it { expect(log.data[:ip_addresses]).not_to be_empty }
-        it { expect(log.data[:ip_addresses].count).to eq(2) }
-        it { expect(log.data[:ip_addresses].last).to be_kind_of(String) }
+        it { expect(log.opens.list.count).to eq(2) }
+        it { expect(log.opens.list.last[:ip_address]).to be_kind_of(String) }
+        it { expect(log.opens.list.last[:user_agent]).to be_kind_of(String) }
+        it { expect(log.opens.list.last[:opened_at]).to be_kind_of(Time) }
       end
     end
   end

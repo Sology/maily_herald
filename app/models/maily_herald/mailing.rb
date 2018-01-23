@@ -230,9 +230,7 @@ module MailyHerald
       MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
       schedule.entity_email = mail.to.first # store current delivery email in case it changed since the schedule was created
       schedule.deliver({
-        content: mail.to_s,
-        opened_at: [],
-        ip_addresses: []
+        content: mail.to_s
       })
 
       return schedule

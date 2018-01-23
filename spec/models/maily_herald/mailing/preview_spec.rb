@@ -84,9 +84,7 @@ describe MailyHerald::Mailing::Preview do
       
       before do
         log.data = {
-          content: "Date: Fri, 19 Jan 2018 09:26:02 +0100\r\nFrom: hello@mailyherald.org\r\nTo: #{entity.email}\r\nMessage-ID: <5a61ab5abfb3_e1a22c6e90247c7@pc.mail>\r\nSubject: Test\r\nMime-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=\"--==_mimepart_5a61ab9a7d74_e1a22c6e902469\";\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n----==_mimepart_5a61ab9a7d74_e1a22c6e902469\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello\r\n\r\n----==_mimepart_5a61ab9a7d74_e1a22c6e902469\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<h1>Hello</h1>\r\n<img alt=\"\" id=\"tracking-pixel\" src=\"http://localhost:3000/tokens/tgViJTWKwP72f1CRrpVFVnzavC7EZ40f/open.gif\" width=\"1\" height=\"1\" />\r\n----==_mimepart_5a61ab9a7d74_e1a27c6e902469--\r\n",
-          opened_at: [],
-          ip_addresses: []
+          content: "Date: Fri, 19 Jan 2018 09:26:02 +0100\r\nFrom: hello@mailyherald.org\r\nTo: #{entity.email}\r\nMessage-ID: <5a61ab5abfb3_e1a22c6e90247c7@pc.mail>\r\nSubject: Test\r\nMime-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=\"--==_mimepart_5a61ab9a7d74_e1a22c6e902469\";\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n----==_mimepart_5a61ab9a7d74_e1a22c6e902469\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello\r\n\r\n----==_mimepart_5a61ab9a7d74_e1a22c6e902469\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<h1>Hello</h1>\r\n<img alt=\"\" id=\"tracking-pixel\" src=\"http://localhost:3000/tokens/tgViJTWKwP72f1CRrpVFVnzavC7EZ40f/open.gif\" width=\"1\" height=\"1\" />\r\n----==_mimepart_5a61ab9a7d74_e1a27c6e902469--\r\n"
         }
         log.save!
         log.reload

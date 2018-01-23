@@ -407,8 +407,7 @@ module MailyHerald
 
     def open
       if @log
-        @log.data[:opened_at] << Time.now
-        @log.data[:ip_addresses] << request.remote_ip
+        @log.data[:opens] = @log.opens.add(request.remote_ip, request.user_agent)
         @log.save
       end
 

@@ -1,8 +1,6 @@
 require 'rails_helper'
-require 'mail'
 
 describe MailyHerald::Log::DeliveryAttempts do
-
   let(:entity)  { create :user }
   let(:mailing) { create :ad_hoc_mailing }
   let!(:log)    { MailyHerald::Log.create_for mailing, entity, {status: :error} }

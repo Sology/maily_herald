@@ -140,7 +140,8 @@ module MailyHerald
     end
 
     # Set attributes of a schedule so it has 'delivered' status.
-    # @param options Various options like 'content', 'opened_at' or 'ip_addresses'.
+    # @param [Hash] options Various options e.g. 'content'. MailyHerald::Mailing#deliver_with_mailer determine what will be stored within 'data' after email delivery.
+    # @options options [String] :content Mail content along with headers and all needed data.
     def deliver options = {}
       self.status = :delivered
       options.each {|k,v| self.data[k] = v }
@@ -165,6 +166,10 @@ module MailyHerald
 
     def delivery_attempts
       @delivery_attempts = MailyHerald::Log::DeliveryAttempts.new self.data
+    end
+
+    def opens
+      @opens = MailyHerald::Log::Opens.new self.data
     end
 
     # Retry sending email - changing 'status' to 'scheduled.
