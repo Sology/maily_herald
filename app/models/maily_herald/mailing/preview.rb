@@ -8,7 +8,7 @@ module MailyHerald
       end
 
       def html?
-        mail.parts.any? && !mail.html_part.body.raw_source.blank?
+        mail.parts.any? && !mail.html_part.body.raw_source.blank? || mail.content_type.match(/html/)
       end
 
       def html
@@ -20,7 +20,7 @@ module MailyHerald
       end
 
       def plain?
-        mail.parts.any? && !mail.text_part.body.raw_source.blank? || !mail.body.raw_source.blank?
+        mail.parts.any? && !mail.text_part.body.raw_source.blank? || mail.content_type.match(/plain/)
       end
 
       def plain

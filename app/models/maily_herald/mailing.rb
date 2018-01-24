@@ -152,19 +152,19 @@ module MailyHerald
     end
 
     # Returns corresponding 'MailyHerald::Mailing::Renderer' object.
-    def render log
-      MailyHerald::Mailing::Renderer.new(self, log)
+    def render log, entity = nil
+      MailyHerald::Mailing::Renderer.new(self, log, entity)
     end
 
     # Builds `Mail::Message` object for given entity.
     #
     # Depending on {#mailer_name} value it uses either generic mailer (from {Mailer} class)
     # or custom mailer.
-    def build_mail schedule
+    def build_mail entity
       if generic_mailer?
-        Mailer.generic(schedule, self)
+        Mailer.generic(entity, self)
       else
-        self.mailer.send(self.name, schedule)
+        self.mailer.send(self.name, entity)
       end
     end
 

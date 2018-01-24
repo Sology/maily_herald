@@ -6,10 +6,12 @@ module MailyHerald
       mailing = @_message.maily_herald_data.mailing
       schedule = @_message.maily_herald_data.schedule
 
+      render = mailing.render(schedule, entity)
+
       destination = mailing.destination(entity)
-      subject = mailing.render(schedule).subject
-      content_html = mailing.render(schedule).html if mailing.mixed? || mailing.html?
-      content_plain = mailing.render(schedule).plain if mailing.mixed? || mailing.plain?
+      subject = render.subject
+      content_html = render.html if mailing.mixed? || mailing.html?
+      content_plain = render.plain if mailing.mixed? || mailing.plain?
 
       opts = {
         to: destination, 
