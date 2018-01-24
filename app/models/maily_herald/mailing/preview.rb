@@ -11,12 +11,14 @@ module MailyHerald
         mail.parts.any? && !mail.html_part.body.raw_source.blank? || mail.content_type.match(/html/)
       end
 
-      def html
-        if mail.parts.any?
-          mail.html_part.body.raw_source.gsub(/<img alt=\"\" id=\"tracking-pixel\" src=\".{1,}\/>/, "")
-        else
-          mail.body.raw_source.html_safe
-        end
+      def html options = {hide_tracking: true}
+        h = if mail.parts.any?
+              mail.html_part.body.raw_source
+            else
+              mail.body.raw_source.html_safe
+            end
+        h = h.gsub(/<img alt=\"\" id=\"tracking-pixel\" src=\".{1,}\/>/, "") if options[:hide_tracking]
+        h
       end
 
       def plain?

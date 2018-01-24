@@ -305,13 +305,19 @@ Maily provides you with a URL helper that generates opt-out URLs (i.e. in your A
 maily_herald_engine.maily_unsubscribe_url(@maily_subscription)
 ```
 
-When you use Liquid for email templating, your context will always include the special attribute `subscription` that allows you to easily output unique opt-out URLs. Use the following syntax:
+Visiting an opt-out URL disables the subscription and by default redirects to "/". When you use Liquid for email templating, your context will always include the special attribute `subscription` that allows you to easily output unique opt-out URLs. Use the following syntax:
 
 ```
 {{subscription.unsubscribe_url}}
 ```
 
-Visiting an opt-out URL disables the subscription and by default redirects to "/".
+### Email previews
+
+There is an option to view sent email in the browser by the end user. When you use Liquid for email templating, your context will always include the special attribute `log` that allows you to easily output unique email preview URLs based on unique token. Link will be broken in general html template preview (because there is no entity/log specified yet), but when you schedule your mailing this link will be prefilled with correct URL. Use the following syntax:
+
+```
+{{log.web_preview_url}}
+```
 
 ### Delivery and background processing
 

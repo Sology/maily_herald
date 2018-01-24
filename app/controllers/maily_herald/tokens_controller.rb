@@ -1,7 +1,8 @@
 module MailyHerald
   class TokensController < MailyHerald::ApplicationController
+    layout "maily_herald/previews", only: :preview
     before_action :load_subscription, only: :unsubscribe
-    before_action :load_log, only: :open
+    before_action :load_log, only: [:open, :preview]
 
     def unsubscribe
       @subscription.try(:deactivate!)
@@ -16,6 +17,9 @@ module MailyHerald
       end
 
       send_data Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="), type: "image/gif", disposition: "inline"
+    end
+
+    def preview
     end
 
     private

@@ -122,6 +122,16 @@ module MailyHerald
       [:delivered, :skipped, :error].include?(self.status)
     end
 
+    def web_preview_url
+      MailyHerald::Engine.routes.url_helpers.maily_web_preview_url(self.try(:token) || "token")
+    end
+
+    def to_liquid
+      {
+        "web_preview_url" => web_preview_url
+      }
+    end
+
     # Set attributes of a schedule so it has 'skipped' status.
     def skip reason
       if self.status == :scheduled

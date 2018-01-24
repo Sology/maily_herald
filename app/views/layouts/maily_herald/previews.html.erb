@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MailyHerald</title>
+    <%= csrf_meta_tag %>
+    <%= stylesheet_link_tag "maily_herald/application", media: "all" %>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  </head>
+  <body>
+    <div class="maily-preview-container">
+      <%= yield %>
+    </div>
+  </body>
+</html>
