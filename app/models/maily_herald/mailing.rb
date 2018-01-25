@@ -152,8 +152,8 @@ module MailyHerald
     end
 
     # Returns corresponding 'MailyHerald::Mailing::Renderer' object.
-    def render log, entity = nil
-      MailyHerald::Mailing::Renderer.new(self, log, entity)
+    def render object
+      MailyHerald::Mailing::Renderer.new(self, object)
     end
 
     # Builds `Mail::Message` object for given entity.

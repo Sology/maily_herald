@@ -6,7 +6,7 @@ module MailyHerald
       mailing = @_message.maily_herald_data.mailing
       schedule = @_message.maily_herald_data.schedule
 
-      render = mailing.render(schedule, entity)
+      render = mailing.render schedule || entity
 
       destination = mailing.destination(entity)
       subject = render.subject

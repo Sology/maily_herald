@@ -3,14 +3,12 @@ module MailyHerald
     # Renders mailing templates using Liquid within the context
     # for provided entity.
     class Renderer
-      attr_reader :mailing, :log, :e
-      delegate :entity, to: :log, allow_nil: true
+      attr_reader :mailing, :object
       delegate :list, to: :mailing
 
-      def initialize mailing, log, e = nil
+      def initialize mailing, object
         @mailing = mailing
-        @log = log
-        @e = e
+        @object = object
       end
 
       # Render html template
@@ -36,15 +34,19 @@ module MailyHerald
       end
 
       def drop
-        @drop ||= list.context.drop_for ent, subscription, log
+        @drop ||= log? ? list.context.drop_for(entity, subscription, object) : list.context.drop_for(object, subscription)
       end
 
       def subscription
-        @subscription ||= list.subscription_for ent
+        @subscription ||= list.subscription_for entity
       end
 
-      def ent
-        @ent = log ? entity : e
+      def entity
+        @entity ||= log? ? object.entity : object
+      end
+
+      def log?
+        object.is_a? ::MailyHerald::Log
       end
     end
   end
