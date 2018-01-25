@@ -1,7 +1,6 @@
 module MailyHerald
   class Mailing
     class Template
-      include ActionView::Helpers::SanitizeHelper
       attr_reader :template_plain, :template_html
 
       def initialize mailing
@@ -31,7 +30,7 @@ module MailyHerald
       end
 
       def generate_plain
-        sanitize(template_html, tags: %w(a), attributes: %w(href mailto)).gsub(/\r\n/, "\n").gsub(/\n{2,}/, "\n").gsub(/\n\s{2,}/, "\n")
+        ::Rails::Html::WhiteListSanitizer.new.sanitize(template_html, tags: %w(a style title), attributes: %w(href mailto)).gsub(/<title>[.\s\S]{1,}<\/title>/, "").gsub(/<style>[.\s\S]{1,}<\/style>/, "").gsub(/\r\n/, "\n").gsub(/\n{2,}/, "\n").gsub(/\n\s{2,}/, "\n").strip
       rescue
         nil
       end
