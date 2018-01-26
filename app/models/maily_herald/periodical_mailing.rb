@@ -21,16 +21,20 @@ module MailyHerald
     # Returns array of {MailyHerald::Log} with actual `Mail::Message` objects stored
     # in {MailyHerald::Log.mail} attributes.
     def run
-      # TODO better scope here to exclude schedules for users outside context scope
-      schedules.where("processing_at <= (?)", Time.now).collect do |schedule|
-        if schedule.entity
-          mail = deliver schedule
-          schedule.reload
-          schedule.mail = mail
-          schedule
-        else
-          MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
-          schedule.destroy
+      delivery_scope.collect do |entity|
+        schedule = MailyHerald::Log.get_from(entity)
+        schedule ||= scheduler_for(entity).set_schedule
+
+        if schedule && schedule.processing_at <= Time.now
+          if schedule.entity
+            mail = deliver schedule
+            schedule.reload
+            schedule.mail = mail
+            schedule
+          else
+            MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+            schedule.destroy
+          end
         end
       end
     end
@@ -52,6 +56,10 @@ module MailyHerald
     # Returns collection of all delivery schedules ({Log} collection).
     def schedules
       Log.ordered.scheduled.for_mailing(self)
+    end
+
+    def delivery_scope
+      list.context.scope_with_log(self, :outer, subscription_active: true, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now)
     end
 
     def to_s

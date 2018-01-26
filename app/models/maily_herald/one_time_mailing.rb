@@ -13,13 +13,12 @@ module MailyHerald
     # Returns array of {MailyHerald::Log} with actual `Mail::Message` objects stored
     # in {MailyHerald::Log.mail} attributes.
     def run
-      list.context.scope_with_log(self, :outer, subscription_active: true, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now).collect do |entity|
+      delivery_scope.collect do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
 
         if schedule && schedule.processing_at <= Time.now
           if schedule.entity
-            schedule = MailyHerald::Log.find(schedule.id) if schedule.readonly? # TODO: read fields from joined tables instead making additional query here
             mail = deliver schedule
             schedule.reload
             schedule.mail = mail
@@ -105,6 +104,10 @@ module MailyHerald
 
         evaluator.evaluate_start_at(self.start_at)
       end
+    end
+
+    def delivery_scope
+      list.context.scope_with_log(self, :outer, subscription_active: true, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now)
     end
 
     def to_s

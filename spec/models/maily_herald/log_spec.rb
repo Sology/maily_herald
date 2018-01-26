@@ -71,9 +71,21 @@ describe MailyHerald::Log do
     before { list.subscribe! entity }
     let!(:log) { create(:log, entity: entity, mailing: mailing, status: "scheduled", data: {foo: 'bar'}) }
 
-    it { expect(scope.first.maily_log_id).to eq(log.id) }
-    it { expect(described_class.get_from(scope.first).id).to eq(log.id) }
-    it { expect(described_class.get_from(scope.first).data).to eq(log.data) }
+    context "reading data" do
+      it { expect(scope.first.maily_log_id).to eq(log.id) }
+      it { expect(described_class.get_from(scope.first).id).to eq(log.id) }
+      it { expect(described_class.get_from(scope.first).data).to eq(log.data) }
+    end
+
+    context "updating data" do
+      it do
+        parsed_log = described_class.get_from(scope.first)
+        parsed_log.status = :delivered
+        parsed_log.save!
+        log.reload
+        expect(log.status).to eq(:delivered)
+      end
+    end
   end
 
   describe "#retry" do

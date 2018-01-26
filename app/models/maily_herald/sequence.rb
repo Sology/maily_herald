@@ -53,15 +53,20 @@ module MailyHerald
     # in {MailyHerald::Log.mail} attributes.
     def run
       # TODO better scope here to exclude schedules for users outside context scope
-      schedules.where("processing_at <= (?)", Time.now).each do |schedule|
-        if schedule.entity
-          mail = schedule.mailing.send(:deliver, schedule)
-          schedule.reload
-          schedule.mail = mail
-          schedule
-        else
-          MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
-          schedule.destroy
+      delivery_scope.collect do |entity|
+        schedule = MailyHerald::Log.get_from(entity)
+        schedule ||= set_schedule_for(entity)
+
+        if schedule && schedule.processing_at <= Time.now
+          if schedule.entity
+            mail = schedule.mailing.send(:deliver, schedule)
+            schedule.reload
+            schedule.mail = mail
+            schedule
+          else
+            MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+            schedule.destroy
+          end
         end
       end
     end
@@ -161,6 +166,10 @@ module MailyHerald
     # Returns collection of all delivery schedules ({Log} collection).
     def schedules
       Log.ordered.scheduled.for_mailings(self.mailings.select(:id))
+    end
+
+    def delivery_scope
+      list.context.scope_with_log(self.mailings, :outer, subscription_active: true, log_status: [nil, :scheduled]).where("#{MailyHerald::Log.table_name}.processing_at IS NULL OR #{MailyHerald::Log.table_name}.processing_at <= (?)", Time.now)
     end
 
     # Calculates processing time for given entity.

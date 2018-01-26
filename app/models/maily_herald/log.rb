@@ -65,6 +65,7 @@ module MailyHerald
       log
     end
 
+    # Read attributes from joined SQL record and create valid Log object out of it.
     def self.get_from(entity)
       if entity.has_attribute?(:maily_log_id) && entity.maily_log_id
         log = MailyHerald::Log.new
@@ -75,7 +76,7 @@ module MailyHerald
           end
         end
 
-        log.readonly!
+        log.instance_variable_set(:@new_record, false)
         log
       end
     end

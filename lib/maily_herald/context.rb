@@ -94,7 +94,7 @@ module MailyHerald
       end
 
       def list
-        @list ||= options[:list] || MailyHerald::List.find_by(id: options[:list_id]) || mailing.try(:list)
+        @list ||= options[:list] || MailyHerald::List.find_by(id: options[:list_id]) || mailing.try(:list) || mailing.try(:first).try(:list)
       end
 
       def list_id
@@ -106,7 +106,7 @@ module MailyHerald
       end
 
       def mailing_id
-        @mailing_id ||= options[:mailing_id] || mailing.try(:id)
+        @mailing_id ||= options[:mailing_id] || mailing.try(:id) || mailing.try(:ids).try(:join, ',')
       end
 
       def join_mode_str
@@ -136,7 +136,7 @@ module MailyHerald
 
       def with_logs options = {}
         @scope = @scope.select(log_fields_select).joins(
-          "#{join_mode_str} #{MailyHerald::Log.table_name} ON #{MailyHerald::Log.table_name}.mailing_id = #{mailing_id} AND #{MailyHerald::Log.table_name}.entity_id = #{model.table_name}.id AND #{MailyHerald::Log.table_name}.entity_type = '#{model.base_class.to_s}'"
+          "#{join_mode_str} #{MailyHerald::Log.table_name} ON #{MailyHerald::Log.table_name}.mailing_id IN (#{mailing_id}) AND #{MailyHerald::Log.table_name}.entity_id = #{model.table_name}.id AND #{MailyHerald::Log.table_name}.entity_type = '#{model.base_class.to_s}'"
         )
         @scope = @scope.where("#{MailyHerald::Log.table_name}.status" => options[:log_status]) if options[:log_status]
         self

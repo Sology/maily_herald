@@ -7,6 +7,36 @@ describe MailyHerald::PeriodicalMailing do
 
   after { Timecop.return }
 
+  describe "#run" do
+    let!(:entity) { create :user }
+    let!(:other_entity) { create :user }
+
+    subject { mailing.run }
+
+    describe "missing schedules" do
+      context "with no subscription" do
+        it("should not create schedules and skip them") do
+          expect(subject.length).to eq(0)
+          expect(mailing.logs.delivered.length).to eq(0)
+        end
+      end
+
+      context "with subscription" do
+        before { list.subscribe!(entity) }
+        before { list.subscribe!(other_entity) }
+        before { mailing.logs.where(entity: entity).delete_all }
+        before { expect(mailing.logs.length).to eq(1) }
+
+        context "start_at non nil" do
+          it("should create schedules and deliver them") do
+            expect(subject.length).to eq(2)
+            expect(mailing.logs.delivered.length).to eq(2)
+          end
+        end
+      end
+    end
+  end
+
   context "setup" do
     it { expect(mailing).to be_kind_of(MailyHerald::PeriodicalMailing) }
     it { expect(mailing).not_to be_a_new_record }

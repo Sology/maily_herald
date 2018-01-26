@@ -61,6 +61,30 @@ describe MailyHerald::OneTimeMailing do
     end
   end
 
+  describe "#delivery_scope" do
+    let!(:mailing) { create :generic_one_time_mailing }
+
+    before { list.subscribe!(entity) }
+
+    subject { mailing.delivery_scope }
+
+    context "when no schedule" do
+      before { mailing.logs.where(entity: entity).delete_all }
+
+      it("should contain entity") { expect(subject).to include(entity) }
+    end
+
+    context "when schedule exists" do
+      it("should contain entity") { expect(subject).to include(entity) }
+    end
+
+    context "when has already been scheduled and delivered" do
+      before { mailing.logs.where(entity: entity).update_all(status: "delivered") }
+
+      it("should not contain entity") { expect(subject).to be_empty }
+    end
+  end
+
   context "with subscription" do
     before { list.subscribe!(entity) }
 
