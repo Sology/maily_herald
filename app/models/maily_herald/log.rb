@@ -175,10 +175,12 @@ module MailyHerald
       @preview ||= MailyHerald::Mailing::Preview.new mail
     end
 
+    # Get [MailyHerald::Log::DeliveryAttempts]
     def delivery_attempts
       @delivery_attempts = MailyHerald::Log::DeliveryAttempts.new self.data
     end
 
+    # Get [MailyHerald::Log::Opens]
     def opens
       @opens = MailyHerald::Log::Opens.new self.data
     end
