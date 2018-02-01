@@ -18,6 +18,7 @@ module MailyHerald
               mail.body.raw_source.html_safe
             end
         h = h.gsub(/<img alt=\"\" id=\"tracking-pixel\" src=\".{1,}\/>/, "") if options[:hide_tracking]
+        h = h.gsub(/<a\ /, "<a target=\"_blank\"")
         h
       end
 
