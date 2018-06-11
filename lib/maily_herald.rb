@@ -165,41 +165,7 @@ module MailyHerald
     #
     # To be used in initializer file.
     def setup
-      migrations_copied?
-      logger.warn("Maily migrations seems to be pending. Skipping setup...") && return unless schema_loaded?
       yield Initializer.new(self)
-    end
-
-    # Checks if Maily tables are present and all additional migrations are processed.
-    def schema_loaded?
-      return false unless ActiveRecord::SchemaMigration.table_exists?
-      lv =  if ::Rails::VERSION::MAJOR == 5
-              ActiveRecord::SchemaMigration.all_versions.last
-            else
-              ActiveRecord::SchemaMigration.all.to_a.last.version
-            end
-      migrator = ActiveRecord::Migrator
-      migrator.migrations_paths = ::Rails.root.join("db/migrate")
-      mlv = migrator.last_migration.version
-      mlv = lv.to_i if Rails.application.class.name == "Dummy::Application"
-      lv.to_i == mlv && !([MailyHerald::Dispatch, MailyHerald::List, MailyHerald::Log, MailyHerald::Subscription].collect(&:table_exists?).select{|v| !v}.length > 0)
-    end
-
-    # Checks if Maily migrations are present.
-    MIGRATION_NAME_REGEX = /[^0-9][a-zA-Z_]{1,}/
-    def migrations_copied?
-      if defined?(Rails) && !::Rails.env.test?
-        maily_migrations  = Dir.entries(MailyHerald::Engine.root.join("db/migrate"))
-                              .select {|f| !File.directory? f}
-                              .each_with_object([]) {|n,arr| arr << n.match(MIGRATION_NAME_REGEX).to_s }
-        target_migrations = Dir.entries(::Rails.root.join("db/migrate"))
-                              .select {|f| !File.directory? f}
-                              .each_with_object([]) {|n,arr| arr << n.match(MIGRATION_NAME_REGEX).to_s }
-
-        maily_migrations.each do |name|
-          raise StandardError.new("There are some new migrations from MailyHerald. To resolve this issue, run:\n\n   rake maily_herald:install:migrations\n\n") unless target_migrations.include? name
-        end
-      end
     end
 
     # Fetches or defines a {Context}.
