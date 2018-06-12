@@ -165,7 +165,10 @@ module MailyHerald
     #
     # To be used in initializer file.
     def setup
+      ActiveRecord::Migration.check_pending!
       yield Initializer.new(self)
+    rescue ActiveRecord::NoDatabaseError, ActiveRecord::PendingMigrationError
+      logger.warn("Maily DB migrations are pending. Skipping setup...")
     end
 
     # Fetches or defines a {Context}.

@@ -8,6 +8,8 @@ namespace :maily_herald do
         end
       end
 
+      sqls = []
+      cmds = []
       ::Rails.root.join("db/migrate").entries.each do |entry|
         entry.basename.to_s.match(/\A(\d+)_(\w+)\.maily_herald\.rb\z/) do |md|
           name = md[2]
@@ -15,11 +17,15 @@ namespace :maily_herald do
 
           id = migrations[name]
 
-          sql = "UPDATE schema_migrations SET version = '#{id}' WHERE version = '#{local_id}'"
-          ActiveRecord::Base.connection.execute(sql)
-          (::Rails.root.join("db/migrate") + entry).unlink
+          sqls << "UPDATE schema_migrations SET version = '#{id}' WHERE version = '#{local_id}';"
+          cmds << "rm #{(::Rails.root.join("db/migrate") + entry)}"
         end
       end
+
+      puts "Fix your migration files by executing following shell commands:"
+      cmds.each{|cmd| puts "\t#{cmd}"}
+      puts "\nFix your database schema by executing following SQL commands:"
+      sqls.each{|cmd| puts "\t#{cmd}"}
     end
   end
 end
