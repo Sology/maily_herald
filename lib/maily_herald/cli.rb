@@ -28,8 +28,8 @@ module MailyHerald
           exit(1)
         end
       else
-        if options[:action] == :restart 
-          kill_daemon 
+        if options[:action] == :restart
+          kill_daemon
           5.times do
             if daemon_running?
               sleep 2
@@ -41,7 +41,7 @@ module MailyHerald
           end
         end
         exit(0) if options[:action] == :start && daemon_running?
-
+        options[:logfile] ||= 'log/paperboy.log'
         daemonize
         write_pid
 
@@ -68,7 +68,7 @@ module MailyHerald
           worker = Thread.new do
             while true
               unless MailyHerald::Manager.job_enqueued?
-                MailyHerald.run_all 
+                MailyHerald.run_all
               else
                 # TODO: this is not logged
                 #MailyHerald.logger.error 'Unable to queue job'
