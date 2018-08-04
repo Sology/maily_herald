@@ -8,7 +8,7 @@ module MailyHerald
     #
     # @param time [Time] time of delivery
     def schedule_delivery_to_all time = Time.now
-      self.list.context.scope_with_subscription(self.list, :outer).each do |entity|
+      self.list.subscribers.each do |entity|
         MailyHerald.logger.debug "Adding schedule of #{self} ad-hoc for entity ##{entity.id} #{entity}"
         schedule_delivery_to entity, time
       end
@@ -53,7 +53,7 @@ module MailyHerald
           schedule.mail = mail
           schedule
         else
-          MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+          MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity")
           schedule.destroy
         end
       end
