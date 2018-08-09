@@ -5,8 +5,6 @@ module MailyHerald
 
     enum kind: [:mixed, :plain, :html]
 
-    has_many    :logs,            class_name: "MailyHerald::Log"
-    
     validates   :subject,         presence: true, if: :generic_mailer?
     validates   :template_plain,  presence: { if: -> { template_html.blank? && generic_mailer? } }
     validates   :template_html,   presence: { if: -> { template_plain.blank? && generic_mailer? } }
@@ -178,7 +176,7 @@ module MailyHerald
     def deliver schedule
       build_mail(schedule).deliver
     rescue StandardError => e
-      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
+      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error)
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
       schedule.save
 
@@ -192,21 +190,21 @@ module MailyHerald
       unless processable?(entity)
         # Most likely the entity went out of the context scope.
         # Let's leave the log for now just in case it comes back into the scope.
-        MailyHerald.logger.log_processing(self, entity, prefix: "Not processable. Delaying schedule by one day", level: :debug) 
+        MailyHerald.logger.log_processing(self, entity, prefix: "Not processable. Delaying schedule by one day", level: :debug)
         skip_reason = in_scope?(entity) ? :not_processable : :not_in_scope
         schedule.skip(skip_reason) unless schedule.postpone_delivery
         return schedule
       end
 
       unless conditions_met?(entity)
-        MailyHerald.logger.log_processing(self, entity, prefix: "Conditions not met", level: :debug) 
+        MailyHerald.logger.log_processing(self, entity, prefix: "Conditions not met", level: :debug)
         schedule.skip(:conditions_unmet)
         return schedule
       end
 
       mail = yield # Let mailer do his job
 
-      MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed") 
+      MailyHerald.logger.log_processing(self, entity, mail, prefix: "Processed")
       schedule.entity_email = mail.to.first # store current delivery email in case it changed since the schedule was created
       schedule.deliver({
         content: mail.to_s
@@ -214,7 +212,7 @@ module MailyHerald
 
       return schedule
     rescue StandardError => e
-      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
+      MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error)
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
 
       MailyHerald.raise_delivery_errors? ? raise : (return schedule)
@@ -240,7 +238,7 @@ module MailyHerald
 
       errors.add(:conditions, "is not a boolean value") unless result
     rescue StandardError => e
-      errors.add(:conditions, e.to_s) 
+      errors.add(:conditions, e.to_s)
     end
 
     def mailer_validity

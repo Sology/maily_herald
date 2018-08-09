@@ -11,8 +11,8 @@ module MailyHerald
   class List < ApplicationRecord
     include MailyHerald::Autonaming
 
-    has_many :dispatches, class_name: "MailyHerald::Dispatch"
-    has_many :subscriptions, class_name: "MailyHerald::Subscription"
+    has_many :dispatches, class_name: "MailyHerald::Dispatch", dependent: :restrict_with_error
+    has_many :subscriptions, class_name: "MailyHerald::Subscription", dependent: :destroy
 
     validates :context, presence: true
 
@@ -41,7 +41,7 @@ module MailyHerald
     #
     # @param entity [Object] Entity object. Need to be in the {Context} scope.
     def subscribe! entity
-      s = subscription_for(entity) 
+      s = subscription_for(entity)
       s ? s.activate! : s = create_subscription_for(entity, true)
       s
     end
@@ -50,7 +50,7 @@ module MailyHerald
     #
     # @param entity [Object] Entity object.
     def unsubscribe! entity
-      s = subscription_for(entity) 
+      s = subscription_for(entity)
       s ? s.deactivate! : s = create_subscription_for(entity, false)
       s
     end

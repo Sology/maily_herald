@@ -34,6 +34,8 @@ module MailyHerald
   #                                            Valid only for {PeriodicalMailing}.
   class Dispatch < MailyHerald::ApplicationRecord
     belongs_to  :list,          class_name: "MailyHerald::List"
+    has_many    :logs,          class_name: "MailyHerald::Log", foreign_key: :mailing_id
+    has_many    :scheduled_logs, ->{ scheduled },  class_name: "MailyHerald::Log", foreign_key: :mailing_id, dependent: :restrict_with_error
 
     validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
