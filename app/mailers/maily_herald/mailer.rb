@@ -92,14 +92,12 @@ module MailyHerald
         entity = args[1]
       end
 
-      if mailing
-        @_message.maily_herald_data = Struct.new(:schedule, :mailing, :entity, :subscription).new(
-          schedule,
-          mailing,
-          entity,
-          mailing.subscription_for(entity)
-        )
-      end
+      @_message.maily_herald_data = Struct.new(:schedule, :mailing, :entity, :subscription).new(
+        schedule,
+        mailing,
+        entity,
+        mailing.subscription_for(entity)
+      )
 
       if Rails::VERSION::MAJOR == 5
         lookup_context.locale = nil
