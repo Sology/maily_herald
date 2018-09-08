@@ -13,7 +13,7 @@ module MailyHerald
 
       def html options = {hide_tracking: true}
         h = if mail.parts.any?
-              mail.html_part.body.raw_source
+              mail.html_part.body.decoded
             else
               mail.body.raw_source.html_safe
             end
