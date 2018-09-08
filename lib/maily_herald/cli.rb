@@ -42,6 +42,7 @@ module MailyHerald
         end
         exit(0) if options[:action] == :start && daemon_running?
         options[:logfile] ||= 'log/paperboy.log'
+        options[:pidfile] ||= 'tmp/pids/paperboy.pid'
         daemonize
         write_pid
 
