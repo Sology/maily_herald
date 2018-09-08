@@ -53,7 +53,7 @@ module MailyHerald
     # in {MailyHerald::Log.mail} attributes.
     def run
       # TODO better scope here to exclude schedules for users outside context scope
-      return if self.mailing.blank?
+      return if self.mailings.blank?
       delivery_scope.collect do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
