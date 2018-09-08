@@ -21,7 +21,7 @@ module MailyHerald
     #
     # If no block provided, {SequenceMailing} with given +name+ is returned.
     #
-    # If block provided, {SequenceMailing} with given +name+ is created or edited 
+    # If block provided, {SequenceMailing} with given +name+ is created or edited
     # and block is evaluated within that mailing.
     #
     # @option options [true, false] :locked (false) Determines whether Mailing is locked.
@@ -53,6 +53,7 @@ module MailyHerald
     # in {MailyHerald::Log.mail} attributes.
     def run
       # TODO better scope here to exclude schedules for users outside context scope
+      return if self.mailing.blank?
       delivery_scope.collect do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
@@ -64,7 +65,7 @@ module MailyHerald
             schedule.mail = mail
             schedule
           else
-            MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity") 
+            MailyHerald.logger.log_processing(schedule.mailing, {class: schedule.entity_type, id: schedule.entity_id}, prefix: "Removing schedule for non-existing entity")
             schedule.destroy
           end
         end
@@ -126,7 +127,7 @@ module MailyHerald
       mailing = next_mailing(entity)
       start_time = calculate_processing_time_for(entity, mailing) if mailing
 
-      if !subscribed || !self.start_at || !enabled? || !mailing || !start_time 
+      if !subscribed || !self.start_at || !enabled? || !mailing || !start_time
         log = schedule_for(entity)
         log.try(:destroy)
         return
