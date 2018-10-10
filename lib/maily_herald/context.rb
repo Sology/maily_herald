@@ -45,7 +45,7 @@ module MailyHerald
     end
 
     class Attributes
-      def initialize block
+      def initialize block = nil
         @attrs = {}
         @node = @parent_node = @attrs
         @block = block
@@ -55,9 +55,10 @@ module MailyHerald
         if entity
           @attrs["subscription"] = Proc.new{ subscription } if subscription
           @attrs["log"] = Proc.new{ log } if log
-          instance_exec entity, &@block
+
+          instance_exec(entity, &@block) if @block
         else
-          instance_eval &@block
+          instance_eval(&@block) if @block
         end
       end
 
@@ -255,27 +256,23 @@ module MailyHerald
       if block_given?
         @attributes = Attributes.new block
       else
-        @attributes
+        @attributes || Attributes.new
       end
     end
 
     # Obtains {Context} attributes in a form of (nested) +Hash+ which 
     # values are procs each returning single Entity attribute value.
     def attributes_list
-      return {} unless @attributes
-
-      attributes = @attributes.dup
-      attributes.setup 
-      attributes.for_drop
+      attrs = attributes.try(:dup)
+      attrs.setup 
+      attrs.for_drop
     end
 
     # Returns Liquid drop created from Context attributes.
     def drop_for entity, subscription, log = nil
-      return {} unless @attributes
-
-      attributes = @attributes.dup
-      attributes.setup entity, subscription, log
-      Drop.new(attributes.for_drop)
+      attrs = attributes.try(:dup)
+      attrs.setup entity, subscription, log
+      Drop.new(attrs.for_drop)
     end
   end
 end
