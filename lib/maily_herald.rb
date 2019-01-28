@@ -7,6 +7,7 @@ begin
 rescue LoadError
 end
 require 'redis'
+require 'mail'
 
 if defined?(::Rails::Engine)
   require "maily_herald/engine"
@@ -205,19 +206,19 @@ module MailyHerald
     #
     # If no block provided, {AdHocMailing} with given +name+ is returned.
     #
-    # If block provided, {AdHocMailing} with given +name+ is created or edited 
+    # If block provided, {AdHocMailing} with given +name+ is created or edited
     # and block is evaluated within that mailing.
     #
     # @option options [true, false] :locked (false) Determines whether Mailing is locked.
     # @see Dispatch#locked?
     def ad_hoc_mailing name, options = {}
-      mailing = MailyHerald::AdHocMailing.where(name: name).first 
+      mailing = MailyHerald::AdHocMailing.where(name: name).first
       lock = options.delete(:locked)
 
       if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
         mailing ||= MailyHerald::AdHocMailing.new(name: name)
         yield(mailing)
-        mailing.save! 
+        mailing.save!
 
         MailyHerald.lock_dispatch(name) if lock
       end
@@ -229,19 +230,19 @@ module MailyHerald
     #
     # If no block provided, {OneTimeMailing} with given +name+ is returned.
     #
-    # If block provided, {OneTimeMailing} with given +name+ is created or edited 
+    # If block provided, {OneTimeMailing} with given +name+ is created or edited
     # and block is evaluated within that mailing.
     #
     # @option options [true, false] :locked (false) Determines whether Mailing is locked.
     # @see Dispatch#locked?
     def one_time_mailing name, options = {}
-      mailing = MailyHerald::OneTimeMailing.where(name: name).first 
+      mailing = MailyHerald::OneTimeMailing.where(name: name).first
       lock = options.delete(:locked)
 
       if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
         mailing ||= MailyHerald::OneTimeMailing.new(name: name)
         yield(mailing)
-        mailing.save! 
+        mailing.save!
 
         MailyHerald.lock_dispatch(name) if lock
       end
@@ -253,13 +254,13 @@ module MailyHerald
     #
     # If no block provided, {PeriodicalMailing} with given +name+ is returned.
     #
-    # If block provided, {PeriodicalMailing} with given +name+ is created or edited 
+    # If block provided, {PeriodicalMailing} with given +name+ is created or edited
     # and block is evaluated within that mailing.
     #
     # @option options [true, false] :locked (false) Determines whether Mailing is locked.
     # @see Dispatch#locked?
     def periodical_mailing name, options = {}
-      mailing = MailyHerald::PeriodicalMailing.where(name: name).first 
+      mailing = MailyHerald::PeriodicalMailing.where(name: name).first
       lock = options.delete(:locked)
 
       if block_given? && !self.dispatch_locked?(name) && (!mailing || lock)
@@ -277,16 +278,16 @@ module MailyHerald
     #
     # If no block provided, {Sequence} with given +name+ is returned.
     #
-    # If block provided, {Sequence} with given +name+ is created or edited 
+    # If block provided, {Sequence} with given +name+ is created or edited
     # and block is evaluated within that mailing.
-    # Additionally, within provided block, using {Sequence#mailing} method, 
+    # Additionally, within provided block, using {Sequence#mailing} method,
     # {SequenceMailing sequence mailings} can be defined.
     #
     # @option options [true, false] :locked (false) Determines whether Mailing is locked.
     # @see Dispatch#locked?
     # @see Sequence#mailing
     def sequence name, options = {}
-      sequence = MailyHerald::Sequence.where(name: name).first 
+      sequence = MailyHerald::Sequence.where(name: name).first
       lock = options.delete(:locked)
 
       if block_given? && !self.dispatch_locked?(name) && (!sequence || lock)
@@ -304,13 +305,13 @@ module MailyHerald
     #
     # If no block provided, {List} with given +name+ is returned.
     #
-    # If block provided, {List} with given +name+ is created or edited 
+    # If block provided, {List} with given +name+ is created or edited
     # and block is evaluated within that list.
     #
     # @option options [true, false] :locked (false) Determines whether {List} is locked.
     # @see List#locked?
     def list name, options = {}
-      list = MailyHerald::List.where(name: name).first 
+      list = MailyHerald::List.where(name: name).first
       lock = options.delete(:locked)
 
       if block_given? && !self.list_locked?(name) && (!list || lock)
@@ -328,7 +329,7 @@ module MailyHerald
     #
     # @see List#subscribe!
     def subscribe entity, *list_names
-      list_names.each do |ln| 
+      list_names.each do |ln|
         list = MailyHerald.list(ln)
         next unless list
 
@@ -340,7 +341,7 @@ module MailyHerald
     #
     # @see List#unsubscribe!
     def unsubscribe entity, *list_names
-      list_names.each do |ln| 
+      list_names.each do |ln|
         list = MailyHerald.list(ln)
         next unless list
 

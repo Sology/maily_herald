@@ -12,7 +12,7 @@ module MailyHerald
   # @attr [String]    entity_type    Entity association type.
   # @attr [String]    entity_email   Delivery email. Stored in case associated entity gets deleted.
   # @attr [Fixnum]    mailing_id     {Dispatch} association id.
-  # @attr [Sumbol]    status         
+  # @attr [Sumbol]    status
   # @attr [Hash]      data           Custom log data.
   # @attr [DateTime]  processing_at  Timestamp of {Dispatch} processing.
   #                                  Can be either future (when in +scheduled+ state) or past.
@@ -22,10 +22,7 @@ module MailyHerald
     belongs_to  :entity,        polymorphic: true
     belongs_to  :mailing,       class_name: "MailyHerald::Dispatch", foreign_key: :mailing_id
 
-    validates   :entity,        presence: true
-    validates   :mailing,       presence: true
     validates   :status,        presence: true, inclusion: {in: AVAILABLE_STATUSES}
-
     validates   :processing_at, presence: true, if: :scheduled?
 
     scope       :ordered,       lambda { order("processing_at asc") }
@@ -167,7 +164,7 @@ module MailyHerald
 
     def preview
       mail =  if self.delivered?
-                ::Mail.new(self.data[:content])
+                Mail.new(self.data[:content])
               else
                 self.mailing.build_mail self
               end

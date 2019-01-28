@@ -37,7 +37,6 @@ module MailyHerald
     has_many    :logs,          class_name: "MailyHerald::Log", foreign_key: :mailing_id
     has_many    :scheduled_logs, ->{ scheduled },  class_name: "MailyHerald::Log", foreign_key: :mailing_id, dependent: :restrict_with_error
 
-    validates   :list,          presence: true
     validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
     validate do |dispatch|
       dispatch.errors.add(:base, "Can't change this dispatch because it is locked.") if dispatch.changes.present? && dispatch.locked?
