@@ -164,7 +164,11 @@ module MailyHerald
       if generic_mailer?
         Mailer.generic(entity, self)
       else
-        self.mailer.send(self.name, entity)
+        if self.mailer.respond_to?(self.name)
+          self.mailer.send(self.name, entity)
+        else
+          raise RuntimeError.new("Mailer '#{self.mailer}' does not define email '#{self.name}'")
+        end
       end
     end
 
