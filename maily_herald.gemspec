@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 4.2.0"
   s.add_dependency "liquid", "~> 4.0.0"
   s.add_dependency "sidekiq", '> 4'
+  s.add_dependency "mail"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"

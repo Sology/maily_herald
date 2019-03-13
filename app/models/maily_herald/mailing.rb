@@ -90,6 +90,26 @@ module MailyHerald
       self.class == SequenceMailing
     end
 
+    def delivered_percentage
+      (self.logs.delivered.count.to_f / self.logs.count.to_f) * 100.0
+    end
+
+    def error_percentage
+      (self.logs.error.count.to_f / self.logs.count.to_f) * 100.0
+    end
+
+    def skipped_percentage
+      (self.logs.skipped.count.to_f / self.logs.count.to_f) * 100.0
+    end
+
+    def scheduled_percentage
+      (self.logs.scheduled.count.to_f / self.logs.count.to_f) * 100.0
+    end
+
+    def opened_percentage
+      (self.logs.opened.count.to_f / self.logs.count.to_f) * 100.0
+    end
+
     def mailer_name
       read_attribute(:mailer_name).to_sym
     end
