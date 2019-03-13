@@ -36,8 +36,10 @@ module MailyHerald
     scope       :processed,     lambda { where(status: [:delivered, :skipped, :error]) }
     scope       :not_skipped,   lambda { where("status != 'skipped'") }
     scope       :like_email,    lambda {|query| where("maily_herald_logs.entity_email LIKE (?)", "%#{query}%") }
+    scope       :opened,        ->{ where(opened: true) }
+    scope       :not_opened,    ->{ where(opened: false) }
 
-    serialize   :data,          Hash
+    serialize   :data,          Hash # TO DO :REMOVE As change to jsonb
 
     before_create :set_token
 
@@ -180,6 +182,12 @@ module MailyHerald
     # Get [MailyHerald::Log::Opens]
     def opens
       @opens = MailyHerald::Log::Opens.new self.data
+    end
+
+    def open!(remote_ip, user_agent)
+      self.data[:opens] = opens.add(remote_ip, user_agent)
+      self.opened = true
+      self.save
     end
 
     # Retry sending email - changing 'status' to 'scheduled.

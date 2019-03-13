@@ -11,11 +11,7 @@ module MailyHerald
     end
 
     def open
-      if @log
-        @log.data[:opens] = @log.opens.add(request.remote_ip, request.user_agent)
-        @log.save
-      end
-
+      @log.open!(request.remote_ip, request.user_agent) if @log
       send_data Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="), type: "image/gif", disposition: "inline"
     end
 
