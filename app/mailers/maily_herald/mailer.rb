@@ -1,5 +1,5 @@
 module MailyHerald
-  class Mailer < ActionMailer::Base
+  class Mailer < ApplicationMailer
     attr_reader :entity
 
     def generic entity
@@ -14,7 +14,7 @@ module MailyHerald
       content_plain = render.plain if mailing.mixed? || mailing.plain?
 
       opts = {
-        to: destination, 
+        to: destination,
         subject: subject
       }
       opts[:from] = mailing.from if mailing.from.present?
