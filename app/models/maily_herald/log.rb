@@ -36,8 +36,8 @@ module MailyHerald
     scope       :processed,     lambda { where(status: [:delivered, :skipped, :error]) }
     scope       :not_skipped,   lambda { where("status != 'skipped'") }
     scope       :like_email,    lambda {|query| where("maily_herald_logs.entity_email LIKE (?)", "%#{query}%") }
-    scope       :opened,        ->{ where(opened: true) }
-    scope       :not_opened,    ->{ where(opened: false) }
+    scope       :opened,        ->{ where.not(opened_at: nil) }
+    scope       :not_opened,    ->{ where(opened_at: nil) }
 
     serialize   :data,          Hash # TO DO :REMOVE As change to jsonb
 
@@ -186,7 +186,7 @@ module MailyHerald
 
     def open!(remote_ip, user_agent)
       self.data[:opens] = opens.add(remote_ip, user_agent)
-      self.opened = true
+      self.opened_at = Time.zone.now
       self.save
     end
 
