@@ -1,4 +1,5 @@
 $stdout.sync = true
+Thread.abort_on_exception = true
 
 require 'yaml'
 require 'singleton'

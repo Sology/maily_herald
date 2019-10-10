@@ -20,7 +20,7 @@ Core Maily features are accessible for Rails programmers via the API. Apart from
 
 ## Requirements
 
-Ruby on Rails 4.2 and 5.1 are supported.
+Ruby on Rails 5.
 
 ## Installation
 
@@ -364,6 +364,8 @@ You can configure your Maily using the config file `config/maily_herald.yml`. Su
 * `redis_namespace`: string
 * `redis_driver`: string
 
+Apart from configuring Redis like described above, you can also set the Redis URL using environment variables. Set the `REDIS_PROVIDER` env var to the name of the env var containing the Redis server URL or you may also use the generic `REDIS_URL` which may be set to your own private Redis server.
+
 ## Other stuff
 
 ### Periodical mailing scheduling
@@ -393,47 +395,6 @@ By default, visiting an opt-out URL silently disables the subscription and redir
 config.token_redirect do |controller, subscription|
   # This is just an example, put here whatever you want.
   controller.view_context.unsubscribed_path
-end
-```
-
-In case you need more customization, you can always overwrite `MailyHerald::TokensController` and its methods:
-
-```ruby
-# app/controllers/maily_herald/tokens_controller.rb
-module MailyHerald
-  class TokensController < MailyHerald::ApplicationController
-    before_action :load_subscription, only: :unsubscribe
-    before_action :load_log, only: :open
-
-    def unsubscribe
-      @subscription.try(:deactivate!)
-
-      redirect_to MailyHerald.token_redirect.try(:call, self, @subscription) || "/", notice: redirection_notice
-    end
-
-    def open
-      if @log
-        @log.data[:opens] = @log.opens.add(request.remote_ip, request.user_agent)
-        @log.save
-      end
-
-      send_data Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="), type: "image/gif", disposition: "inline"
-    end
-
-    private
-
-    def load_subscription
-      @subscription = MailyHerald::Subscription.find_by_token(params[:token])
-    end
-
-    def load_log
-      @log = MailyHerald::Log.find_by_token(params[:token])
-    end
-
-    def redirection_notice
-      @subscription ? t('maily_herald.subscription.deactivated') : t('maily_herald.subscription.undefined_token')
-    end
-  end
 end
 ```
 

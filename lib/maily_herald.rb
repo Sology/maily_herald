@@ -135,7 +135,7 @@ module MailyHerald
     def redis
       @redis ||= begin
                    client = Redis.new(
-                     url: options[:redis_url] || 'redis://localhost:6379/0',
+                     url: options[:redis_url] || ENV[ENV['REDIS_PROVIDER'] || 'REDIS_URL'] || 'redis://localhost:6379/0',
                      driver: options[:redis_driver] || "ruby"
                    )
 
