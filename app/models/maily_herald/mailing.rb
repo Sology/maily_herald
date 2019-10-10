@@ -186,7 +186,7 @@ module MailyHerald
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
       schedule.save
 
-      MailyHerald.raise_delivery_errors? ? raise : (return nil)
+      MailyHerald.raise_delivery_errors? ? (raise MailyHerald::DeliveryError.new) : (return nil)
     end
 
     # Called from Mailer, block required
@@ -221,7 +221,7 @@ module MailyHerald
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")
 
-      MailyHerald.raise_delivery_errors? ? raise : (return schedule)
+      MailyHerald.raise_delivery_errors? ? (raise MailyHerald::DeliveryError.new) : (return schedule)
     end
 
     private
