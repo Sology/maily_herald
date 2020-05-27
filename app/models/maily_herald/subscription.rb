@@ -1,3 +1,5 @@
+require_relative('application_record.rb')
+
 module MailyHerald
   class Subscription < ApplicationRecord
     belongs_to  :entity,        polymorphic: true
