@@ -7,6 +7,7 @@ begin
 rescue LoadError
 end
 require 'redis'
+require 'forwardable'
 
 if defined?(::Rails::Engine)
   require "maily_herald/engine"
@@ -74,6 +75,17 @@ module MailyHerald
   @@raise_delivery_errors = false
 
   class << self
+    extend Forwardable
+    def_delegators :config, :mailer_default_url_options, :mailer_default_url_options=
+
+    def configure
+      yield config
+    end
+
+    def config
+      @_config ||= Config.new
+    end
+
     # Returns config options read from config file.
     def options
       @options ||= read_options
@@ -431,6 +443,14 @@ module MailyHerald
         opts = YAML.load(ERB.new(IO.read(cfile)).result)
       end
       opts
+    end
+  end
+
+  class Config
+    attr_accessor :mailer_default_url_options
+
+    def initialize
+      @mailer_default_url_options = {}
     end
   end
 end

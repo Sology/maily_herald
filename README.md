@@ -121,7 +121,15 @@ In some cases, you need to specify default `from` and `host` mailer options in y
 # config/application.rb
 config.action_mailer.default_options = { from: "hello@mailyherald.org" }
 config.action_mailer.default_url_options = { host: "mailyherald.org" }
+```
 
+You can also override the default_url_options for MailyHerald base mailer:
+
+```ruby
+# config/initializers/maily_herald.rb
+MailyHerald.setup do |config|
+  config.mailer_default_url_options = { host: "mailyherald.org" }
+end
 ```
 
 ### Initializer

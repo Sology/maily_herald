@@ -10,7 +10,8 @@ MailyHerald::Engine.routes.url_helpers.class.module_eval do
     options = options.reverse_merge(
       {controller: "/maily_herald/tokens", action: "unsubscribe", token: subscription.token}.
       merge(Rails.application.routes.default_url_options).
-      merge(Rails.application.config.action_mailer.default_url_options)
+      merge(Rails.application.config.action_mailer.default_url_options).
+      merge(MailyHerald.config.mailer_default_url_options)
     )
 
     MailyHerald::Engine.routes.url_helpers.url_for(options)
@@ -21,7 +22,8 @@ MailyHerald::Engine.routes.url_helpers.class.module_eval do
     options = options.reverse_merge(
       {controller: "/maily_herald/tokens", action: "open", token: token, format: "gif"}.
       merge(Rails.application.routes.default_url_options).
-      merge(Rails.application.config.action_mailer.default_url_options)
+      merge(Rails.application.config.action_mailer.default_url_options).
+      merge(MailyHerald.config.mailer_default_url_options)
     )
 
     MailyHerald::Engine.routes.url_helpers.url_for(options)
@@ -32,7 +34,8 @@ MailyHerald::Engine.routes.url_helpers.class.module_eval do
     options = options.reverse_merge(
       {controller: "/maily_herald/tokens", action: "preview", token: token}.
       merge(Rails.application.routes.default_url_options).
-      merge(Rails.application.config.action_mailer.default_url_options)
+      merge(Rails.application.config.action_mailer.default_url_options).
+      merge(MailyHerald.config.mailer_default_url_options)
     )
 
     MailyHerald::Engine.routes.url_helpers.url_for(options)
