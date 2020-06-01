@@ -12,6 +12,7 @@ module MailyHerald
 
     def open
       if @log
+        @log.status = :opened
         @log.data[:opens] = @log.opens.add(request.remote_ip, request.user_agent)
         @log.save
       end
