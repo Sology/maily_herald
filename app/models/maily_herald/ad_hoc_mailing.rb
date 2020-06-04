@@ -46,8 +46,8 @@ module MailyHerald
     # in {MailyHerald::Log.mail} attributes.
     def run
       if pending?
-        complete!
         schedule_delivery_to_all
+        complete!
       end
 
       # TODO better scope here to exclude schedules for users outside context scope

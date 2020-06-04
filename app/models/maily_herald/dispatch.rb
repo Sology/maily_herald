@@ -55,6 +55,7 @@ module MailyHerald
 
     delegate :subscription_for, to: :list
 
+    scope       :runnable,      lambda { where(state: [:enabled, :pending]) }
     scope       :enabled,       lambda { where(state: [:enabled, :pending, :completed]) }
     scope       :pending,       lambda { where(state: :pending) }
     scope       :completed,     lambda { where(state: :completed) }
