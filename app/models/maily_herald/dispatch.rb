@@ -5,6 +5,8 @@ module MailyHerald
   # Each Dispatch instance need to have associated {List}.
   # Dispatch can be in one of three states:
   # - +enabled+
+  # - +pending+
+  # - +completed+
   # - +disabled+
   # - +archived+
   #
@@ -36,7 +38,7 @@ module MailyHerald
     belongs_to  :list,          class_name: "MailyHerald::List"
 
     validates   :list,          presence: true
-    validates   :state,         presence: true, inclusion: {in: [:enabled, :disabled, :archived]}
+    validates   :state,         presence: true, inclusion: {in: [:enabled, :pending, :completed, :disabled, :archived]}
     validate do |dispatch|
       dispatch.errors.add(:base, "Can't change this dispatch because it is locked.") if dispatch.changes.present? && dispatch.locked?
     end
@@ -53,7 +55,9 @@ module MailyHerald
 
     delegate :subscription_for, to: :list
 
-    scope       :enabled,       lambda { where(state: :enabled) }
+    scope       :enabled,       lambda { where(state: [:enabled, :pending, :completed]) }
+    scope       :pending,       lambda { where(state: :pending) }
+    scope       :completed,     lambda { where(state: :completed) }
     scope       :disabled,      lambda { where(state: :disabled) }
     scope       :archived,      lambda { where(state: :archived) }
     scope       :not_archived,  lambda { where("state != (?)", :archived) }
@@ -119,7 +123,13 @@ module MailyHerald
     end
 
     def enabled?
-      self.state == :enabled
+      [:enabled, :pending, :completed].include?(self.state)
+    end
+    def pending?
+      self.state == :pending
+    end
+    def completed?
+      self.state == :completed
     end
     def disabled?
       self.state == :disabled
@@ -131,6 +141,12 @@ module MailyHerald
     def enable!
       update_attribute(:state, "enabled")
     end
+    def pend!
+      update_attribute(:state, "pending")
+    end
+    def complete!
+      update_attribute(:state, "completed")
+    end
     def disable!
       update_attribute(:state, "disabled")
     end
@@ -140,6 +156,12 @@ module MailyHerald
 
     def enable
       write_attribute(:state, "enabled")
+    end
+    def pend
+      write_attribute(:state, "pending")
+    end
+    def complete
+      write_attribute(:state, "completed")
     end
     def disable
       write_attribute(:state, "disabled")

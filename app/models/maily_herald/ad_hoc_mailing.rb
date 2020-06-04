@@ -45,6 +45,11 @@ module MailyHerald
     # Returns array of {MailyHerald::Log} with actual `Mail::Message` objects stored
     # in {MailyHerald::Log.mail} attributes.
     def run
+      if pending?
+        complete!
+        schedule_delivery_to_all
+      end
+
       # TODO better scope here to exclude schedules for users outside context scope
       schedules.where("processing_at <= (?)", Time.now).collect do |schedule|
         if schedule.entity
