@@ -16,7 +16,7 @@ module MailyHerald
   # @attr [Hash]      data           Custom log data.
   # @attr [DateTime]  processing_at  Timestamp of {Dispatch} processing.
   #                                  Can be either future (when in +scheduled+ state) or past.
-  class Log < ApplicationRecord
+  class Log < MailyHerald::ApplicationRecord
     AVAILABLE_STATUSES = [:scheduled, :delivered, :skipped, :error, :opened, :clicked]
 
     belongs_to  :entity,        polymorphic: true
