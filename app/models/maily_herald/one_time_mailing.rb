@@ -31,7 +31,7 @@ module MailyHerald
         method_to_invoke_after_scheduling = (Time.now < parsed_start_at) ? :pend! : :complete!
       end
 
-      delivery_scope.collect do |entity|
+      delivery_scope.find_each do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
 

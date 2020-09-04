@@ -51,7 +51,7 @@ module MailyHerald
       end
 
       # TODO better scope here to exclude schedules for users outside context scope
-      schedules.where("processing_at <= (?)", Time.now).collect do |schedule|
+      schedules.where("processing_at <= (?)", Time.now + 1.minute).find_each do |schedule|
         if schedule.entity
           mail = deliver schedule
           schedule.reload
