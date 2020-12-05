@@ -21,8 +21,8 @@ module MailyHerald
 
     # Run all scheduled mailing deliveres.
     def self.run_all
-      AdHocMailing.all.each {|m| m.run}
-      OneTimeMailing.all.each {|m| m.run}
+      AdHocMailing.runnable.each {|m| m.run}
+      OneTimeMailing.runnable.each {|m| m.run}
       PeriodicalMailing.all.each {|m| m.run}
       Sequence.all.each {|m| m.run}
     end

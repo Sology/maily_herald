@@ -180,7 +180,7 @@ module MailyHerald
     #
     # Returns `Mail::Message`.
     def deliver schedule
-      build_mail(schedule).deliver
+      build_mail(schedule).deliver_later
     rescue StandardError => e
       MailyHerald.logger.log_processing(self, schedule.entity, prefix: "Error", level: :error) 
       schedule.error("#{e.to_s}\n\n#{e.backtrace.join("\n")}")

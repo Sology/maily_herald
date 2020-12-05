@@ -8,7 +8,7 @@ module MailyHerald
   # @attr [String]    name
   # @attr [String]    title
   # @attr [String]    context_name    Name of the {Context} used by List.
-  class List < ApplicationRecord
+  class List < MailyHerald::ApplicationRecord
     include MailyHerald::Autonaming
 
     has_many :dispatches, class_name: "MailyHerald::Dispatch"

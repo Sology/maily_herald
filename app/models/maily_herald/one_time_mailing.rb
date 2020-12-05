@@ -13,7 +13,25 @@ module MailyHerald
     # Returns array of {MailyHerald::Log} with actual `Mail::Message` objects stored
     # in {MailyHerald::Log.mail} attributes.
     def run
-      delivery_scope.collect do |entity|
+      is_static_start_at = true
+      is_static_start_at = false unless start_at
+      is_static_start_at = false if has_start_at_proc?
+      parsed_start_at = nil
+      begin
+        parsed_start_at = Time.parse(start_at)
+      rescue ArgumentError => e
+        is_static_start_at = false
+      rescue Exception => e
+        is_static_start_at = false
+      end
+
+      method_to_invoke_after_scheduling = nil
+      if is_static_start_at && parsed_start_at
+        return if pending? && Time.now < parsed_start_at
+        method_to_invoke_after_scheduling = (Time.now < parsed_start_at) ? :pend! : :complete!
+      end
+
+      delivery_scope.find_each do |entity|
         schedule = MailyHerald::Log.get_from(entity)
         schedule ||= set_schedule_for(entity)
 
@@ -29,6 +47,8 @@ module MailyHerald
           end
         end
       end
+
+      send(method_to_invoke_after_scheduling) if method_to_invoke_after_scheduling
     end
 
     # Returns collection of processed {Log}s for given entity.
@@ -51,7 +71,7 @@ module MailyHerald
       subscribed = self.list.subscribed?(entity)
       start_time = start_processing_time(entity)
 
-      if !self.start_at || !enabled? || !start_time || !subscribed
+      if !self.start_at || !enabled? || completed? || !start_time || !subscribed
         log = schedule_for(entity)
         log.try(:destroy)
         return

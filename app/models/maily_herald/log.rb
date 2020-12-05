@@ -16,8 +16,8 @@ module MailyHerald
   # @attr [Hash]      data           Custom log data.
   # @attr [DateTime]  processing_at  Timestamp of {Dispatch} processing.
   #                                  Can be either future (when in +scheduled+ state) or past.
-  class Log < ApplicationRecord
-    AVAILABLE_STATUSES = [:scheduled, :delivered, :skipped, :error]
+  class Log < MailyHerald::ApplicationRecord
+    AVAILABLE_STATUSES = [:scheduled, :delivered, :skipped, :error, :opened, :clicked]
 
     belongs_to  :entity,        polymorphic: true
     belongs_to  :mailing,       class_name: "MailyHerald::Dispatch", foreign_key: :mailing_id
@@ -32,11 +32,13 @@ module MailyHerald
     scope       :for_entity,    lambda {|entity| where(entity_id: entity.id, entity_type: entity.class.base_class.name) }
     scope       :for_mailing,   lambda {|mailing| where(mailing_id: mailing.id) }
     scope       :for_mailings,  lambda {|mailings| where("mailing_id in (?)", mailings) }
-    scope       :delivered,     lambda { where(status: :delivered) }
+    scope       :clicked,       lambda { where(status: :clicked) }
+    scope       :opened,        lambda { where(status: [:opened, :clicked]) }
+    scope       :delivered,     lambda { where(status: [:delivered, :opened, :clicked]) }
     scope       :skipped,       lambda { where(status: :skipped) }
     scope       :error,         lambda { where(status: :error) }
     scope       :scheduled,     lambda { where(status: :scheduled) }
-    scope       :processed,     lambda { where(status: [:delivered, :skipped, :error]) }
+    scope       :processed,     lambda { where(status: [:delivered, :skipped, :error, :opened, :clicked]) }
     scope       :not_skipped,   lambda { where("status != 'skipped'") }
     scope       :like_email,    lambda {|query| where("maily_herald_logs.entity_email LIKE (?)", "%#{query}%") }
 
@@ -104,7 +106,7 @@ module MailyHerald
     end
 
     def delivered?
-      self.status == :delivered
+      [:delivered, :opened, :clicked].include?(self.status)
     end
 
     def skipped?
@@ -119,8 +121,16 @@ module MailyHerald
       self.status == :scheduled
     end
 
+    def opened?
+      [:opened, :clicked].include?(self.status)
+    end
+
+    def clicked?
+      self.status == :clicked
+    end
+
     def processed?
-      [:delivered, :skipped, :error].include?(self.status)
+      [:delivered, :skipped, :error, :opened, :clicked].include?(self.status)
     end
 
     def web_preview_url
@@ -183,6 +193,11 @@ module MailyHerald
     # Get [MailyHerald::Log::Opens]
     def opens
       @opens = MailyHerald::Log::Opens.new self.data
+    end
+
+    # Get [MailyHerald::Log::Clicks]
+    def clicks
+      @clicks = MailyHerald::Log::Clicks.new self.data
     end
 
     # Retry sending email - changing 'status' to 'scheduled.
